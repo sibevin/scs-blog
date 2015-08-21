@@ -19,6 +19,8 @@ $ta_btns: "menu", "search"
       padding: 8px
       text-align: center
       font-size: 1.3em
+    .ta-mobile
+      display: none
     .ta-btns
       text-align: center
       .ta-btn
@@ -32,3 +34,26 @@ $ta_btns: "menu", "search"
             width: 72px
             background: url("/images/header/#{$ta_btn}_d_48x.svg")
             background-size: 100%
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px)
+  .home
+    .title-area
+      .ta-title
+        display: none
+      .ta-sub-title
+        display: none
+      .ta-mobile
+        display: inline-block
+        border: 10px solid
+        padding: 24px 0px
+        .ta-title
+          display: block
+          font-size: 5.0em
+          width: 250px
+          border-bottom: none
+        .ta-sub-title
+          display: inline-block
+          padding: 12px 24px
+          font-size: 1.3em
+          border-top: 2px solid
+      .ta-btns
+        display: none
