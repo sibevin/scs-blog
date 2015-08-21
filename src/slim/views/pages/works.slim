@@ -1,0 +1,26 @@
+.meta-data title Works
+
+.work ng-controller="WorkListCtrl"
+  .title
+    .title-img
+      a
+        img src="/images/menu/work_76x.svg"
+    .title-main
+      .title-text
+        | Works
+  .posts
+    .post-list
+      .pl-row ng-repeat="post in getPosts()"
+        .pl-cell.pl-title
+          a href="/posts/{{post.file}}"
+            | {{post.title}}
+        .pl-cell.pl-tcs
+          .tag ng-repeat="tag in getPostTags(post)" ng-style="{'background-color':tag.color}"
+            a.tag-link ng-href="/tags?t={{tag.code}}"
+              | {{tag.name}}
+          .category
+            a.category-link ng-href="/categories?c={{getPostCategory(post).code}}"
+              | {{getPostCategory(post).name}}
+        .pl-cell.pl-time
+          .time
+            | {{post.datetime}}

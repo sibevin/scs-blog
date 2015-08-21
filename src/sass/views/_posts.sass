@@ -1,0 +1,51 @@
+@import "compass/typography/vertical_rhythm"
+@import "modules/globals"
+@import "modules/header_style"
+
+.posts
+  .post-list
+    padding: 0px 8px 8px 8px
+    .pl-title
+      a
+        color: $c_black
+    .pl-row
+      +box-sizing(border-box)
+      padding: 8px
+      display: table
+      width: 100%
+      &:hover
+        background: $c_ll
+    .pl-cell
+      display: table-cell
+      vertical-align: middle
+      +adjust-font-size-to($fs_def)
+    .pl-time
+      text-align: right
+      width: 240px
+    .pl-tcs
+      text-align: right
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px)
+  @mixin sub-info
+    text-align: left
+    border-left: 3px solid $c_grey
+    margin-left: 20px
+    padding-left: 12px
+  .posts
+    .post-list
+      .pl-row
+        display: block
+      .pl-cell
+        display: block
+      .pl-title
+        margin: 5px 0px
+        font-size: $fs_xl
+        line-height: 1.6em
+        &:before
+          +header-style($fs_xl)
+      .pl-time
+        width: auto
+        +sub-info
+      .pl-tcs
+        padding: 5px 0px
+        +sub-info

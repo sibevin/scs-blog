@@ -1,0 +1,17 @@
+# outputs
+build/
+
+# Gemfile.lock
+Gemfile.lock
+
+# vim artifacts
+**.swp
+
+# sass cache
+.sass-cache
+
+# temp
+temp/
+
+# scripts
+scripts/

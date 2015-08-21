@@ -1,0 +1,42 @@
+@import "modules/globals"
+
+.menu
+  position: fixed
+  top: 0px
+  bottom: $header_h
+  width: $menu_main_w
+  border-left: $menu_border_w solid
+  ul
+    position: absolute
+    bottom: 0px
+    li
+      padding: 0px 14px 14px
+  .mu-btn
+    vertical-align: middle
+    font-size: 1.4em
+    font-family: $ff_serif
+    text-decoration: none
+    font-weight: bold
+    img
+      vertical-align: middle
+      margin-right: 30px
+    .mu-icon
+      height: 76px
+      width: 76px
+
+  @each $mu_btn in $mu_btns
+    .mu-btn-#{$mu_btn}
+      font-size: 1.4em
+      font-family: $ff_serif
+      text-decoration: none
+      font-weight: bold
+      .mu-icon
+        display: inline-block
+        height: 76px
+        width: 76px
+        vertical-align: middle
+        background: url("/images/menu/#{$mu_btn}_d_76x.svg")
+        margin-right: 30px
+      &:hover, &.active
+        .mu-icon
+          background: url("/images/menu/#{$mu_btn}_76x.svg")

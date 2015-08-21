@@ -1,0 +1,34 @@
+.meta-data title Tags
+
+.tags ng-controller="TagListCtrl"
+  .title
+    .title-img ng-style="{'background-color':current_tag.color}"
+      a href="/tags"
+        img src="/images/menu/tag_76x.svg"
+    .title-main
+      .title-text ng-style="{'color':current_tag.color}"
+        | {{title}}
+      .title-info
+        .title-tcs
+          .tag ng-style="{'background-color':current_tag.color}"
+            | {{list_count}}
+  .tag-list
+    .tag ng-repeat="tag in getTags()" ng-style="{'background-color':tag.color}"
+      a.tag-link ng-href="/tags?t={{tag.code}}"
+        | {{tag.name}} [{{tag.count}}]
+  .posts
+    .post-list
+      .pl-row ng-repeat="post in getTagPosts()"
+        .pl-cell.pl-title
+          a href="/posts/{{post.file}}"
+            | {{post.title}}
+        .pl-cell.pl-tcs
+          .tag ng-repeat="tag in getPostTags(post)" ng-style="{'background-color':tag.color}"
+            a.tag-link ng-href="/tags?t={{tag.code}}"
+              | {{tag.name}}
+          .category
+            a.category-link ng-href="/categories?c={{getPostCategory(post).code}}"
+              | {{getPostCategory(post).name}}
+        .pl-cell.pl-time
+          .time
+            | {{post.datetime}}

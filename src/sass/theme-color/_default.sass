@@ -1,0 +1,18 @@
+@import "modules/globals"
+
+$c_main_fg: $c_black
+$c_main_bg: $c_white
+
+.theme-color-default
+  .header
+    background: $c_dd
+  .menu
+    background: $c_ll
+    border-color: $c_l
+    .mu-btn
+      color: $c_black
+    @each $mu_btn in $mu_btns
+      .mu-btn-#{$mu_btn}
+        color: $c_l
+        &:hover, &.active
+          color: $c_black

@@ -1,0 +1,48 @@
+@import "modules/globals"
+
+$hd_btns: "menu", "search"
+
+$hd_btn_s: 48px
+$hd_btn_p: 6px
+
+.header
+  position: fixed
+  bottom: 0px
+  left: 0px
+  right: 0px
+  height: $header_h
+  table
+    width: 100%
+    td:
+      vertical-align: middle
+  .hd-btn-td
+    width: $hd_btn_s + $hd_btn_p
+  .hd-btn
+    float: left
+    display: block
+    padding-left: $hd_btn_p
+  .hd-trademark
+    float: right
+    display: block
+  .hd-op-td
+    padding: 0px 8px
+  .hd-input-search
+    padding: 6px 12px
+    height: 38px
+    width: 100%
+    border-width: 0px
+    @include border-radius(5px)
+    @include box-sizing(border-box)
+    background: $c_d
+    color: $c_l
+  @each $hd_btn in $hd_btns
+    .hd-btn-#{$hd_btn}
+      float: left
+      padding: 6px 0px 6px 6px
+      .hd-icon
+        height: 48px
+        width: 48px
+        background: url("/images/header/#{$hd_btn}_48x.svg")
+      &:hover, &.active
+        .hd-icon
+          background: url("/images/header/#{$hd_btn}_d_48x.svg")

@@ -1,0 +1,23 @@
+javascript:
+  angular.module("scsBlogApp").constant("CURRENT_FILE", "#{@meta["file"]}")
+.post ng-controller="PostCtrl"
+  .title
+    .title-img
+      a href="/posts"
+        img src="/images/menu/paper_76x.svg"
+    .title-main
+      .title-text
+        | #{@meta["title"]}
+      .title-info
+        .title-time
+          .time
+            | #{@meta["datetime"]}
+        .title-tcs
+          .tag ng-repeat="tag in getPostTags(current_post)" ng-style="{'background-color':tag.color}"
+            a.tag-link ng-href="/tags?t={{tag.code}}"
+              | {{tag.name}}
+          .category
+            a.category-link ng-href="/categories?c={{getPostCategory(current_post).code}}"
+              | {{getPostCategory(current_post).name}}
+  .content
+    == yield

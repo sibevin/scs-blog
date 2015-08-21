@@ -1,0 +1,78 @@
+doctype html
+html
+  head
+    meta charset="utf-8"
+    meta name="viewport" content="width=device-width, initial-scale=1.0"
+    title
+      | #{@meta["title"]}
+    meta name="description" content="#{@meta["description"]}"
+    meta property="og:title" content="#{@meta["title"]}"
+    meta property="og:description" content="#{@meta["description"]}"
+    meta property="og:site_name" content="#{@meta["site_name"]}"
+    link rel="stylesheet" href="//cdn.jsdelivr.net/highlight.js/8.7.0/styles/hybrid.min.css"
+    link rel="stylesheet" href="/css/application.css"
+    script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"
+    script src="//cdn.jsdelivr.net/highlight.js/8.7.0/highlight.min.js"
+    script src="//cdn.jsdelivr.net/lodash/3.10.1/lodash.min.js"
+    script src="/js/vendor/angular-tau-utils.min.js"
+    script src="/js/vendor/focusIf.min.js"
+    script src="/js/app.min.js"
+    javascript:
+      hljs.initHighlightingOnLoad();
+  body.theme-color-default.layout ng-controller="LayoutCtrl" ng-class="{'lo-menu-open':footer_ts.isTab('menu')}"
+    .main-container
+      section.main
+        == yield
+    header.header
+      table
+        tbody
+          tr
+            td.hd-btn-td
+              a.hd-btn-menu href="#" ng-class="{active: footer_ts.isTab('menu')}" ng-click="switchFooter('menu')"
+                .hd-icon
+            td.hd-btn-td
+              a.hd-btn-search href="#" ng-class="{active: footer_ts.isTab('search')}" ng-click="switchFooter('search')"
+                .hd-icon
+            td.hd-op-td
+              input.hd-input-search ng-model="query_keyword" ng-show="footer_ts.isTab('search')" focus-if="footer_ts.isTab('search')"
+              a.hd-trademark href="/" ng-hide="footer_ts.isTab('search')"
+                img src="/images/header/trademark_200x50.svg" alt="#{@meta["site_name"]}" title="#{@meta["site_name"]}"
+    nav.menu
+      ul
+        li
+          a.mu-btn-paper class="#{menu == "paper" ? "active" : "" }" href="/posts"
+            .mu-icon
+            | Posts
+        li
+          a.mu-btn-category class="#{menu == "category" ? "active" : "" }" href="/categories"
+            .mu-icon
+            | Categories
+        li
+          a.mu-btn-tag class="#{menu == "tag" ? "active" : "" }" href="/tags"
+            .mu-icon
+            | Tags
+        li
+          a.mu-btn-work class="#{menu == "work" ? "active" : "" }" href="/works"
+            .mu-icon
+            | Works
+        li
+          a.mu-btn-wizard class="#{menu == "wizard" ? "active" : "" }" href="/about"
+            .mu-icon
+            | About
+    aside.search-result-panel ng-show="footer_ts.isTab('search')"
+      .posts
+        .post-list
+          .pl-row ng-repeat="post in getSearchPosts()"
+            .pl-cell.pl-title
+              a href="/posts/{{post.file}}"
+                | {{post.title}}
+            .pl-cell.pl-tcs
+              .tag ng-repeat="tag in getPostTags(post)" ng-style="{'background-color':tag.color}"
+                a.tag-link ng-href="/tags?t={{tag.code}}"
+                  | {{tag.name}}
+              .category
+                a.category-link ng-href="/categories?c={{getPostCategory(post).code}}"
+                  | {{getPostCategory(post).name}}
+            .pl-cell.pl-time
+              .time
+                | {{post.datetime}}
