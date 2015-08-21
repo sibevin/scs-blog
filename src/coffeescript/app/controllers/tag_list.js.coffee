@@ -35,10 +35,10 @@ angular.module("scsBlogApp").controller "TagListCtrl", [
           params[nv[0]] = nv[1] or true
       if params.t != undefined && APP_TAG_DATA[params.t] != undefined
         $scope.current_tag = APP_TAG_DATA[params.t]
-        $scope.title = "Tag - " + $scope.current_tag.name
+        $scope.title = "標籤 ー " + $scope.current_tag.name
         $scope.list_count = 0
       else
-        $scope.title = "Tags"
+        $scope.title = "標籤"
         $scope.list_count = Object.keys(APP_TAG_DATA).length
 
     init = ->

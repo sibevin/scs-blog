@@ -1,11 +1,14 @@
 $categories = {
   "tools" => {
-    name: "Useful Tools",
+    name: "好用工具",
+    desc: "一些工具的使用方式或技巧",
   },
   "coding" => {
-    name: "Coding Notes",
+    name: "程式筆記",
+    desc: "寫程式遇到的問題或是學習用筆記",
   },
   "life" => {
-    name: "My Life",
+    name: "生活隨筆",
+    desc: "隨便寫",
   },
 }

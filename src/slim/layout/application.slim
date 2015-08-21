@@ -16,7 +16,7 @@ html
     script src="//cdn.jsdelivr.net/lodash/3.10.1/lodash.min.js"
     script src="/js/vendor/angular-tau-utils.min.js"
     script src="/js/vendor/focusIf.min.js"
-    script src="/js/app.min.js"
+    script src="/js/app.js"
     javascript:
       hljs.initHighlightingOnLoad();
   body.theme-color-default.layout ng-controller="LayoutCtrl" ng-class="{'lo-menu-open':footer_ts.isTab('menu')}"
@@ -36,29 +36,29 @@ html
             td.hd-op-td
               input.hd-input-search ng-model="query_keyword" ng-show="footer_ts.isTab('search')" focus-if="footer_ts.isTab('search')"
               a.hd-trademark href="/" ng-hide="footer_ts.isTab('search')"
-                img src="/images/header/trademark_200x50.svg" alt="#{@meta["site_name"]}" title="#{@meta["site_name"]}"
+                img src="/images/header/trademark_200x50.svg" alt="魔法師的手杖" title="魔法師的手杖"
     nav.menu
       ul
         li
           a.mu-btn-paper class="#{menu == "paper" ? "active" : "" }" href="/posts"
             .mu-icon
-            | Posts
+            | 文章
         li
           a.mu-btn-category class="#{menu == "category" ? "active" : "" }" href="/categories"
             .mu-icon
-            | Categories
+            | 分類
         li
           a.mu-btn-tag class="#{menu == "tag" ? "active" : "" }" href="/tags"
             .mu-icon
-            | Tags
+            | 標籤
         li
           a.mu-btn-work class="#{menu == "work" ? "active" : "" }" href="/works"
             .mu-icon
-            | Works
+            | 作品
         li
           a.mu-btn-wizard class="#{menu == "wizard" ? "active" : "" }" href="/about"
             .mu-icon
-            | About
+            | 關於
     aside.search-result-panel ng-show="footer_ts.isTab('search')"
       .posts
         .post-list

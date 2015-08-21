@@ -26,10 +26,10 @@ angular.module("scsBlogApp").controller "CategoryListCtrl", [
           params[nv[0]] = nv[1] or true
       if params.c != undefined && APP_CATEGORY_DATA[params.c] != undefined
         $scope.current_category = APP_CATEGORY_DATA[params.c]
-        $scope.title = "Category ー " + $scope.current_category.name
+        $scope.title = "分類 ー " + $scope.current_category.name
         $scope.list_count = 0
       else
-        $scope.title = "Categories"
+        $scope.title = "分類"
         $scope.list_count = Object.keys(APP_CATEGORY_DATA).length
 
     init = ->

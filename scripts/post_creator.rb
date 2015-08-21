@@ -126,16 +126,27 @@ ul
       |  ()
 h1 What
 p
-  | 
+  |
 h1 Why
 p
-  | 
+  |
 h1 How
 p
-  | 
+  |
 pre
   code.ruby
-    | 
+    |
+eos
+end
+
+if options.template.include?("link")
+  file_header = file_header + <<eos
+ul
+  li
+    a href="" target="_blank" Homepage
+h1 What
+p
+  |
 eos
 end
 
