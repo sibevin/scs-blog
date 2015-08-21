@@ -12,6 +12,15 @@
   background-position: center
   overflow-y: scroll
   .posts
+    position: absolute
+    left: 0px
+    right: 0px
     bottom: 0px
+    max-height: 100%
     .post-list
       padding-top: 8px
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px)
+  .search-result-panel
+    .posts
+      max-height: 50%
