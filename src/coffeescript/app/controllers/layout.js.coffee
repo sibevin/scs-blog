@@ -30,7 +30,9 @@ angular.module("scsBlogApp").controller "LayoutCtrl", [
       filtered_posts = []
       if $scope.query_keyword != undefined && $scope.query_keyword != ""
         posts = _.map(_.values(APP_POST_DATA), storePostTagCategoryStr)
-        filtered_posts = $filter("filter")(posts, $scope.query_keyword)
+        filtered_posts = $filter("filter") posts, (post) ->
+          post.draft != true
+        filtered_posts = $filter("filter")(filtered_posts, $scope.query_keyword)
         $scope.search_count = filtered_posts.length
         filtered_posts = $filter("orderBy")(filtered_posts, "datetime", true)
       filtered_posts

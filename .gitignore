@@ -12,6 +12,4 @@ Gemfile.lock
 
 # temp
 temp/
-
-# scripts
-scripts/
+temp_uploader/

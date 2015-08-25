@@ -1,0 +1,29 @@
+.meta-data title="Drafs"
+
+.posts ng-controller="DraftListCtrl"
+  .title
+    .title-img
+      a href="/drafts"
+        img src="/images/menu/paper_76x.svg"
+    .title-main
+      .title-text
+        | Drafts
+      .title-info
+        .title-tcs
+          .tag
+            | {{getPosts().length}}
+  .post-list
+    .pl-row ng-repeat="post in getPosts()"
+      .pl-cell.pl-title
+        a href="/posts/{{post.file}}"
+          | {{post.title}}
+      .pl-cell.pl-tcs
+        .tag ng-repeat="tag in getPostTags(post)" ng-style="{'background-color':tag.color}"
+          a.tag-link ng-href="/tags?t={{tag.code}}"
+            | {{tag.name}}
+        .category
+          a.category-link ng-href="/categories?c={{getPostCategory(post).code}}"
+            | {{getPostCategory(post).name}}
+      .pl-cell.pl-time
+        .time
+          | {{post.datetime}}

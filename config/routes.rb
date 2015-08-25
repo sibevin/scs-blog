@@ -9,6 +9,11 @@ $routes = [
     menu: "paper",
   },
   {
+    path: "/drafts",
+    view: "views/pages/drafts",
+    menu: "paper",
+  },
+  {
     path: "/tags",
     view: "views/pages/tags",
     menu: "tag",
