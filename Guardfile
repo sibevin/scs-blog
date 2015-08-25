@@ -57,6 +57,10 @@ module ::Guard
         end
       end
       meta = Hash[meta_arr]
+      # NOTE: { "draft" => nil } => { "draft" => true }
+      meta.keys.each do |k|
+        meta[k] = true if meta[k] == nil
+      end
       if meta["tags"] != nil
         meta["tags"] = meta["tags"].split(",")
       else
@@ -346,6 +350,7 @@ module ::Guard
       Dir["#{@root_path}/src/slim/posts/*.slim"].each do |post_slim|
         meta = MetaService.parse_meta(post_slim)
         post_file.write("\"#{meta["file"]}\": #{meta.to_json},")
+        next if meta["draft"]
         # handle categories
         if ca = meta["category"]
           cts.add(ca)

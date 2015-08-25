@@ -18,7 +18,10 @@ angular.module("scsBlogApp").controller "TagListCtrl", [
     $scope.getTagPosts = ->
       filtered_posts = []
       if $scope.current_tag != undefined
-        filtered_posts = $filter("filter") _.values(APP_POST_DATA), (post) ->
+        posts = _.values(APP_POST_DATA)
+        filtered_posts = $filter("filter") posts, (post) ->
+          post.draft != true
+        filtered_posts = $filter("filter") filtered_posts, (post) ->
           _.includes(post.tags, $scope.current_tag.code)
         $scope.list_count = filtered_posts.length
         filtered_posts = $filter("orderBy")(filtered_posts, "datetime", true)

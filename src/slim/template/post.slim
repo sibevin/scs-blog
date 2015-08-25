@@ -3,7 +3,7 @@ javascript:
 .post ng-controller="PostCtrl"
   .title
     .title-img
-      a href="/posts"
+      a href="/#{@meta["draft"] ? "drafts" : "posts" }"
         img src="/images/menu/paper_76x.svg"
     .title-main
       .title-text
@@ -20,4 +20,7 @@ javascript:
             a.category-link ng-href="/categories?c={{getPostCategory(current_post).code}}"
               | {{getPostCategory(current_post).name}}
   .content
+    - if @meta["draft"]
+      .draft
+        | DRAFT
     == yield
