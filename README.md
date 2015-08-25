@@ -2,16 +2,17 @@
 
 ## Why?
 
-1. I don't like markdown, it has no table, css highlight, only a formatted boring plan text.
-2. I want embed js code in my post or build/design a page I want.
+1. I don't like markdown, it is only a boring plane text and has no table, no block and no css.
+2. I want to write some js codes in my post or design a page I want.
 3. I need a flexible and elegant way to display tags and categories.
 4. I want a smarter search on my blog.
-5. No web server is required, it's a pure static html with js.
-For these reasons, most of blog frameworks are not fit my requirement, so I build one.
+5. It should be a pure static html with js, i.e., no web server is required.
+
+Most of blog frameworks don't meet my requirement, so I build one.
 
 ## What?
 
-SCS Blog is a blog framework based on SCS Playground framework. Write posts with slim, it means you can do anything on your post just like you do on a web page.
+SCS Blog is a blog framework based on SCS Playground. Write posts with slim, it means you can do anything on your post just like you do on a web page.
 
 ## How?
 
@@ -43,7 +44,7 @@ SCS Blog is a blog framework based on SCS Playground framework. Write posts with
     │   ├── index.html
     │   └── js -- where to generate the javascript files
     │       └── app.js
-    ├── config
+    ├── config -- settings for scs-blog
     │   ├── tags.rb
     │   ├── categories.rb
     │   └── compass.rb
@@ -52,6 +53,7 @@ SCS Blog is a blog framework based on SCS Playground framework. Write posts with
     ├── Guardfile
     ├── LICENSE
     ├── README.md
+    ├── scripts -- utility scripts
     └── src
         ├── coffeescript
         │   └── app
@@ -62,6 +64,25 @@ SCS Blog is a blog framework based on SCS Playground framework. Write posts with
         └── slim -- where to put slim files
             ├── posts -- where to put the post files
             └── index.html.slim
+
+## Meta
+
+You can add metas at the top of your posts, here is an example:
+
+    .meta-data title git tips
+    .meta-data description tips for using git
+    .meta-data datetime 2014-10-30 15:29:56
+    .meta-data tags git,tips
+    .meta-data category tools
+    .meta-data link git-tips
+    .meta-data file 2014-10-30-152956-git-tips
+    .meta-data template post
+    .meta-data draft
+    .meta-data end
+
+## Draft
+
+You can mark your post to be a draft with the draft meta, all drafts are not listed in posts/tags/categories pages and their tags and categories are not included either. You can see all drafts in /drafts.
 
 ## Authors
 
