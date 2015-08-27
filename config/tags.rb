@@ -56,4 +56,8 @@ $tags = {
     name: "有趣",
     color: "#008f6b",
   },
+  "cooking" => {
+    name: "料理",
+    color: "#2b830a",
+  },
 }
