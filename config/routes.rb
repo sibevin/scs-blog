@@ -4,7 +4,7 @@ $routes = [
     view: "views/pages/homepage",
   },
   {
-    path: "/posts",
+    path: "/posts/index",
     view: "views/pages/posts",
     menu: "paper",
   },
