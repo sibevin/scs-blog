@@ -250,6 +250,9 @@ module ::Guard
       unless File.directory?(output_dir)
         FileUtils.mkdir_p(output_dir)
       end
+      unless File.directory?(File.dirname(output_path))
+        FileUtils.mkdir_p(File.dirname(output_path))
+      end
 
       File.open(output_path, 'w') do |f|
         f.puts page_html
