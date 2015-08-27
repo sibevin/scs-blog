@@ -1,0 +1,37 @@
+.meta-data title ruby如何讓你的initializer變成private
+.meta-data description ruby如何讓你的initializer變成private
+.meta-data datetime 2014-11-27 07:49:31
+.meta-data tags ruby
+.meta-data category coding
+.meta-data link ruby-private-initializer
+.meta-data file 2014-11-27-074931-ruby-private-initializer
+.meta-data template post
+.meta-data end
+
+p
+  | 很簡單，可以用
+  code
+    | private_class_method :new
+pre
+  code.hljs
+    | class A
+        private_class_method :new
+      end
+p
+  code
+    | private_class_method
+  | 也可以用在其它的class method，不過必須放在method之後才會work。
+pre
+  code.hljs
+    | class A
+        def self.my_method
+          # ...
+        end
+        private_class_method :my_method
+      end
+p
+  | 另外，如果你只是為了做singleton而做private initializer，那其實可以考慮使用ruby內建的Singleton class，不用自己重建輪子。
+h1 Refs
+p
+  a href="http://stackoverflow.com/questions/1567400/how-to-make-the-class-constructor-private-in-ruby" target="_blank"
+    | SO - How to make the class constructor private in Ruby?

@@ -1,0 +1,26 @@
+.meta-data title 如何在pre顯示html的原始碼
+.meta-data description 如何在pre顯示html的原始碼
+.meta-data datetime 2014-10-22 12:35:57
+.meta-data tags html
+.meta-data category coding
+.meta-data link html-put-html-source-code-in-pre
+.meta-data file 2014-10-22-123557-html-put-html-source-code-in-pre
+.meta-data template post
+h1 問題
+.meta-data end
+
+p
+  | 想在pre中顯示html的程式碼：
+pre
+  code.hljs
+    | &lt;pre&gt;<br/>&nbsp;&nbsp;&lt;p&nbsp;class=&quot;mk-red&quot;&gt;&nbsp;RED&nbsp;&lt;/p&gt;<br/>&lt;/pre&gt;
+p
+  | 可是程式碼都會被解讀成html...
+pre
+  code.hljs
+    | &lt;pre&gt;<br/>&nbsp;&nbsp;<p class="mk-red"> RED </p><br/>&lt;/pre&gt;
+h1 解答
+p
+  | 簡言之不使用跳脫字元就是做不到，這篇
+  a href="http://stackoverflow.com/a/16784925" target="_blank" SO的解答
+  | 寫的還蠻詳細的。

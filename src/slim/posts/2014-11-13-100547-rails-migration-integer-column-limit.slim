@@ -1,0 +1,72 @@
+.meta-data title rails migration中integer column的limit
+.meta-data description rails migration中integer column的limit
+.meta-data datetime 2014-11-13 10:05:47
+.meta-data tags rails_migration
+.meta-data category coding
+.meta-data link rails-migration-integer-column-limit
+.meta-data file 2014-11-13-100547-rails-migration-integer-column-limit
+.meta-data template post
+.meta-data end
+
+p
+  | integer的limit其實指的是byte的長度，而不是字串的長度，下面是對應表：
+table.pt-table
+  thead
+    tr
+      td
+        | :limit
+      td
+        | SQL的資料型態
+      td
+        | 大小
+      td
+        | 最大值
+  tbody
+    tr
+      td
+        | 1
+      td
+        | tinyint
+      td
+        | 1 byte
+      td
+        | 127
+    tr
+      td
+        | 2
+      td
+        | smallint
+      td
+        | 2 byte
+      td
+        | 32767
+    tr
+      td
+        | 3
+      td
+        | mediumint
+      td
+        | 3 byte
+      td
+        | 8388607
+    tr
+      td
+        | nil, 4, 11
+      td
+        | int(11)
+      td
+        | 4 byte
+      td
+        | 2147483647
+    tr
+      td
+        | 5..8
+      td
+        | bigint
+      td
+        | 8 byte
+      td
+        | 9223372036854775807
+h1 Refs
+a href="https://ariejan.net/2009/08/20/once-and-for-all-rails-migrations-integer-limit-option/" target="_blank"
+  | Once and for all: Rails migrations integer :limit option

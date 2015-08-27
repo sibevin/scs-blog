@@ -1,0 +1,85 @@
+.meta-data title 如何使用grunt, bower與npm製做js package - part 2 - 使用grunt建立自動化流程
+.meta-data description 如何使用grunt, bower與npm製做js package - part 2 - 使用grunt建立自動化流程
+.meta-data datetime 2014-10-12 23:34:03
+.meta-data tags js_pack-js
+.meta-data category coding
+.meta-data link how-to-build-js-package-with-grunt-bower-npm-02
+.meta-data file 2014-10-12-233403-how-to-build-js-package-with-grunt-bower-npm-02
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+h1 準備README、LICENSE、CHANGELOG
+p
+  | 除了程式碼外，一個package基本上還要包含下面這些檔案：
+ul
+  li
+    | README - package的使用說明書，沒有規定要怎麼寫，不過通常會包含：package的名稱與簡介、安裝、使用方式、使用範例、作者、版權宣告、協作方式等。
+  li
+    | LICENSE - 版權宣告
+  li
+    | CHANGELOG或是HISTORY - 修改記錄
+h1 包成package的步驟
+p
+  | 準備好程式碼再加上bower.json與package.json，感覺好像就可以開始包成package了，不過實際上還有許多的步驟要做，例如：
+ul
+  li
+    | 使用JSHint或是coffine檢驗程式碼的code quality
+  li
+    | 如果原始碼是使用coffeescript寫的，就要將.coffee compile成.js
+  li
+    | 跑測試確定程式沒有問題並產生coverage報表
+  li
+    | 合併多個.js檔到同一個檔案並進行壓縮(uglfiy)
+  li
+    | 包成package並上傳
+h1 什麼是grunt？
+p
+  | 之前提到的步驟，除了在第一次包package會做之外，每當更新package的版本，這個流程都還要再做一次。如果每次都要重新執行這些步驟，這將會是非常煩人的事情。grunt是一個javascript task runner，它可以將一連串的指令整合成一個指令，就像是make或是rake的角色，不過使用grunt還多了一些好處：
+ul
+  li
+    | 有許多現成的plugin可以使用，不用自己寫。
+  li
+    | 每個plugin都有提供選項可以做到客製化設定。
+  li
+    | 使用watch plugin可以做到監控檔案的修改，並觸發task來做事情，例如：當改完測試檔時，可以自動做測試。
+h1 第一次使用grunt就上手
+h2 安裝並設定package dependence
+p
+  | grunt是在開發時才會用到的工具，所以自然我們會將grunt相關的package加到development dependence中。而之前也有提到，如果是開發期間會用到的package，我們會加到npm，也就是package.json的dependence之中。方式很簡單，只要執行下面的指令：
+pre
+  code.hljs
+    | npm install --dev-save grunt
+p
+  code npm install
+  | 就是安裝npm package的指令，它會在目前所在的資料夾下建立一個node_modules的資料夾，並將package安裝到這個資料夾下。而
+  code
+    | --dev-save
+  | 這個option，則會在package.json中的devDependencies加上剛剛安裝的package。這表示
+  code
+    | grunt
+  | 已經被加到npm package的development dependence中了。
+pre
+  code.hljs
+    | "devDependencies": {
+        "grunt": "~0.4.5"
+      }
+.panel
+.meta-data pl-title
+    | 關於npm install的一些小知識
+.meta-data pl-content
+    ul
+      li
+        | npm install預設是所謂的local install，也就是將package安裝在目前所在目錄下的node_modules。這樣的做法可以確保各目錄之間的package不會因為版本不同而造成衝突，但缺點就是各目錄之間的package不能共用，每個目錄都要自行安裝所需要的package。npm install提供了一個
+        code
+          | -g
+        | 的選項，會將package安裝到global，也就是所有的目錄都可以使用安裝的package。
+      li
+        | npm install在安裝package的時候，預設會連devDependencies下的package也一並安裝，如果你不想安裝開發用的package，可以加上
+        code
+          | --production
+        | 這個選項。
+      li
+        | 更多的訊息可以參考
+        code
+          | npm help install

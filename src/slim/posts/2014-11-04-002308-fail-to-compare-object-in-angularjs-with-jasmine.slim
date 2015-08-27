@@ -1,0 +1,36 @@
+.meta-data title 用jasmine比對angularjs的object時出現失敗的情況
+.meta-data description 用jasmine比對angularjs的object時出現失敗的情況
+.meta-data datetime 2014-11-04 00:23:08
+.meta-data tags angularjs,js_test,jasmine
+.meta-data category coding
+.meta-data link fail-to-compare-object-in-angularjs-with-jasmine
+.meta-data file 2014-11-04-002308-fail-to-compare-object-in-angularjs-with-jasmine
+.meta-data template post
+.meta-data end
+
+h1 問題
+p
+  | 原本的測試檔如下：
+pre
+  code.hljs
+    | expect(model).toBe { "opt1":true, "opt2":true, "opt3":true }
+  p
+    | 結果跑測試出現了下面的錯誤：
+  pre
+    code.hljs
+      | PhantomJS 1.9.8 (Mac OS X) tau-checkbox-model contructor should set candidates with given array FAILED
+        Expected { opt3t1 : true, opt2 : true, opt3 : true } to be { opt1 : true, opt2 : true, opt3 : true }.
+h1 原因
+p
+  | AngularJS會在object中多加一些附屬屬性，導致jasmine比對時會視做不同的object。
+h1 解法
+p
+  | 將上面的測試改成
+pre
+  code.hljs
+    | expect(angular.equals(model, { "opt1":true, "opt2":true, "opt3":true })).toBe true
+h1 Refs
+ul
+  li
+    a href="http://stackoverflow.com/questions/15487510/angularjs-jasmine-comparing-objects" target="_blank"
+      | SO - AngularJS + Jasmine: Comparing objects

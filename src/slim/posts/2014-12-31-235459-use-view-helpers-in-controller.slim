@@ -1,0 +1,24 @@
+.meta-data title 在model中使用view helper
+.meta-data description 在model中使用view helper
+.meta-data datetime 2014-12-31 23:54:59
+.meta-data tags rails_controller
+.meta-data category coding
+.meta-data link use-view-helpers-in-controller
+.meta-data file 2014-12-31-235459-use-view-helpers-in-controller
+.meta-data template post
+.meta-data end
+
+h1 問題
+p
+  | 想在model中使用
+  code
+    | number_to_currency
+  | ，可是卻遇到
+  code
+    | undefined method `number_to_currency'
+  | 的問題。
+h1 解法
+p
+  | 改用
+  code
+    | ActionController::Base.helpers.number_to_currency

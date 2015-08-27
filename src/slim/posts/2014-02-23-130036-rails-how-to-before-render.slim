@@ -1,0 +1,82 @@
+.meta-data title 如何在rails的controller中做到before_render
+.meta-data description 如何在rails的controller中做到before_render
+.meta-data datetime 2014-02-23 13:00:36
+.meta-data tags rails_controller
+.meta-data category coding
+.meta-data link rails-how-to-before-render
+.meta-data file 2014-02-23-130036-rails-how-to-before-render
+.meta-data template post
+.meta-data end
+
+h1 問題
+p
+  | 在顯示每一頁的title時，我想使用一些定義在controller中的變數當作title。於是寫了一個
+  code ApplicationController
+  | 的method如下：
+pre
+  code.hljs
+    | class ApplicationController < ActionController::Base
+        # ...
+        before_filter :gen_title
+        # ...
+        private
+        def gen_title
+          app_name = ENV["APP_NAME"]
+          if @page_title
+            @title = "\#{app_name} - \#{@page_title}"
+          else
+            @title = app_name
+          end
+        end
+        # ...
+      end
+p
+  | 可是因為
+  code
+    | @page_title
+  | 這個變數是在controller中被設定，如果
+  code gen_title
+  | 放在
+  code before_filter
+  | ，則這個
+  code
+    | @page_title
+  | 變數會沒有機會被設定而造成它們永遠都是nil。
+h1 解法
+p
+  | 呼叫
+  code gen_title
+  | 最好的時間點是在controller跑完要做render的這個時間點，不過rails似乎沒有這種filter。還好SO上有人提供個好方法，就是覆寫
+  code render
+  | 這個method，方式如下：
+pre
+  code.hljs
+    | class ApplicationController < ActionController::Base
+        # ...
+        # remove gen_title from the before_filter
+        # ...
+        def render *args
+          gen_title
+          super
+        end
+        # ...
+        private
+        def gen_title
+          # same as before
+        end
+        # ...
+      end
+p
+  | 當然如果在
+  code ApplicationController
+  | 中覆寫
+  code render
+  | ，就表示會改到所有的render行為（以我這個例子而言是沒有問題，因為每個頁面應該都要
+  code gen_title
+  | ）。如果只針對需要的頁面才做的話，就在一般的controller中覆寫
+  code render
+  | 就好。
+h1 Refs
+p
+  a href="http://stackoverflow.com/questions/9281224/filter-to-execute-before-render-but-after-controller" target="_blank"
+    | stackoverflow - Filter to execute before render but after controller?

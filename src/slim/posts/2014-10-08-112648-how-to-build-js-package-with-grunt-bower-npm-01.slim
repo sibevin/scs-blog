@@ -1,0 +1,241 @@
+.meta-data title 如何使用grunt, bower與npm製做js package - part 1 - 概觀、bower.json與package.json
+.meta-data description 如何使用grunt, bower與npm製做js package - part 1 - 概觀、bower.json與package.json
+.meta-data datetime 2014-10-08 11:26:48
+.meta-data tags js_pack-js
+.meta-data category coding
+.meta-data link how-to-build-js-package-with-grunt-bower-npm-01
+.meta-data file 2014-10-08-112648-how-to-build-js-package-with-grunt-bower-npm-01
+.meta-data template post
+.meta-data end
+
+p
+  | 最近想把自己寫的angular module(
+  a href="https://github.com/sibevin/angular-tau-utils" target="_blank"
+    | Github - sibevin/angular-tau-utils
+  | )包成package，這樣除了可以方便安裝，程式碼也比較好管理。其實一開始還真不知道要怎麼開始(繞口令…)，於是就找了網路上的別人的package(
+  a href="https://github.com/chieffancypants/angular-loading-bar" target="_blank"
+    | Github - chieffancypants/angular-loading-bar
+  | )來偷學(open source的好處)，以下是不負責筆記。
+h1 需求
+p
+  | 對我來說，我希望可以盡可能簡化打包package的流程，所以想要做到：
+ul
+  li
+    | package management，也就是可以管理package的相依性，只要下一個指令就可以把js或是開發環境需要用到的package都裝好。
+    span.mk-blue
+      | => bower, npm
+  li
+    | 自動化測試：當修改完程式碥的時候，可以自動做測試。而且因為是用coffeescript寫js，所以當然是希望可以在測試前就能先自動compile。另外也要能自動計算並產生coverage的報表。
+    span.mk-blue
+      | => grunt, karma
+  li
+    | 類似makefile的東東可以自行組一系列的指令來處理build, test與clean的功能。
+    span.mk-blue
+      | => grunt
+h1 目錄架構
+p
+  | 我規劃的目錄結構如下，除了bower.json, package.json與Gruntfile.js這些設定檔名字不能亂取之外，其它目錄名稱其實可以隨便取，只要在設定Gruntfile位置指對就好了。
+ul
+  li
+    | src/ - angular module的原始碼(.coffee檔)
+  li
+    | test/ - 測試的原始碼(.coffee檔)
+  li
+    | lib/ - (自動生成)angular module的js檔，尚未合併與壓縮(uglfiy)
+  li
+    | build/ - (自動生成)最後要包在package的js檔與min.js檔，也就是lib中的js合併與壓縮(uglfiy)後的結果
+  li
+    | coverage/ - (自動生成)用來放coverage的結果
+  li
+    | bower.json - bower package的設定檔
+  li
+    | package.json - npm package的設定檔
+  li
+    | Gruntfile.js - grunt的設定檔
+p
+  | 基本上能自動生成的目錄與檔案都不應該commit到repo中，不過因為要包成package，build的目錄還是要commit。
+h1 Bower ? Npm ?
+p
+  | 首先我知道
+  a href="http://bower.io/" target="_blank"
+    | bower
+  | 這個package management，所以自然會想包成bower package，但是在看
+  a href="http://bower.io/docs/creating-packages/" target="_blank"
+    | bower的文件
+  | 發現還要處理另一個npm的package。這就讓我有點困惑，這兩個到底差在哪？我又要包成哪一個？查了一下G大(bower npm)，果然也有很多人跟我有同樣的問題(
+  a href="http://stackoverflow.com/questions/18641899/difference-between-bower-and-npm" target="_blank"
+    | SO1
+  | , 
+  a href="http://stackoverflow.com/questions/21198977/difference-between-grunt-npm-and-bower-package-json-vs-bower-json" target="_blank"
+    | SO2
+  | )，簡單來說：
+ul
+  li
+    | bower：bower package比較像是用在frontend的package，除了js外，像是css或是圖片檔都可以包進package當中。所以如果是要包angular module，肯定是要包成bower package。
+  li
+    | npm：npm package其實就是nodejs專用的package，如果是frontend的js，就沒有必要放進npm。但npm可以用在管理開發所需要的其它package的相依性，像是grunt與karma等，也就是說包成的npm package實際上只用到它的package dependence management，npm裡的js並不會用在nodejs之中。
+h1 從零開始建package
+p
+  | 當然不是從零開始，至少要把node js與bower裝好。這些準備好之後，接下來的步驟會先建立package root folder, bower.json與package.json這兩個檔案。
+h2 建立package root folder
+p
+  | 一開始先建立一個folder用來放package所有的內容(也就是目錄結構中提到的檔案與目錄)，我們把這個目錄稱作package root folder，所有的操作都會在這個目錄下執行。
+pre
+  code
+    | $ mkdir angular-tau-utils
+      $ cd angular-tau-utils
+h2 準備source code與test
+p
+  | 將source code放在src/，測試檔則是放在test/。這兩個目錄的檔案與資料夾要怎麼放也是隨個人喜好，不過如果是angular相關的程式碼，我還是習慣會將controller, service, directive等這些類別分開放置，比較清楚也方便管理。
+pre
+  code
+    | angular-tau-utils/
+      ├── src
+      │   ├── angular_tau_utils.coffee
+      │   ├── tau-switcher
+      │   │   └── services
+      │   │       ├── bool_switcher.coffee
+      │   │       ├── cycle_switcher.coffee
+      │   │       └── tab_switcher.coffee
+      │   └── tau_switcher.js.coffee
+      └── test
+          ├── angualr_tau_utils.coffee
+          ├── tau-switcher
+          │   └── services
+          │       ├── bool_switcher.coffee
+          │       ├── cycle_switcher.coffee
+          │       └── tab_switcher.coffee
+          └── tau_switcher.coffee
+ 
+h2 建立bower.json
+p
+  | 建立bower.json其實很簡單，只要執行
+  code bower init
+  | 就可以了，它會問你一些問題，填完bower.json就會幫你生好了，真方便啊。(詳細使用方式可以參考
+  a href="http://bower.io/docs/creating-packages/" target="_blank"
+    | bower - Creating packages
+  | 這份文件)
+pre
+  code.hljs
+    | $ bower init
+      ? name: angular-tau-utils
+      ? version: 1.0.0
+      ? description: Utilitis for AngularJS app
+      ? main file: build/angular-tau-utils.js
+      ? what types of modules does this package expose?: globals
+      ? keywords: angular angularjs tau tau-utils utility
+      ? authors: Sibevin Wang
+      ? license: MIT
+      ? homepage: https://github.com/sibevin/angular-tau-utils
+      ? set currently installed components as dependencies?: No
+      ? add commonly ignored files to ignore list?: Yes
+      ? would you like to mark this package as private which prevents it from being accidentally published to the registry?: No
+      {
+        name: 'angular-tau-utils',
+        version: '1.0.0',
+        authors: [
+          'Sibevin Wang'
+        ],
+        description: 'Utilitis for AngularJS app',
+        main: 'build/angular-tau-utils.js',
+        moduleType: [
+          'globals'
+        ],
+        keywords: [
+          'angular',
+          'angularjs',
+          'tau',
+          'tau-utils',
+          'utility'
+        ],
+        license: 'MIT',
+        homepage: 'https://github.com/sibevin/angular-tau-utils',
+        ignore: [
+          '**/.*',
+          'node_modules',
+          'bower_components',
+          'test',
+          'tests'
+        ]
+      }
+      ? Looks good?: Yes
+p
+  | bower.json的設定值可以參考
+  a href="https://github.com/bower/bower.json-spec" target="_blank"
+    | bower.json specification
+  | ，要注意的是某些設定值有一定的規定與建議，所以別亂取啊。其中幾個重要的設定這邊說明一下
+ul
+  li
+    | name - 就是你的package name，也是註冊在bower的唯一名稱。(別人先用掉的話就哭哭了)
+  li
+    | main - 就是要包在package的js檔案路徑。
+  li
+    | moduleType - 請參考
+    a href="https://gist.github.com/wycats/dba8578fb748c2f4e132" target="_blank"
+      | Module Metadata for Bower Packages
+    | 或是這篇
+    a href="http://stackoverflow.com/questions/22674018/bower-init-difference-between-amd-es6-globals-and-node" target="_blank"
+      | SO
+    | 。
+  li
+    | ignore - 在進行bower install時會省略的檔案，格式跟gitignore一樣。
+h2 建立package.json
+p
+  | 之前提到我們還要另外準備npm package的設定檔，也就是package.json。建立package.json跟bower.json一樣簡單，只要執行
+  code npm init
+  | 就可以了，它同樣會問你一些問題，填完package.json就會幫你生好了，一樣方便啊。
+pre
+  code.hljs
+    | $ npm init
+      This utility will walk you through creating a package.json file.
+      It only covers the most common items, and tries to guess sane defaults.
+      See `npm help json` for definitive documentation on these fields
+      and exactly what they do.
+      Use `npm install <pkg> --save` afterwards to install a package and
+      save it as a dependency in the package.json file.
+      Press ^C at any time to quit.
+      name: (test) angular-tau-utils
+      version: (0.0.0) 1.0.0
+      description: Utilitis for AngularJS app
+      entry point: (index.js) build/angular-tau-utils.js
+      test command: grunt test
+      git repository: git@github.com:sibevin/angular-tau-utils.git
+      keywords: angular angularjs tau tau-utils utility
+      author: Sibevin Wang
+      license: (ISC) MIT
+      About to write to /Users/wangkaito/workspace/angular/dev/test/package.json:
+      {
+        "name": "angular-tau-utils",
+        "version": "1.0.0",
+        "description": "Utilitis for AngularJS app",
+        "main": "build/angular-tau-utils.js",
+        "scripts": {
+          "test": "grunt test"
+        },
+        "repository": {
+          "type": "git",
+          "url": "git@github.com:sibevin/angular-tau-utils.git"
+        },
+        "keywords": [
+          "angular",
+          "angularjs",
+          "tau",
+          "tau-utils",
+          "utility"
+        ],
+        "author": "Sibevin Wang",
+        "license": "MIT",
+        "bugs": {
+          "url": "https://github.com/sibevin/angular-tau-utils/issues"
+        },
+        "homepage": "https://github.com/sibevin/angular-tau-utils"
+      }
+      Is this ok? (yes)
+p
+  | package.json的設定值可以參考
+  a href="https://www.npmjs.org/doc/files/package.json.html" target="_blank"
+    | package.json
+  | ，內容跟bower.json大同小異，所以就不再贅述。
+h1 NEXT
+p
+  | 目前我們已經建立好bower與npm package的設定檔，會先建立這兩個檔案是因為在接下來的流程都會用到。下一篇會開始處理package dependence，並使用grunt建立自動化流程。

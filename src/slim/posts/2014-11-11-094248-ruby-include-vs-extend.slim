@@ -1,0 +1,94 @@
+.meta-data title ruby的include與extend的差別
+.meta-data description ruby的include與extend的差別
+.meta-data datetime 2014-11-11 09:42:48
+.meta-data tags ruby,rails
+.meta-data category coding
+.meta-data link ruby-include-vs-extend
+.meta-data file 2014-11-11-094248-ruby-include-vs-extend
+.meta-data template post
+.meta-data end
+
+p 簡單來說，module被include時，module的method會變成class的instance method，而被extend時，則會變成class method：
+pre
+  code.hljs
+    | module M
+        def say
+          "hello"
+        end
+      end
+
+      class A
+        include(M)
+      end
+
+      a = A.new
+      a.say # "hello"
+      # A.say # undefined method `say' for A:Class (NoMethodError)
+
+      class B
+        extend(M)
+      end
+
+      B.say # "hello"
+      # b = B.new
+      # b.say # undefined method `say' for #<B:0x007fb72a0ed858> (NoMethodError)
+p 如果要同時加入instance與class method，可以使用合體技：
+pre
+  code.hljs
+    | module M
+        def self.included(base)
+          base.extend(ClassMethods)
+        end
+
+        module ClassMethods
+          def say_hello
+            "hello"
+          end
+        end
+
+        def say_hi
+          "hi"
+        end
+      end
+
+      class A
+        include(M)
+      end
+
+      A.say_hello # "hello"
+      a = A.new
+      a.say_hi # "hi"
+p
+  | rails的
+  code
+    | ActiveSupport::Concern
+  | 則把上面的合體技更加的簡化：
+pre
+  code.hljs
+    | require "active_support/concern"
+
+      module M
+        extend ActiveSupport::Concern
+
+        module ClassMethods
+          def say_hello
+            "hello"
+          end
+        end
+
+        def say_hi
+          "hi"
+        end
+      end
+
+      class A
+        include(M)
+      end
+
+      A.say_hello # "hello"
+      a = A.new
+      a.say_hi # "hi"
+p
+  | 當然concern的功能不只這些，有興趣可以參考
+  a href="http://api.rubyonrails.org/classes/ActiveSupport/Concern.html" target="_blank"
+    | ActiveSupport::Concern的文件

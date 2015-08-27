@@ -1,0 +1,99 @@
+.meta-data title Sunspot使用技巧
+.meta-data datetime 2015-08-07 15:00:46
+.meta-data tags sunspot,tips
+.meta-data category coding
+.meta-data link sunspot-tips
+.meta-data file 2015-08-07-150046-sunspot-tips
+.meta-data template post
+
+.meta-data end
+
+h1
+  | 用rake跑reindex
+pre
+  code
+    | rake sunspot:reindex
+p
+  | 如果是只reindex其中一個model，可以下：
+pre
+  code
+    | rake sunspot:reindex[,ModelName]
+p
+  | 注意在zsh中要用\跳脫[]字元
+pre
+  code
+    | rake sunspot:reindex\[,ModelName\]
+
+h1 要注意save自動更新index的行為
+
+p
+  | 在預設的sunspot設定下，只要是使用Searchable的model，在做儲存時，會自動更新這筆資料的index。但要注意的是，即使是沒更新任何attribute的值，只要呼叫到save，更新index的動作還是會進行，如果你的searchable中定義的field太複雜(例如有關聯到其它的model資料)，那每一次儲存都會造成大量的query。
+
+h2 Trace Code
+p
+  | 從下面的sunspot_rails原始碼可以發現，searchable會用到before_save與after_save這兩個callback，在before_save時去決定是否要做index，而在after_save去執行更新index的動作。
+u
+  | sunspot_rails-2.1.1/lib/sunspot/rails/searchable.rb:80
+pre
+  code
+    | def searchable(options = {}, &block)
+        Sunspot.setup(self, &block)
+        if searchable?
+          sunspot_options[:include].concat(Util::Array(options[:include]))
+        else
+          extend ClassMethods
+          include InstanceMethods
+          class_attribute :sunspot_options
+
+          unless options[:auto_index] == false
+            <span class="mk-blue">before_save :mark_for_auto_indexing_or_removal</span>
+            <span class="mk-blue">after_save :perform_index_tasks</span>
+          end
+
+          unless options[:auto_remove] == false
+            after_destroy do |searchable|
+              searchable.remove_from_index
+            end
+          end
+          options[:include] = Util::Array(options[:include])
+
+          self.sunspot_options = options
+        end
+      end
+p
+  | 在before_save callback，會呼叫mark_for_auto_indexing_or_removal，我們可以發現sunspot提供很多的option來決定是否要做index。你甚至可以關掉自動index的功能，手動來控制index的行為。
+u
+  | sunspot_rails-2.1.1/lib/sunspot/rails/searchable.rb:461
+pre
+  code
+    | def mark_for_auto_indexing_or_removal
+        if indexable?
+          # :if/:unless constraints pass or were not present
+
+          @marked_for_auto_indexing =
+            if !new_record? && ignore_attributes = self.class.sunspot_options[:ignore_attribute_changes_of]
+              !(changed.map { |attr| attr.to_sym } - ignore_attributes).blank?
+            elsif !new_record? && only_attributes = self.class.sunspot_options[:only_reindex_attribute_changes_of]
+              !(changed.map { |attr| attr.to_sym } & only_attributes).blank?
+            else
+              true
+            end
+          @marked_for_auto_removal = false
+        else
+          # :if/:unless constraints did not pass; do not auto index and
+          # actually go one step further by removing it from the index
+          @marked_for_auto_indexing = false
+          @marked_for_auto_removal = true
+        end
+        true
+      end
+
+      def perform_index_tasks
+        if @marked_for_auto_indexing
+          <span class="mk-blue">solr_index</span>
+          remove_instance_variable(:@marked_for_auto_indexing)
+        elsif @marked_for_auto_removal
+          solr_remove_from_index
+          remove_instance_variable(:@marked_for_auto_removal)
+        end
+      end

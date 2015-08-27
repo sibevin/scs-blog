@@ -1,0 +1,63 @@
+.meta-data title 處理rails的時區
+.meta-data description 處理rails的時區
+.meta-data datetime 2015-01-02 00:19:17
+.meta-data tags rails
+.meta-data category coding
+.meta-data link rails-handle-time-zone
+.meta-data file 2015-01-02-001917-rails-handle-time-zone
+.meta-data template post
+.meta-data end
+
+ul
+  li
+    | 如果你要讓使用者可以儲存他所在的時區，每個user必須要對應一個string的欄位用來記錄使用者的時區，這時候在edit的view中使用simple form時，可以加上
+    code
+      | as: :time_zone
+    | 的選項，就可以建立時區的下拉式選單。
+pre
+  code.hljs
+    | f.input :timezone, as: :time_zone
+ul
+  li
+    | 要針對不同使用者根據他的時區設定顯示不同的時間，則要在controller中加上下面的code。如果是加在application controller，則表示會套用在所有的頁面。
+pre
+  code.hljs
+    | class ApplicationController < ActionController::Base
+      around_action :set_time_zone
+      def set_time_zone
+        if current_user && current_user.user_config.timezone.present?
+          Time.use_zone(current_user.user_config.timezone) { yield }
+        else
+          yield
+        end
+      end
+    end
+ul
+  li
+    | 上面的動作如果設定好，時間並不會自動顯示成時區時間，必須要使用
+    code
+      | in_time_zone
+    | 才可以顯示成時區時間。
+pre
+  code.hljs
+    | 1.month.ago.in_time_zone
+ul
+  li
+    | 要顯示目前時區，可以使用
+    code
+      | Time.zone.to_s
+    | 。
+ul
+  li
+    | 要檢查form傳來的字串是否為合法的時區字串，可以用
+    code
+      | ActiveSupport::TimeZone[input_string]
+    | ，回傳非nil的值即代表是合法的時區字串。
+ul
+  li
+    | 存進資料庫的時候會自動轉成utc儲存，不用特別轉換。
+h1 Ref
+ul
+  li
+    a href="http://api.rubyonrails.org/classes/Time.html#method-c-zone-3D" target="_blank"
+      | api.rubyonrails.org - Time - zone=

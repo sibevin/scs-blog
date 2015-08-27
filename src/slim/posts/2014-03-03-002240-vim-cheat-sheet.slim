@@ -1,0 +1,706 @@
+.meta-data title vim指令一覽
+.meta-data description vim指令一覽
+.meta-data datetime 2014-03-03 00:22:40
+.meta-data tags vim,cheat-sheet
+.meta-data category tools
+.meta-data link vim-cheat-sheet
+.meta-data file 2014-03-03-002240-vim-cheat-sheet
+.meta-data template post
+.meta-data end
+
+h1 本文件標示說明
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [a]
+      td
+        | 表示按一下a鍵
+    tr
+      td
+        code
+          | [a]+[b]
+      td
+        | 表示先按一下a鍵，再按一下b鍵
+    tr
+      td
+        code
+          | [Ctrl][a]
+      td
+        | 表示按住[Ctrl]不放，再按一下a鍵
+    tr
+      td
+        code
+          | [Ctrl]([a]+[b])
+      td
+        | 表示按住[Ctrl]不放，按一下a鍵，再按一下b鍵
+    tr
+      td
+        code
+          | [:command]
+      td
+        | 表示在一般模式下，按下[:]後輸入command指令，再按下[Enter]
+h1 一般模式(normal mode)
+h2 移動(move)
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [h]
+      td
+        | 向右
+    tr
+      td
+        code
+          | [j]
+      td
+        | 向下
+    tr
+      td
+        code
+          | [k]
+      td
+        | 向上
+    tr
+      td
+        code
+          | [l]
+      td
+        | 向左
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [Ctrl][b]
+      td
+        | (backward)向前翻一頁
+    tr
+      td
+        code
+          | [Ctrl][f]
+      td
+        | (forward)向後翻一頁
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [w]
+      td
+        | (word)到下一個字首
+    tr
+      td
+        code
+          | [e]
+      td
+        | (end)到下一個字尾
+    tr
+      td
+        code
+          | [b]
+      td
+        | (backward)到上一個字首
+    tr
+      td
+        code
+          | [W]
+      td
+        | (word)到下一個字首，略過標點符號
+    tr
+      td
+        code
+          | [E]
+      td
+        | (end)到下一個字尾，略過標點符號
+    tr
+      td
+        code
+          | [B]
+      td
+        | (backward)到上一個字首，略過標點符號
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [^]
+      td
+        | (head)到本行最前面第一個非空白字元
+    tr
+      td
+        code
+          | [$]
+      td
+        | 到本行最後面
+    tr
+      td
+        code
+          | [0]
+      td
+        | 到本行最前面
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [H]
+      td
+        | (high)到本頁最前面一行
+    tr
+      td
+        code
+          | [M]
+      td
+        | (middle)到本頁中間那一行
+    tr
+      td
+        code
+          | [L]
+      td
+        | (low)到本頁最後一行
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [g]+[g]
+      td
+        | 到本檔案第一行
+    tr
+      td
+        code
+          | [G]
+      td
+        | 到本檔案最後一行
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [:數字]
+      td
+        | 跳至第[數字]行
+    tr
+      td
+        code
+          | [數字]+[|]+[Enter]
+      td
+        | 跳至本行第[數字]個字元
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [(]
+      td
+        | 到下一個句首
+    tr
+      td
+        code
+          | [)]
+      td
+        | 到上一個句首
+    tr
+      td
+        code
+          | [{]
+      td
+        | 到下一個段落
+    tr
+      td
+        code
+          | [}]
+      td
+        | 到上一個段落
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [%]
+      td
+        | 在成對的()，[]，{}之間切換
+h2 刪除(delete)
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [x]
+      td
+        | 刪除游標所在位置字元
+    tr
+      td
+        code
+          | [X]
+      td
+        | 刪除游標所在位置的前一個字元
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [d]+[d]
+      td
+        | (delete)刪除游標所在位置的那一行
+    tr
+      td
+        code
+          | [d]+[w]
+      td
+        | 刪除游標所在位置到字尾
+    tr
+      td
+        code
+          | [d]+[b]
+      td
+        | 刪除游標所在位置的前一個字元到字首
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [d]+[g]+[g]或[d]+[1]+[G]
+      td
+        | 刪除游標所在位置的那一行到檔案第一行
+    tr
+      td
+        code
+          | [d]+[G]
+      td
+        | 刪除游標所在位置的那一行到檔案最後一行
+    tr
+      td
+        code
+          | [d]+[^]或[d]+[0]
+      td
+        | 刪除游標所在位置的前一個字元到本行最前面
+    tr
+      td
+        code
+          | [d]+[$]或[D]
+      td
+        | 刪除游標所在位置字元到本行最後面
+h2 複製與貼上(copy & paste)
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [y]+[y]
+      td
+        | (yank)複製游標所在位置的那一行
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [y]+[w]
+      td
+        | 複製游標所在位置到字尾
+    tr
+      td
+        code
+          | [y]+[b]
+      td
+        | 複製游標所在位置的前一個字元到字首
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [y]+[G]
+      td
+        | 複製游標所在位置的那一行到檔案最後一行
+    tr
+      td
+        code
+          | [y]+[g]+[g]或[y]+[1]+[G]
+      td
+        | 複製游標所在位置的那一行到檔案第一行
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [p]
+      td
+        | (put)在游標所在位置的字元之後(如果複製的是字或是選取的內容)或是後一行(如果複製的是行)貼上
+    tr
+      td
+        code
+          | [P]
+      td
+        | 在游標所在位置的字元之前(如果複製的是字或是選取的內容)或是前一行(如果複製的是行)貼上
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | ["]+[暫存區]+[y]+[y]
+      td
+        | (register)將複製的那一行放到[暫存區]中，其中[暫存區]可以是任何一個英文字母
+        br
+        | 如果是小寫英文字母，則新複製的內容會蓋掉原本[暫存區]內容
+        br
+        | 如果是大寫英文字母，則會將新複製的內容接在[暫存區]內容的後面
+    tr
+      td
+        code
+          | ["]+[暫存區]+[p]
+      td
+        | 將[暫存區]的內容貼上
+    tr
+      td
+        code
+          | [:reg]或[:register]
+      td
+        | 顯示[暫存區]的內容
+h2 取代(replace)
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [r]
+      td
+        | (replace)取代游標所在位置的字元按下[r]之後，再輸入要用來取代的字元
+    tr
+      td
+        code
+          | [R]
+      td
+        | 進入取代模式按下[R]之後，接下來輸入的字都會蓋掉原本的內容，按[Esc]回到一般模式
+h2 縮排(indent)
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [>]+[>]
+      td
+        | 本行向內縮排一次
+    tr
+      td
+        code
+          | [<]+[<]
+      td
+        | 本行向外縮排一次
+h2 回復(undo)
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [u]
+      td
+        | (undo)回復到編輯之前的狀態
+    tr
+      td
+        code
+          | [Ctrl][r]
+      td
+        | (redo)回復到編輯之後的狀態
+    tr
+      td
+        code
+          | [U]
+      td
+        | 在編輯前後的狀態之間切換，每做一次[U]視做新的一次編輯
+h2 其它
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [.]
+      td
+        | 重複上一次的編輯
+    tr
+      td
+        code
+          | [J]
+      td
+        | (joint)將下一行接到本行最後面，中間用空白隔開也就是將本行最後的換行字元取代成空白
+    tr
+      td
+        code
+          | [~]
+      td
+        | 切換游標所在位置的那一個字元的大小寫後，將游標移到下一個字元
+h2 進入插入模式(insert mode)
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [i]
+      td
+        | (insert)在游標所在位置字元之後插入
+    tr
+      td
+        code
+          | [I]
+      td
+        | 在本行最後插入
+    tr
+      td
+        code
+          | [a]
+      td
+        | (append)在游標所在位置字元之前插入
+    tr
+      td
+        code
+          | [A]
+      td
+        | 在本行最前面插入
+    tr
+      td
+        code
+          | [o]
+      td
+        | (open new line)在游標所在位置的那一行向下插入新的一行
+    tr
+      td
+        code
+          | [O]
+      td
+        | 在游標所在位置的那一行向上插入新的一行
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [s]
+      td
+        | 刪除游標所在位置的那一個字元後插入
+    tr
+      td
+        code
+          | [S]或[c]+[c]
+      td
+        | 刪除游標所在位置的那一行後插入
+    tr
+      td
+        code
+          | [c]
+      td
+        | 刪除游標所在位置的那一個字後插入
+    tr
+      td
+        code
+          | [c]+[^]或[c]+[0]
+      td
+        | 刪除游標所在位置的前一個字元到本行最前面後插入
+    tr
+      td
+        code
+          | [c]+[$]或[C]
+      td
+        | 刪除游標所在位置字元到本行最後面後插入
+h2 進入選取模式(virtual mode)
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [v]
+      td
+        | 在游標所在位置字元開始進行選取
+    tr
+      td
+        code
+          | [V]
+      td
+        | 在游標所在位置的那一行開始以行為單位進行選取
+    tr
+      td
+        code
+          | [Ctrl][v]
+      td
+        | 在游標所在位置字元開始以區塊的方式進行選取
+h1 選取模式
+h2 移動
+table.pt-table
+  tbody
+    tr
+      td
+        | 與一般模式的移動方式一樣
+h2 複製
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [y]
+      td
+        | 將選取的內容複製起來並回到一般模式
+h2 刪除
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [d]
+      td
+        | 將選取的內容刪除並回到一般模式
+h2 縮排
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [>]
+      td
+        | 將選取的行向內縮排一次並回到一般模式
+    tr
+      td
+        code
+          | [<]
+      td
+        | 將選取的行向外縮排一次並回到一般模式
+h2 回到一般模式
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [Esc]
+      td
+        | 回到一般模式
+h1 插入模式
+h2 回到一般模式
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [Esc]
+      td
+        | 回到一般模式
+h1 指令
+h2 檔案操作
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [:e 檔案]
+      td
+        | (edit)開啟[檔案]，如果檔案不存在則會開新檔案
+    tr
+      td
+        code
+          | [:w]
+      td
+        | (write)存檔
+    tr
+      td
+        code
+          | [:q]
+      td
+        | (quit)關閉檔案，如果檔案修改但尚未存檔，會不能關
+    tr
+      td
+        code
+          | [:q!]
+      td
+        | 强制關閉檔案如果檔案修改但尚未存檔，則修改的部分會被捨棄
+    tr
+      td
+        code
+          | [:qw]
+      td
+        | 存檔並關閉檔案
+table.pt-table
+  tbody
+    tr
+      td
+        | 上面的指令都可以在前面加上a，對所有在buffer中的檔案都進行操作，例如：
+        code
+          | [:aq]
+        | 就是關閉所有檔案
+h2 緩衝區操作(buffer)
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [:buffers]
+      td
+        | 列出所有的緩衝區
+    tr
+      td
+        code
+          | [:bn]
+      td
+        | (buffer next)移到下一個緩衝區
+    tr
+      td
+        code
+          | [:bp]
+      td
+        | (buffer previous)移到上一個緩衝區
+    tr
+      td
+        code
+          | [:b緩衝區號碼]
+      td
+        | 移動到號碼為[緩衝區號碼]的緩衝區
+    tr
+      td
+        code
+          | [:bd]
+      td
+        | (buffer delete)將目前開啟的檔案移出緩衝區，這個檔案必須要先儲存。
+        br
+        | 注意
+        code
+          | [:q]
+        | 關閉檔案並不會將檔案移出緩衝區，要使用
+        code
+          | [:bd]
+        | 才行。
+h2 執行外部指令
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | [:!指令]
+      td
+        | 執行外部指令[指令]
+    tr
+      td
+        code
+          | [:!]
+      td
+        | 執行前一個外部指令，根據history的順序
+    tr
+      td
+        code
+          | [:!!]
+      td
+        | 執行前一次[:!指令]
+    tr
+      td
+        code
+          | [:silent !指令]
+      td
+        | 不顯示output，vim可能會變黑，這時候要下[:redraw]讓vim重新產生畫面
+    tr
+      td
+        code
+          | [:r !指令]
+      td
+        | 將指令產生的output讀入到目前的buffer
+h2 其它
+table.pt-table
+  tbody
+    tr
+      td
+        | 當要連續執行兩個指令，則可以在指令之間用|分隔

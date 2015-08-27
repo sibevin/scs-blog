@@ -1,0 +1,59 @@
+.meta-data title Random Token - 建立亂數字串最簡單的方法
+.meta-data description Random Token - 建立亂數字串最簡單的方法
+.meta-data datetime 2014-10-06 11:01:55
+.meta-data tags ruby_gem,work
+.meta-data category coding
+.meta-data link gem-random-token-generate-random-string
+.meta-data file 2014-10-06-110155-gem-random-token-generate-random-string
+.meta-data template post
+.meta-data end
+
+ul
+  li
+    a href="https://github.com/sibevin/random_token" target="_blank" Github
+  li
+    a href="http://rubygems.org/gems/random_token" target="_blank" RubyGem
+    code
+      |  (random_token)
+h1 What
+p
+  | 建立亂數字串最簡單的方法。
+h1 Why
+p
+  | 建立一個亂數字串其實很簡單，google一下就找到
+  a href="http://stackoverflow.com/questions/88311/how-best-to-generate-a-random-string-in-ruby" target="_blank" 做法
+  | 了。但如果還要讓生成的字串加上後製的處理，例如大小寫轉換或是過濾某些字元，那就要花額外的功與程式碼去做。而這個gem是希望可以將這些步驟簡化並整合到gem中，讓建立亂數字串的過程可以更簡單，也可以達到DRY。
+h1 How
+p
+  | 這個 gem提供了兩種方式來產生亂數字串，第一種是直接給字串長度：
+pre
+  code.hljs
+    | RandomToken.gen(8)
+      # "iUEFxcG2"
+p
+  | 可以加上一些參數來修改生成的字串：
+pre
+  code.hljs
+    | RandomToken.gen(20, seed: :alphabet, friendly: true, case: :up)
+      # "YTHJHTXKSSXTPLARALRH"
+p
+  | 假如你懶的打字，參數可以簡化如下：
+pre
+  code.hljs
+    | RandomToken.gen(20, s: :a, f: true, c: :u)
+      # "YTHJHTXKSSXTPLARALRH"
+p
+  | 另一種方式是使用格式化字串，例如：
+pre
+  code.hljs
+    | RandomToken.gen("%4H-%4H-%4H-%4H")
+      # "FD77-2792-91A9-6CE3"
+p
+  | 詳細的使用方式請參考
+  a href="https://github.com/sibevin/random_token/blob/master/README.md" target="_blank" README
+  | ，這裡就不再贅述。
+h1 心得
+p
+  | 當初只是想要做一個方便用來生成亂數字串的工具，沒有想說要做多完整的功能，另一方面也想嘗試怎麼做一個gem。沒想到做了之後就會開始欲罷不能的多做一些功能，像是string format或是指定亂數機率分佈等。
+p
+  | 做這個gem最大的收獲就是實作string format，如何去parse傳入的string有哪些directive，然而轉成想要的option。看似困難，其實實際下去做感覺反而沒想像的這麼難。另一個收獲是學習使用ruby內建的test framework，之前在寫rails都是用rspec，但如果只是一個gem，用rspec似乎有點殺雞牛刀的感覺，還要增加dependence，所以就試著用ruby的unit test來做測試。感覺跟寫rspec很像，不過每個case前都要用test_開頭的語法有點多餘就是了。

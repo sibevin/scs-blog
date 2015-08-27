@@ -1,0 +1,61 @@
+.meta-data title 如何讓使用者完成註冊確認之後就做某件事
+.meta-data description 如何讓使用者完成註冊確認之後就做某件事
+.meta-data datetime 2015-01-21 21:52:35
+.meta-data tags rails,devise
+.meta-data category coding
+.meta-data link rails-devise-after-confirmation
+.meta-data file 2015-01-21-215235-rails-devise-after-confirmation
+.meta-data template post
+.meta-data end
+
+h1 問題
+p
+  | 我們希望能在一個使用者帳號被建立的時候初始化一些資料，最好的時間點就是當使用者完成註冊確認的時候。
+h1 解法
+p
+  | devise在3.1.2之後在
+  code
+    | Devise::Confirmable
+  | 有提供一個method叫
+  code
+    | after_confirmation
+  | 。你可以override它如下：
+pre
+  code.hljs
+    | class User < ActiveRecord::Base
+        devise :database_authenticatable, :registerable,
+           :recoverable, :rememberable, :trackable, :validatable, :confirmable
+
+        def after_confirmation
+          # do something...
+        end
+      end
+p
+  | 不過這樣的做法有個缺點就是每次使用者更改email重新做confirmation的時候都會再做一次，這顯然不是我們想要的。比較好的做法是override
+  code
+    | confirm!
+  | 這個method，並且在method中檢查confirmed_at是否已經存在過來判斷是不是第一次做confirmation，程式如下：
+pre
+  code.hljs
+    | class User < ActiveRecord::Base
+        devise :database_authenticatable, :registerable,
+           :recoverable, :rememberable, :trackable, :validatable, :confirmable
+
+        def confirm!
+          super
+          if first_confirmation?
+            # do something...
+          end
+        end
+
+        private
+
+        def first_confirmation?
+          previous_changes[:confirmed_at] && previous_changes[:confirmed_at].first.nil?
+        end
+      end
+h1 Refs
+ul
+  li
+    a href="http://stackoverflow.com/questions/4558463/rails-devise-after-confirmation#comment12853945_4558910" target="_blank"
+      | SO - Rails Devise: after_confirmation

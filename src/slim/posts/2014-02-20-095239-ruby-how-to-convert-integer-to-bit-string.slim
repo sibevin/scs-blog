@@ -1,0 +1,24 @@
+.meta-data title 如何在ruby中轉換integer與bit string
+.meta-data description 如何在ruby中轉換integer與bit string
+.meta-data datetime 2014-02-20 09:52:39
+.meta-data tags ruby
+.meta-data category coding
+.meta-data link ruby-how-to-convert-integer-to-bit-string
+.meta-data file 2014-02-20-095239-ruby-how-to-convert-integer-to-bit-string
+.meta-data template post
+.meta-data end
+
+h2
+  | integer轉bit string
+pre
+  code.hljs
+    | 25.to_s(2)
+      # "11001"
+h2
+  | bit string轉integer
+pre
+  code.hljs
+    | "11001".to_i(2)
+      # 25
+p
+  | 這個技巧同樣可以用在8進位與16進位。

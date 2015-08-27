@@ -1,0 +1,34 @@
+.meta-data title 處理rails中的小數
+.meta-data description 處理rails中的小數
+.meta-data datetime 2015-01-04 09:53:43
+.meta-data tags rails_migration
+.meta-data category coding
+.meta-data link rails-handle-decimal-number
+.meta-data file 2015-01-04-095343-rails-handle-decimal-number
+.meta-data template post
+.meta-data end
+
+p
+  | 要建立一個欄位用來處理小數，我們可以用decimal這個type來儲存，要注意的是decimal有兩個option要設定，一個是
+  code
+    | :precision
+  | 用來決定數字要支援多大的位數(括含小數位數)，另一個是
+  code
+    | :scale
+  | 用來決定數字的小數位數最多可以有幾位。以下面的例子而言，amount可以儲存的數值範圍就是介於-999.99到999.99之間。
+pre
+  code.hljs
+    | t.decimal :amount, precision: 5, scale: 2
+p
+  | 如果你用的是mysql，在使用decimal而不設定這個兩個值，它預設是
+  code
+    | precision: 10, scale: 0
+  | ，也就是沒有小數(囧)。
+h1 Ref
+ul
+  li
+    a href="http://torontoprogrammer.ca/2010/05/decimal-numbers-in-rails-and-mysql/" target="_blank"
+      | Toronto Programmer Jason Doucette - Decimal numbers in Rails and MySQL
+  li
+    a href="http://apidock.com/rails/ActiveRecord/ConnectionAdapters/TableDefinition/column" target="_blank"
+      | apidock - ActiveRecord::ConnectionAdapters::TableDefinition - column

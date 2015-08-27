@@ -1,0 +1,145 @@
+.meta-data title 筆記 - 如何寫「好的」程式
+.meta-data description 筆記 - 如何寫「好的」程式
+.meta-data datetime 2014-11-20 18:37:59
+.meta-data tags note
+.meta-data category coding
+.meta-data link note-how-to-create-high-quality-code
+.meta-data file 2014-11-20-183759-note-how-to-create-high-quality-code
+.meta-data template post
+.meta-data end
+
+p
+  | Based on the book - Code Complete
+h1 What is high Quality Code
+ul
+  li
+    | external v.s. internal
+  li
+    | code quality - self-documenting, construction, testable
+h1 Variables
+ul
+  li
+    | 宣告變數與使用變數的地方要接近。
+  li
+    | variable live time should be short
+  li
+    | group related statment
+  li
+    | one variable only for one purpose, one meaning
+  li
+    | choose good name, should have a meaning, not too long and not too short
+  li
+    | name for status should have a meaning
+  li
+    | Don't use:
+    ul
+      li keyword
+      li similar meanings
+      li similar look
+      li similar sound
+      li misspelled
+      li numbers
+      li case difference
+      li unit natural languages - color, coluor
+      li undefined words
+      li hard-to-read characters
+  li
+    | Avoid magic numbers
+  li
+    | boolean variable, separate long condition
+  li
+    | use structure to group variables
+h1 Statments
+ul
+  li
+    | grouping related statments
+  li
+    | condition block should not empty
+  li
+    | don't use goto in loop
+  li
+    | don't: for loop index is changed by inside condition
+  li
+    | use meaning index
+  li
+    | don't use recursion, hard to read and low effiency
+  li
+    | use boolean(true/false) instead of 1/0
+ul
+  li
+    | Construction
+    ul
+      li
+        | coding and debugging
+      li
+        | detailed design
+      li
+        | unit testing
+      li
+        | construction planning
+      li
+        | ...
+  li
+    | abstraction
+  li
+    | top-down v.s. bottom-up
+  li
+    | managing complexity - accidental v.s. essenttial difficulties
+  li
+    | high secrets, information hidding - hidding sources and complexity, define public interface, encapsulation
+  li
+    | level of design
+    ul
+      li
+        | software system
+      li
+        | subsystem/packages
+      li
+        | class in packages
+      li
+        | data and routines in classes
+      li
+        | internal routines
+  li
+    | class
+    ul
+      li
+        | avoid creating god classes
+      li
+        | eliminate irrelevated classes
+      li
+        | don't use verb to name a class
+  li
+    | abstract data type
+h1
+  | Routines = Functions
+ul
+  li
+    | put into routines
+  li
+    | name: describe everything your method dose, avoid numbers
+  li
+    | unify the similar operation name
+  li
+    | 100 < lines < 200
+  li
+    | Don't assign value to parameters
+  li
+    | variables < 7
+h1 Pseudocode
+ul
+  li
+    | Use natural language
+  li
+    | steps
+    ul
+      li
+        | design
+      li
+        | write pseudocode
+      li
+        | coding
+      li
+        | test
+      li
+        | repeat if needed

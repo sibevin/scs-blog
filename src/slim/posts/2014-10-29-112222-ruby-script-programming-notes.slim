@@ -1,0 +1,35 @@
+.meta-data title 使用ruby寫script的雜記事本
+.meta-data description 使用ruby寫script的雜記事本
+.meta-data datetime 2014-10-29 11:22:22
+.meta-data tags ruby
+.meta-data category coding
+.meta-data link ruby-script-programming-notes
+.meta-data file 2014-10-29-112222-ruby-script-programming-notes
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+h1 如何切換目錄
+pre
+  code.ruby
+    | Dir.chdir("the/target/path/to/change/to") do
+        # ... do something ...
+      end
+      # back to original path here
+h1 取得script檔案的路徑
+pre
+  code.ruby
+    | script_path = Pathname.new(File.dirname(__FILE__))
+h1 瀏覽某個目錄下的檔案
+pre
+  code.ruby
+    | Dir["the/target/path/to/get/files/"].each do |file| do
+        # ... do something with file ...
+      end
+p
+  | 可以搭配使用萬用字元找出想要的檔案
+pre
+  code.ruby
+    | Dir["the/target/path/to/get/files/*.rb"].each do |file| do
+        # ... do something with rb files ...
+      end

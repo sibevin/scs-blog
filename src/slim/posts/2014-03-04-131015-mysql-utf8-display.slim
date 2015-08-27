@@ -1,0 +1,65 @@
+.meta-data title 如何顯示utf8的欄位
+.meta-data description 如何顯示utf8的欄位
+.meta-data tags mysql
+.meta-data category tools
+.meta-data datetime 2014-03-04 13:10:15
+.meta-data template post
+.meta-data link mysql-utf8-display
+.meta-data file 2014-03-04-131015-mysql-utf8-display
+.meta-data end
+
+h1 問題
+p
+  | 用client連進mysql的時候，很常遇到db明明己經設定成utf8，可是透過client看utf8的欄位時，還是出現???的字串。
+pre
+  code.hljs
+    | +----+-----------------+------------+
+      | id | name            | name_zh_tw |
+      +----+-----------------+------------+
+      | 1  | taipei-city     | ???        |
+      | 2  | kaoh-siung-city | ???        |
+h1 解法
+p
+  | 這種情況通常是client characterset沒有設好，設定步驟如下：
+p
+  | 首先，先確定mysql的characterset，在mysql client中下指令
+  code
+    | status;
+  | 。這時會發現Db characterset是utf8，但Client characterset卻是latin1，這就會使client無法正確顯示utf8的欄位。
+pre
+  code.hljs
+    | Server characterset: latin1
+      Db characterset: utf8
+      Client characterset: latin1
+      Conn. characterset: latin1
+p
+  | 修改
+  code
+    | ~/.my.cnf
+  | (如果沒有這個檔案，請從
+  code
+    | /etc/mysql/my.cnf
+  | 複製一份到你的home下面)，在
+  code
+    | [client]
+  | 的地方加入以下設定：
+pre
+  code.hljs
+    | [client]
+      default-character-set = utf8
+p
+  | 再用指令
+  code
+    | status;
+  | ，會發現Client characterset己改成utf8，utf8的欄位也可以正常顯示了。
+pre
+  code.hljs
+    | Server characterset: latin1
+      Db characterset: utf8
+      Client characterset: utf8
+      Conn. characterset: utf8
+      +----+-----------------+------------+
+      | id | name            | name_zh_tw |
+      +----+-----------------+------------+
+      | 1  | taipei-city     | 台北市      |
+      | 2  | kaoh-siung-city | 高雄市      |

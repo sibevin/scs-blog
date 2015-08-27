@@ -1,0 +1,45 @@
+.meta-data title 如何轉換時間字串
+.meta-data description 如何轉換時間字串
+.meta-data category coding
+.meta-data tags ruby
+.meta-data datetime 2014-09-18 09:48:05
+.meta-data template post
+.meta-data link ruby-how-to-parse-time-string
+.meta-data file 2014-09-18-094805-ruby-how-to-parse-time-string
+.meta-data end
+
+h1 問題
+p
+  | 如果有一個時間字串，例如："2014-09-18 09:48:05"，要怎麼轉成ruby中的time或datetime object？
+h1 解法
+p
+  | 如果需要保留時區資訊，可以使用
+  code Time.parse
+  | ，回傳的是帶有時區的Time object：
+pre
+  code.ruby
+    | require "time"
+      Time.parse("2014-09-18 09:48:05")
+      # => 2014-09-18 09:48:05 +0800
+p
+  | 如果不需要時區資訊，可以用
+  code DateTime.parse
+  | ，回傳的是不帶時區的Datetime object，這個時候如果用
+  code .to_time
+  | 轉成Time object的時候，就會加入時區的計算：
+pre
+  code.ruby
+    | require "date"
+      dt = DateTime.parse("2014-09-18 09:48:05")
+    = "\n" + '# => #<DateTime: 2014-09-18T09:48:05+00:00 ((2456919j,35285s,0n),+0s,2299161j)>'"\n"
+    | dt.to_time
+      # => 2014-09-18 17:48:05 +0800
+p
+  | 如果只是想取得日期資訊，可以用
+  code Date.parse
+  | ，它只會回傳date object：
+pre
+  code.ruby
+    | require "date"
+      Date.parse("2014-09-18 09:48:05")
+    = "\n" + '# => #<Date: 2014-09-18 ((2456919j,0s,0n),+0s,2299161j)>'

@@ -1,0 +1,83 @@
+.meta-data title rails讓多選單中的value使用slug來取代id
+.meta-data description rails讓多選單中的value使用slug來取代id
+.meta-data datetime 2015-01-15 10:25:00
+.meta-data tags rails
+.meta-data category coding
+.meta-data link rails-form-multi-select-with-slug-instead-of-id
+.meta-data file 2015-01-15-102500-rails-form-multi-select-with-slug-instead-of-id
+.meta-data template post
+.meta-data end
+
+h1
+  | 原本使用id的版本
+p
+  | 一個user有很多courses，在user model中可能長的像這個樣子：
+pre
+  code.ruby
+    | class User < ActiveRecord::Base
+        # ...
+        has_many :user_courses_maps
+        has_many :courses, through: :user_course_maps
+        # ...
+      end
+p
+  | 而在user的edit頁面中，使用simple form的association可以直接生成對應的多選單：
+pre
+  code.html
+    | <%= f.associate :courses, collection: @user.courses.select("courses.id, courses.name")
+                                label_method: :name, value_method: :id %>
+p
+  | 生成的html如下：
+pre
+  code.html
+    = '<span class="checkbox">' + "\n"
+    = '  <label for="user_course_ids_1" name="user[course_ids]">' + "\n"
+    = '  <input class="check_boxes optional" id="user_course_ids_1" name="user[course_ids][]" type="checkbox" value="1">' + "\n"
+    = '  課程名稱001' + "\n"
+    = '  </label>' + "\n"
+    = '</span>' + "\n"
+    = '<span class="checkbox">' + "\n"
+    = '  <label for="user_course_ids_2" name="user[course_ids]">' + "\n"
+    = '  <input class="check_boxes optional" id="user_course_ids_1" name="user[course_ids][]" type="checkbox" value="2">' + "\n"
+    = '  課程名稱002' + "\n"
+    = '  </label>' + "\n"
+    = '</span>'
+p
+  | 顯然將id直接拿來用並不是個安全的做法，而在課程model中原本就有用slug來取代id在url上的顯示，所以會想將slug也用在courses的選單裡。
+h1
+  | 修改後使用slug的版本
+p
+  | 技巧是在user model中加上virtual attribute
+  code
+    | course_slugs
+  | ，在form中不直接用courses而是用course_slugs來做關聯。接著在user model中建立
+  code
+    | course_slugs=
+  | 這個method，我們在form中設定course_slugs得到的是課程slug的array，當user儲存時，就會在method
+  code
+    | course_slugs=
+  | 中轉成課程id的array並指定給
+  code
+    | course_ids
+  | 。
+pre
+  code.hljs
+    | class User < ActiveRecord::Base
+        # ...
+        has_many :user_courses_maps
+        has_many :courses, through: :user_course_maps
+        # ...
+        attr_reader :course_slugs
+        # ...
+        def course_slugs=(slugs)
+          self.course_ids = Course.where(slug: slugs).pluck(:id)
+        end
+        # ...
+      end
+p
+  | 在form中就不使用courses，而是使用course_slugs來取代。要注意的是為了讓預設值也可以work，必須要加上checked這個option。
+pre
+  code.hljs
+    | <%= f.input :course_slugs, collection: Course.select("courses.slug, courses.name")
+                                 label_method: :name, value_method: :slug,
+                                 checked: @user.courses.pluck(:slug) %>

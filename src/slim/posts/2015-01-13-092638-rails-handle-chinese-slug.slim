@@ -1,0 +1,78 @@
+.meta-data title 處理rails中文slug
+.meta-data description 處理rails中文slug
+.meta-data datetime 2015-01-13 09:26:38
+.meta-data tags rails
+.meta-data category coding
+.meta-data link rails-handle-chinese-slug
+.meta-data file 2015-01-13-092638-rails-handle-chinese-slug
+.meta-data template post
+.meta-data end
+
+h2 使用friendly_id支援slug
+p
+  | 1. 在migration中加入一個slug的col。
+pre
+  code.hljs
+    | class CreateBlogPosts < ActiveRecord::Migration
+        def change
+          create_table :blog_posts do |t|
+            # ...
+            t.string :title
+            t.string :slug, null: false
+            # ...
+          end
+          add_index :blog_posts, :slug, unique: true
+        end
+      end
+p
+  | 2. 在model中設定friendly_id。friendly_id會在model被建立的時候將一個指定的欄位(以這個例子而言就是title)轉成網址用的slug並存在slug這個欄位中。
+pre
+  code.hljs
+    | class BlogPost < ActiveRecord::Base
+        extend FriendlyId
+        friendly_id :title, use: :slugged
+        # ...
+      end
+p
+  | 3. 在controller中如果要用
+  code
+    | params[:id]
+  | 找對應的record，要記得加上friendly。
+pre
+  code
+    | class BlogPostsController < ApplicationController
+        before_action :set_blog_post, only: [:show, :edit, :update, :destroy]
+        # ...
+        private
+        def set_blog_post
+          @blog_post = BlogPost.friendly.find(params[:id])
+        end
+      end
+p
+  | 目前friendly_id只能支援英文的slug，如果有中文字就會被強迫變成-，這時候就要用babosa了。
+h2 加上babosa支援中文slug
+p
+  | 在model中override
+  code
+    | normalize_friendly_id
+  | 。
+pre
+  code
+    | class BlogPost < ActiveRecord::Base
+        extend FriendlyId
+        friendly_id :title, use: :slugged
+        # ...
+        def normalize_friendly_id(input)
+          input.to_s.to_slug.normalize.to_s
+        end
+        # ...
+        private
+        def gen_ubid
+          self.ubid = RandomToken.gen(64)
+        end
+      end
+h1 Refs
+ul
+  li
+    a href="http://blog.roachking.net/blog/2014/01/17/babosa-friendly-id-solve-chinese-problems/" target="_blank"
+      | 使用 Babosa 配合 Friendly_id 解決中文網址問題 - by 蟑螂窩

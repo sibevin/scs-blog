@@ -1,0 +1,45 @@
+.meta-data title RailRoady - 用來繪製model與controller的關係圖
+.meta-data description RailRoady - 用來繪製model與controller的關係圖
+.meta-data datetime 2015-01-19 14:57:11
+.meta-data tags ruby_gem,rails
+.meta-data category coding
+.meta-data link gem-rail-roady-generate-rails-model-and-controller-graphs
+.meta-data file 2015-01-19-145711-gem-rail-roady-generate-rails-model-and-controller-graphs
+.meta-data template gem
+.meta-data end
+
+ul
+  li
+    a href="https://github.com/preston/railroady" target="_blank" Github
+  li
+    a href="https://rubygems.org/gems/railroady" target="_blank" RubyGem
+    code
+      |  (railroady)
+h1 What
+p
+  | 用來繪製model與controller的關係圖。
+h1 Why
+p
+  | 用圖更能了解整體model的架構與關聯性。
+h1 How
+p
+  | 1. 要先安裝
+  code
+    | graphviz
+p
+  | 2. 在Gemfile中加入
+  code
+    | railroady
+pre
+  code
+    | group :development, :test do
+        gem 'railroady'
+      end
+p
+  | 3. 下指令
+  code
+    | rake diagram:all
+  | ，圖就會產生在
+  code
+    | doc/
+  | 。

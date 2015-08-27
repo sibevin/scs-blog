@@ -1,0 +1,104 @@
+.meta-data title ruby在if中的assignment
+.meta-data description ruby在if中的assignment
+.meta-data datetime 2014-03-25 12:28:57
+.meta-data tags ruby
+.meta-data category coding
+.meta-data link ruby-if-assignment
+.meta-data file 2014-03-25-122857-ruby-if-assignment
+.meta-data template post
+.meta-data end
+
+p
+  | 如果我們想要檢查
+  code
+    | foo.get_value()
+  | 有沒有值，如果有的話就用回傳的值做什麼事，如果回傳是
+  code nil
+  | 則不做事之類的。那我們通常會寫成下面這個樣子：
+pre
+  code.hljs
+    | if a = foo.get_value()
+        # ...
+        # Do something with a if Foo.get_value() return a value...
+        # ...
+      end
+p
+  | 不過當你有兩個以上的判斷式就要小心了，先看一個最簡單的例子：
+pre
+  code.hljs
+    | if a = 1
+        p a
+      end
+
+      # 1
+p
+  | 這個沒有問題，
+  code a
+  | 的值是
+  code 1
+  | ，所以會跑
+  code p a
+  | ，印出的值是
+  code 1
+  | 。那下面這個例子？
+pre
+  code.hljs.ruby
+    | if a = 1 && b = 2
+        p a
+        p b
+      end
+
+      # 2 <= ???
+      # 2
+p
+  | 這是因為
+  code
+    | &&
+  | 的優先權大於
+  code
+    | =
+  | ，所以
+  code
+    | a = 1 && b = 2
+  | 的結果相當於
+pre
+  code.hljs.ruby
+    | a = 1 && b = 2
+      a = (1 && (b = 2))
+      a = (1 && 2) # b = 2
+      a = 2
+p
+  | 如果想要得到
+  code
+    | a = 1
+  | 與
+  code
+    | b = 2
+  | 的結果，可以使用
+  code and
+  | (
+  code and
+  | 的優先權比
+  code
+    | =
+  | 低)或是
+  code
+    | ()
+  | 來得到正確的值：
+pre
+  code.hljs.ruby
+    | if a = 1 and b = 2
+        p a
+        p b
+      end
+
+      # 1
+      # 2
+
+      if (a = 1) && (b = 2)
+        p a
+        p b
+      end
+
+      # 1
+      # 2

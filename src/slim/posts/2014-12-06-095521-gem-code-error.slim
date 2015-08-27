@@ -1,0 +1,93 @@
+.meta-data title Code Error - 標準的StandardError加上了錯誤代碼來管理錯誤情況
+.meta-data description Code Error
+.meta-data datetime 2014-12-06 09:55:21
+.meta-data tags ruby_gem,work
+.meta-data category coding
+.meta-data link gem-code-error
+.meta-data file 2014-12-06-095521-gem-code-error
+.meta-data template gem
+.meta-data end
+
+ul
+  li
+    a href="https://github.com/sibevin/code_error" target="_blank" Homepage
+  li
+    a href="https://github.com/sibevin/code_error" target="_blank" Github
+  li
+    a href="https://rubygems.org/gems/code_error" target="_blank" RubyGem
+    code
+      |  (code_error)
+h1 What
+p
+  | 它一個標準的StandardError，但加上了錯誤代碼(code)來管理一系列錯誤情況的功能。
+h1 Why
+p
+  | 錯誤的情況有很多種，通常都需要能根據不同情況來進行不同的處理，單一個StandardError很難做這點。CodeError則是基於StandardError多了下面的特點：
+ul
+  li
+    | 所有的錯誤情況都定義在同一個class中，方便管理與參考。
+  li
+    | 只要在raise一個帶有錯誤代碼的CodeError，就可以使用對應的錯誤訊息與狀態。
+  li
+    | 高度客制化與彈性的設計，可以自行定義預設的錯誤訊息與狀態。
+h1 How
+p
+  | 1. 定義一個class繼承CodeError::Base，在class中定義錯誤代碼。
+pre
+  code.ruby
+    | class MyError < CodeError::Base
+        error_codes({
+          purchase_info_incorrect: {
+            status: :failed,
+            msg: 'Purchase information format is incorrect.'
+          },
+          device_info_incorrect: {
+            status: :failed,
+            msg: 'Device information format is incorrect.'
+          },
+          unknown_store: {
+            status: :failed,
+            msg: 'Unknown store.'
+          },
+          duplicated_request: {
+            status: :duplicated,
+            msg: 'A duplicated IAP request is sent.'
+          },
+          resend_iap: {
+            status: :retry,
+            msg: 'Client should send the IAP request again.'
+          }
+        })
+      end
+p
+  | 2. 在raise錯誤時加上錯誤代碼。
+pre
+  code.ruby
+    | raise MyError.gen(:purchase_info_incorrect)
+p
+  | 3. rescue，接著就可以根據錯誤情況來處理它。
+pre
+  code.ruby
+    | begin
+        #...
+        raise MyError.gen(:purchase_info_incorrect)
+        #...
+      rescue MyError => e
+        raise e if e.internal?
+        msg = e.msg
+        code = e.code
+        info = e.info
+        data = e.data
+        case(e.status)
+        when :failed
+          #...
+        when :duplicated
+          #...
+        else
+          #...
+        end
+        #...
+      end
+h1 心得
+p
+  | 一直覺得用StandardError來處理多種錯誤的情況有點不太夠用，用繼承體系做出多的Error似乎又太麻煩，而且不好管理，於是就試著做個可以儲存狀態的Error。只是對於ruby的dsl還不是很熟，想要做出方便好用的使用方式(就是可以在class中設定變數)倒是花了一段時間。

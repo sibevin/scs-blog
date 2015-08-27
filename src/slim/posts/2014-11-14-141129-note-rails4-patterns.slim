@@ -1,0 +1,72 @@
+.meta-data title code school 筆記 - rails4 patterns
+.meta-data description code school 筆記 - rails4 patterns
+.meta-data datetime 2014-11-14 14:11:29
+.meta-data tags rails,note_code-school
+.meta-data category coding
+.meta-data link note-rails4-patterns
+.meta-data file 2014-11-14-141129-note-rails4-patterns
+.meta-data template post
+.meta-data end
+
+p
+  | 1. 將邏輯從controller移到model，尤其是需要存取model attribute的運算邏輯，應該封裝在model之中。
+p
+  | 2. 不要將其它model的建立放在model中的callback。放在callback中會讓model之間的關係無法鬆綁，而且當model建立失敗時會產生未預期的行為。比較好的做法是將其它model的建立放在一般的method中，當需要建立時才呼叫。至於callback應該只用在改變model attribute的狀態。
+p
+  | 3. 不是所有的model都需要ActiveRecord，一些運算邏輯不屬於model範疇，例如流程控制或是牽涉到其它model，應該要切出另一個非ActiveRecord(PORO = Plain Old Ruby Object)的class來處理。 = Simple Responsibility Priciple
+p
+  | 4. 不要將model的sql query放在controller中，取而代之的是建立一個model class method或是scope。class method與scope的差異在於當使用多個query chain在一起時，如果其中一個query回傳nil，class method會將
+  code IS NULL
+  | 的條件代入query中，而scope則會跳過結果為nil的query。另外使用scope的好處是它一定會傳回chainable的object，而class method則要小心回傳的object能不能chain。
+p
+  | 6. 可以使用scope merge在model scope中使用另一個model的scope。
+pre
+  code.hljs
+    | class Comment < ActiveRecord
+        belongs_to :post
+        scope :approved, -> { where(approved: true) }
+      end
+    class Post < ActiveRecord
+      has_many :comments
+      scope :with_approved_comments, -> { joins(:comments).merge(Comment.approved) }
+    end
+pre
+  code.hljs
+    | SELECT "posts".* FROM "posts" INNER JOIN "comments" ON "comments"."post_id" = "post"."id" WHERE ("comments"."approved" = "t")
+  p
+    | 另一個scope merge的用處是決定存取相同attribute的scope優先權，當兩個scope chain在一起時，rails4會將兩個scope的結果都放進query中。而rails3則是後chain的scope贏，如果要讓rails4有相同的效果，可以用merge做chain，這時候後merge的scope贏。
+  p
+    | 7. rails4在models與controllers下都有concerns的目錄，可以將在多個model或是多個controller中重複用到的code放在concerns中再include進來。
+  p
+    | 8. 不應該將使用在view的邏輯運算放在model中，因為model不應該直接控制view。取而代之的是將view的邏輯運算搬到decorator，另外可以使用method_missing與respond_to_missing的技巧將model的method導向decorator。
+pre
+  code.hljs
+    | class PostDecorator
+        attr_reader :post
+      def initialize(post)
+        @post = post
+      end
+      def is_front_page?
+        post.published_at > 2.days.ago
+      end
+      def method_missing(method_name, *args, &block)
+        post.send(method_name, *args, &block)
+      end
+      def respond_to_missing?(method_name, include_private = false)
+        post.respond_to?(method_name, include_private) || super
+      end
+    end
+p
+  | 相較於view helper，decorator可以限制存取的model，另外decorator是obejct，使用起來更方便直覺。
+p
+  | 9. 當使用rails建立API server時，很常將資料使用json的格式來傳送。但將組json的程式放在controller或是model中並不適合。使用ActiveModelSerializer可以簡化serialize的程式碼，同時還可以自行定義要如何做serialize。
+p
+  | 10. 在model query中使用pluck選取需要的model attribute並組成array，可以避免ActiveRecord object的生成而達到加速的效果。
+p
+  | 11. 使用config.filter_parameters來過濾log中敏感的資料。
+p
+  | 12. 不要在production中使用WEBrick當作web server。
+p
+  | 13. 在Gemfile中宣告ruby的版本。
+p
+  | 14. 使用Procfile來定義起動rails app的流程，類似makefile的作法。

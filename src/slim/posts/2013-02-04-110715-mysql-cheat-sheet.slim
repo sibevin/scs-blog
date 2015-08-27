@@ -1,0 +1,153 @@
+.meta-data title mysql指令一覽
+.meta-data description mysql指令一覽
+.meta-data datetime 2013-02-04 11:07:15
+.meta-data tags mysql,cheat-sheet
+.meta-data category tools
+.meta-data template post
+.meta-data link mysql-cheat-sheet
+.meta-data file 2013-02-04-110715-mysql-cheat-sheet
+.meta-data end
+
+h1 mysql指令一覽
+
+h2 資料庫操作
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | show databases;
+      td
+        | 列出所有的database
+    tr
+      td
+        code
+          | use [database];
+      td
+        | 使用[database]資料庫，會讀取資料庫內所有table內的欄位資訊
+    tr
+      td
+        code
+          | drop database [database];
+      td
+        | 刪除[database]資料庫
+h2 表格操作
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | show tables;
+      td
+        | 列出目前使用的資料庫所有的table
+    tr
+      td
+        code
+          | desc [table];
+      td
+        | 列出[table]內欄位資訊
+    tr
+      td
+        code
+          | truncate [table];
+      td
+        | 刪除[table]內所有的資料，id從1開始計算(如果使用delete刪除所有的資料，則id不會從1開始)
+    tr
+      td
+        code
+          | alter table [table] drop column [column];
+      td
+        | 刪除[table]的某一欄[column];
+h2 資料操作
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | select * from [table];
+      td
+        | 列出[table]內所有的資料
+    tr
+      td
+        code
+          | select [col1],[col2] from [table];
+      td
+        | 列出[table]內所有的資料，只顯示[col1]與[col2]的欄位
+    tr
+      td
+        code
+          | insert into [table] ([col1],[col2]) values ([value1],[value2]);
+      td
+        | 插入一筆新資料到[table]中，其中[col1]的值為[value1]，[col2]的值為[value2]
+    tr
+      td
+        code
+          | insert into [table] ([col1],[col2]) values ([value_a1],[value_a2]), ([value_b1],[value_b2]);
+      td
+        | 插入多筆新資料到[table]
+    tr
+      td
+        code
+          | delete from [table];
+      td
+        | 刪除[table]內所有的資料
+    tr
+      td
+        code
+          | update [table] set [col1]=[value1],[col2]=[value2];
+      td
+        | 更新[table]內所有的資料，將它的[col1]值更新成[value1]、[col1]更新成[value1]
+    tr
+      td
+        code
+          | insert [table_a] ([col_a1], [col_a2]) select [col_b1], [col_b2] from [table_b]
+      td
+        | 將[table_b]的[col_b1]與[col_b2]選出並當作新資料的[col_a1]與[col_a2]的欄位插入到[table_a]
+h2 條件查詢、排序
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | select * from [table] where [condition];
+      td
+        | 列出[table]內所有符合[condition]的資料
+    tr
+      td
+        code
+          | select * from [table] order by [col1] [asc/desc], [col2] [asc/desc];
+      td
+        | 列出[table]內所有的資料，依序照[col1]的[asc升冪/desc降冪]與[col2]的[asc升冪/desc降冪]排序
+    tr
+      td
+        code
+          | select * from [table] limit [num];
+      td
+        | 列出[table]內所有的資料，列出前[num]筆資料
+h2 分組
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | select count(*) from [table] group by [col];
+      td
+        | 將[col]中相同的值分成同一組，並計算各組的資料個數。
+    tr
+      td
+        code
+          | select avg([col1]) from [table] group by [col2];
+      td
+        | 將[col2]中相同的值分成同一組，並計算各組[col1]的平均值。
+    tr
+      td
+        code
+          | select sum([col1]) from [table] group by [col2];
+      td
+        | 將[col2]中相同的值分成同一組，並計算各組[col1]的總和。
+    tr
+      td
+        code
+          | select count(*) from [table] group by [col] having count(*) > 10;
+      td
+        | 將[col]中相同的值分成同一組，並計算各組的資料個數，只列出資料個數>10的個數。

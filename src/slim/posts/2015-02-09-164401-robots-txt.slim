@@ -1,0 +1,103 @@
+.meta-data title 有關robots.txt的大小事
+.meta-data description 有關robots.txt的大小事
+.meta-data datetime 2015-02-09 16:44:01
+.meta-data tags web
+.meta-data category coding
+.meta-data link robots-txt
+.meta-data file 2015-02-09-164401-robots-txt
+.meta-data template post
+.meta-data end
+
+h1 What
+p
+  | robots.txt是一個檔案用來告訴趴網頁機器人要略掉哪一些網頁路徑。它被定義在The Robots Exclusion Protocol。
+h1 How
+p
+  | 基本上有robots.txt與robots meta兩種設定方式：
+h2 robots.txt
+p
+  | 在對應root url下放上檔案robots.txt即可，例如網址是
+  code
+    | www.example.com
+  | ，則robots.txt應該要放在
+  code
+    | www.example.com/robots.txt
+  | 。robots.txt的格式如下：
+pre.hljs
+  code
+    | User-agent: *
+      Disallow: /cgi-bin/
+      Disallow: /tmp/
+      Disallow: /junk/
+      User-agent: GoogleBot
+      Disallow: /tmp/
+p
+  | 一個robots.txt可以有多組設定，用空行分開，每一組設定會有一個
+  code
+    | User-agent
+  | 與一或多個
+  code
+    | Disallow
+  | 。每組設定是獨立分開的，如果你要兩組User-agent支援相同的設定，應該要個別設定在它的設定中。其中User-agent與Disallow的意義如下：
+ul
+  li
+    code
+      | User-agent
+    | 是用來指定這個設定是適用在哪個趴網頁機器人。它可以是一個趴網頁機器人的名稱或是
+    code
+      | *
+    | ，其中
+    code
+      | *
+    | 是指套用在所有的趴網頁機器人。注意兩個趴網頁機器人名稱不能寫在同一個User-agent的設定中，另外也不能在名稱中使用萬用字符(*)來做設定。
+  li
+    code
+      | Disallow
+    | 是用來指定哪些路徑不希望趴網頁機器人去趴，路徑可以是完整路徑或是路徑開頭的一部分，只要網頁路徑符合任何一個Disallow，則表示這個路徑會被略過。如果Disallow的設定是空白字串，則表示所有的路徑都可以趴。注意路徑是case-sensitive，兩個路徑不能寫在同一個Disallow的設定中，另外也不能用萬用字符(*)來做設定。
+p
+  | 上面的規則主要是用來支援一般的趴網頁機器人，Google的趴網頁機器人則可使用更多的設定(例如Allow)來定義路徑，有興趣可參考這份文件：
+  a href="https://support.google.com/webmasters/answer/6062596?hl=zh-Hant&ref_topic=6061961" target="_blank"
+    | 使用 ROBOTS.TXT 封鎖網址 - 建立 robots.txt 檔案
+h2 robots meta
+p
+  | 如果你沒有server admin的權限，無法在對應的網址放置robots.txt，另一個作法就是在網頁的meta加入ROBOTS這個meta data。例如：
+pre
+  code
+    = '<meta name="robots" content="index, follow">'
+p
+  | 其中content可以是
+  code
+    | index/noindex, follow/nofollow
+  | 的組合。意義如下：
+ul
+  li
+    code
+      | index/noindex
+    | index表示趴網頁機器人應該要趴目前這個網頁，noindex表示應該要略過這個網頁。
+  li
+    code
+      | follow/nofollow
+    | follow表示趴網頁機器人應該要在趴完這個網頁之後繼續訪問這個網頁所有的連結，nofollow則表示略過這個網頁下的所有連結。
+h1 Refs
+ul
+  li
+    a href="http://www.robotstxt.org/" target="_blank"
+      | robotstxt.org
+  li
+    a href="http://tools.seobook.com/robots-txt/" target="_blank"
+      | seobook - Robots.txt Tutorial
+  li
+    a href="http://www.searchenginejournal.com/robotstxt-4-things-you-should-know/7292/" target="_blank"
+      | Robots.txt : 4 Things You Should Know
+  li
+    a href="http://www.w3.org/TR/html4/appendix/notes.html#h-B.4.1.1" target="_blank"
+      | w3c有關robots.txt的文件
+  li
+    a href="https://support.google.com/webmasters/answer/6062608?hl=zh-Hant&ref_topic=6061961&rd=1" target="_blank"
+      | google提供的robots.txt文件
+  li
+    a href="http://www.bing.com/webmaster/help/how-to-create-a-robots-txt-file-cb7c31ec" target="_blank"
+      | bing提供的robots.txt文件
+  li
+    a href="http://www.timbabwe.com/2011/08/rails-robots-txt-customized-by-environment-automatically/" target="_blank"
+      | Rails - robots.txt Customized By Environment Automatically

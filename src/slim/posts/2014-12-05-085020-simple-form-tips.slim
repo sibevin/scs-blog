@@ -1,0 +1,17 @@
+.meta-data title SimpleForm雜筆記本
+.meta-data description SimpleForm雜筆記本
+.meta-data datetime 2014-12-05 08:50:20
+.meta-data tags rails,simple-form,tips
+.meta-data category coding
+.meta-data link simple-form-tips
+.meta-data file 2014-12-05-085020-simple-form-tips
+.meta-data template post
+.meta-data end
+
+h2 如何使用min, max等限制input的範圍
+pre
+  code.hljs
+    | <%= simple_form_for @pet do |f| %>
+        <%= f.input :age, input_html: { min: '1' } %>
+        <%= f.button :submit %>
+      <% end %>

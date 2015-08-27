@@ -1,0 +1,94 @@
+.meta-data title ruby處理unique物件
+.meta-data description ruby處理unique物件
+.meta-data datetime 2014-12-04 10:59:14
+.meta-data tags ruby
+.meta-data category coding
+.meta-data link ruby-check-unique-use-set-instead-of-array
+.meta-data file 2014-12-04-105914-ruby-check-unique-use-set-instead-of-array
+.meta-data template post
+.meta-data end
+
+p
+  | 要建立一連串unique的字串，直覺上可以用array將建立過的字串存起來，再用
+  code
+    | include?
+  | 來判斷新產生的字串有沒有被建立過：
+pre
+  code.ruby
+    | n = 10000
+      created_tokens = []
+      while created_tokens.size < n
+        token = RandomToken.gen(10)
+        if created_tokens.include?(token)
+          next
+        else
+          created_tokens << token
+        end
+      end
+      results = created_tokens
+  p
+    | 不過這個方法速度會非常的慢。有一個技巧是使用hash的key一定是unique的特性來判斷，程式如下：
+pre
+  code.ruby
+    | n = 10000
+      created_tokens_hash = {}
+      while created_tokens_hash.size < n
+        token = RandomToken.gen(10)
+        created_tokens_hash[token] = true
+      end
+      results = created_tokens_hash.keys
+  p
+    | 這速度很明顯的大幅提升，不過用hash看起來就像是用hack的方式感覺不是很乾淨，尤其是不會用到的value塞什麼都怪怪的。最好的做法就是用set了：
+pre
+  code.ruby
+    | n = 10000
+      created_tokens_set = Set.new
+      while created_tokens_set.size < n
+        token = RandomToken.gen(10)
+        created_tokens_set << token
+      end
+      results = created_tokens_set.to_a
+  p
+    | 效能測試如下：
+pre
+  code.ruby
+    | require 'benchmark'
+      require 'set'
+      require 'random_token'
+      n = 10000
+      Benchmark.bm(7) do |x|
+        x.report("array:") do
+          created_tokens = []
+          while created_tokens.size < n
+            token = RandomToken.gen(10)
+            if created_tokens.include?(token)
+              next
+            else
+              created_tokens << token
+            end
+          end
+          results = created_tokens
+        end
+        x.report("hash:") do
+          created_tokens_hash = {}
+          while created_tokens_hash.size < n
+            token = RandomToken.gen(10)
+            created_tokens_hash[token] = true
+          end
+          results = created_tokens_hash.keys
+        end
+        x.report("set:") do
+          created_tokens_set = Set.new
+          while created_tokens_set.size < n
+            token = RandomToken.gen(10)
+            created_tokens_set << token
+          end
+          results = created_tokens_set.to_a
+        end
+      end
+pre
+  code
+    |               user     system      total        real
+      array:    8.860000   0.050000   8.910000 (  9.112402)
+      hash:     2.030000   0.010000   2.040000 (  2.062945)
+      set:      2.000000   0.000000   2.000000 (  2.037125)

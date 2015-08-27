@@ -1,0 +1,45 @@
+.meta-data title rails的partial應該放哪裡
+.meta-data description rails的partial應該放哪裡
+.meta-data datetime 2015-01-13 09:07:16
+.meta-data tags rails_view
+.meta-data category coding
+.meta-data link rails-where-to-put-partials
+.meta-data file 2015-01-13-090716-rails-where-to-put-partials
+.meta-data template post
+.meta-data end
+
+h2 共用在某個controller底下所有的view，就放在對應這個controller的view目錄下
+p
+  | 例如用在
+  code
+    | views/users/index.html.slim
+  | 與
+  code
+    | views/users/show.html.slim
+  | 的menu，可以放在
+  code
+    | views/users/_menu.html.slim
+  | ，在index或show中就能用
+  code
+    | render "menu"
+  | 來render menu partial。
+h2 共用在不同controller底下的view，就放在views/application的目錄中
+p
+  | 例如用在
+  code
+    | views/users/index.html.slim
+  | 與
+  code
+    | views/admins/show.html.slim
+  | 的menu，可以放在
+  code
+    | views/application/_menu.html.slim
+  | ，在users/index或admins/show中就能用
+  code
+    | render "menu"
+  | 來render menu partial。
+h1 Refs
+ul
+  li
+    a href="http://robots.thoughtbot.com/directory-for-shared-partials-in-rails" target="_blank"
+      | Directory for shared partials in Rails -  by Dan Croak

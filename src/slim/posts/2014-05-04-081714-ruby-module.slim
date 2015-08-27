@@ -1,0 +1,268 @@
+.meta-data title ruby module的用法
+.meta-data description ruby module的用法
+.meta-data datetime 2014-05-04 08:17:14
+.meta-data tags ruby
+.meta-data category coding
+.meta-data link ruby-module
+.meta-data file 2014-05-04-081714-ruby-module
+.meta-data template post
+.meta-data end
+
+p
+  | module與class最大的差別就是module沒有繼承概念，也就是沒有子module，另外module也不能產生instance。那module可以用來做什麼呢？
+h1 用途1：做為namespace
+p
+  | 我們可以定義一些類似的class method(也就是用self.定義的method)到同一個module中，要使用這些method只能透過module來呼叫。
+pre
+  code.hljs
+    | module A
+        A_CONST = 1
+        def self.a_method
+          p 'a_method'
+        end
+
+        class << self
+          def b1_method
+            p 'b1_method'
+          end
+
+          def b2_method
+            p 'b2_method'
+          end
+        end
+
+        def self.c_method
+          a_method
+        end
+
+        def self.d_method
+          p 'd_method'
+        end
+        private_class_method :d_method
+
+        def self.e_method
+          d_method
+        end
+
+        def f_method
+          f_method
+        end
+      end
+
+      p A::A_CONST # *1
+      A.a_method   # *2
+      A.b1_method  # *3
+      A.b2_method  # *3
+      A.c_method   # *4
+      #A.d_method  # *5 # private method `d_method' called for A:Module (NoMethodError)
+      A.e_method   # *6
+      #A.f_method  # *7 # undefined method `f_method' for A:Module (NoMethodError)
+ul
+  li
+    | 1. 可以在module中定義常數，用`::`來取用。
+  li
+    | 2. 可以在module中定義class method(也就是`self.`的方式定義method)，用`.`來呼叫。
+  li
+    | 3. 另一種宣告class method的方式，這樣不用定義每一個method時都要指定`self.`。
+  li
+    | 4. 在module中可以直接呼叫它的class method。
+  li
+    | 5. 可以使用`private_class_method`讓class method變成private，這時候這個method就不能從module的外部呼叫。
+  li
+    | 6. 可以用implicit的方式在module內呼叫private class method。
+  li
+    | 7. 不能直接呼叫module內定義的instance method。
+h1 用途2：mixin
+p
+  | mixin的meta-programming一個重要的技巧，也就是在不修改原本class的定義的原則下，新增或是改變class的method。
+h2 Include
+p
+  | 第一種mixin的方法是在class中include module來加入新的method(注意這裡就不是class method而是一般的instance method)：
+pre
+  code.hljs
+    | class A
+        def a_method
+          p 'a_method'
+        end
+      end
+
+      module B
+        def b_method
+          p 'b_method'
+        end
+      end
+
+      p A.ancestors # [A, Object, Kernel, BasicObject] # *1
+
+      class A
+        include B
+      end
+
+      p A.ancestors # [A, B, Object, Kernel, BasicObject] # *2
+      a = A.new
+      a.a_method # "a_method"
+      a.b_method # "b_method" # *3
+ul
+  li
+    | 1. 在還沒include module B之前，
+    code A.ancestors
+    | 的結果為
+    code
+      | [A, Object, Kernel, BasicObject]
+    | 。
+  li
+    | 2. 在reopen class A並將module B include到A之中後，
+    code A.ancestors
+    | 的結果為
+    code
+      | [A, B, Object, Kernel, BasicObject]
+    | 。
+  li
+    | 3. include B之後，A就可以呼叫module B的method。
+p
+  | 你可以include多個module，當module之中有相同名稱的method時，後include會蓋掉前include的method：
+pre
+  code.hljs
+    | class A
+        def a_method
+          p 'a_method'
+        end
+      end
+
+      module B
+        def b_method
+          p 'b_method_in_B'
+        end
+      end
+
+      module C
+        def b_method
+          p 'b_method_in_C'
+        end
+      end
+
+      p A.ancestors # [A, Object, Kernel, BasicObject]
+
+      class A
+        include B
+        include C
+      end
+
+      p A.ancestors # [A, C, B, Object, Kernel, BasicObject] # *1
+      a = A.new
+      a.a_method # "a_method"
+      a.b_method # "b_method_in_C" # *2
+ul
+  li
+    | 1. 在reopen class A並將module B與module C include到A之中後，
+    code A.ancestors
+    | 的結果為
+    code
+      | [A, C, B, Object, Kernel, BasicObject]
+    | ，如果有相同名稱的method同時存在在不同的module，會根據ancestors的結果，左邊會蓋掉右邊的method，也就是C會蓋掉B的method。
+  li
+    | 2. 因為module C是後include，所以
+    code
+      | a.b_method
+    | 會呼叫module C的
+    code
+      | b_method
+    | 。
+p
+  | 可是使用include會遇到一個問題，也就是如果想要override的是class的method，用include的方式會失敗：
+pre
+  code.hljs
+    | class A
+        def a_method
+          p 'a_method_in_A'
+        end
+      end
+
+      module B
+        def a_method
+          p 'a_method_in_B'
+        end
+      end
+
+      class A
+        include B
+      end
+
+      p A.ancestors # [A, B, Object, Kernel, BasicObject] # *1
+      a = A.new
+      a.a_method # "a_method_in_A" # *2
+ul
+  li
+    | 1. 在reopen class A並將module B include到A之中後，
+    code A.ancestors
+    | 的結果為
+    code
+      | [A, B, Object, Kernel, BasicObject]
+    | 。用include的方式，被include的module都會在原本class的右邊，也就是include的module是無法蓋掉原本class相同名稱的method。
+  li
+    | 2. 
+    code a.a_method
+    | 最後還是會呼叫定義在class A的
+    code a_method
+    | 。
+h2 Prepend
+p
+    | 為了解決上面的問題，在ruby 2.0之後導入了另一種mixin module的方式，叫作prepend。下面的例子只將include改成prepend，但就可以達到利用module來修改class的method。
+pre
+  code.hljs
+    | class A
+        def a_method
+          p 'a_method_in_A'
+        end
+      end
+
+      module B
+        def a_method
+          p 'a_method_in_B'
+        end
+      end
+
+      class A
+        prepend B
+      end
+
+      p A.ancestors # [B, A, Object, Kernel, BasicObject] # *1
+      a = A.new
+      a.a_method # "a_method_in_B" # *2
+ul
+  li
+    | 1. 在reopen class A並將module B prepend到A之中後，
+    code A.ancestors
+    | 的結果為
+    code
+      | [B, A, Object, Kernel, BasicObject]
+    | 。用prepend的方式，被pprepend的module都會在原本class的左邊，也就是prepend的module會蓋掉原本class相同名稱的method。
+  li
+    | 2. 
+    code a.a_method
+    | 最後會呼叫定義在module B的
+    code a_method
+    | 。
+p
+  | 最後，你可以在module中的method加上public, protected與private這些visiablity(預設是public)，當module被mixin到class中，就相當於將public, protected與private的method加入到class中。
+pre
+  code.hljs
+    | module B
+        public
+
+        def public_method
+          p 'public_method'
+        end
+
+        protected
+
+        def protected_method
+          p 'protected_method'
+        end
+
+        private
+
+        def private_method
+          p 'private_method'
+        end
+      end

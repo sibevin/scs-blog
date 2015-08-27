@@ -1,0 +1,242 @@
+.meta-data title rails中使用select2來實作標籤選取功能
+.meta-data description rails中使用select2來實作標籤選取功能
+.meta-data datetime 2015-01-14 15:46:01
+.meta-data tags rails
+.meta-data category coding
+.meta-data link rails-implement-tag-selector-with-select2
+.meta-data file 2015-01-14-154601-rails-implement-tag-selector-with-select2
+.meta-data template post
+.meta-data end
+
+h1 需求
+ul
+  li
+    | 當輸入文字時可以自動搜尋包含輸入文字的標籤。
+  li
+    | 當輸入不存在的標籤時，可以在文章儲存時自動新增標籤。
+h1 How
+p
+  | 1. 加入
+  code
+    | select2-rails
+  | gem。
+pre
+  code.ruby.hljs
+    | gem 'select2-rails'
+p
+  | 這裡用的版本是3.5.9.1。
+p
+  | 2. 在
+  code
+    | app/assets/javascripts/application.js
+  | 中require
+  code
+    | select2
+  | 與
+  code
+    | select2_locale_zh-TW
+  | 。
+pre
+  code.js.hljs
+    | //= require select2
+      //= require select2_locale_zh-TW
+p
+  | 3. 實作API讓js可以根據關鍵字查詢標籤。
+p
+  code
+    | config/routes.rb
+pre
+  code.ruby.hljs
+    | resources :tags, only: [:index]
+p
+  code
+    | app/controllers/tags_controller.rb
+pre
+  code.ruby.hljs
+    | class TagsController < ApplicationController
+        def index
+          @tags = Tag.where("name like ?", "%\#{params[:q]}%").select("tags.id, tags.name")
+          render json: { tags: @tags.map { |t| { id: t.id, text: t.name } } }
+        end
+      end
+p
+  | 這個時候呼叫
+  code
+    | /tags?q=時
+  | ，就會取得下面的json
+pre
+  code.json.hljs
+    | {"tags":[{"id":385,"text":"時間管理"},{"id":586,"text":"線上即時分析"},{"id":996,"text":"贏時代"},{"id":1238,"text":"時尚飾品"}]}
+p
+  | 4. 修改
+  code
+    | BlogPost
+  | 與
+  code
+    | Tag
+  | model，讓儲存文章時，若發現有新tag也會自動建立新的tag資料。
+p
+  code
+    | app/models/blog_post.rb
+pre
+  code.ruby.hljs
+    | class BlogPost < ActiveRecord::Base
+        # ...
+        has_many :blog_tag_maps, dependent: :destroy
+        has_many :tags, through: :blog_tag_maps
+
+        attr_reader :tag_tokens
+
+        def tag_tokens=(tokens)
+          self.tag_ids = Tag.get_ids_from_tokens(tokens)
+        end
+        # ...
+      end
+p
+  code
+    | app/models/tag.rb
+pre
+  code.ruby.hljs
+    | class Tag < ActiveRecord::Base
+        # ...
+        has_many :blog_posts, through: :blog_tag_maps
+
+        def self.get_ids_from_tokens(tokens)
+          tokens.gsub!(/<<<(.+?)>>>/) { create!(name: $1.capitalize).id }
+          tokens.split(',')
+        end
+        # ...
+      end
+p
+  | 原理是用tag_token來處理tag_ids。tag_tokens會長的像
+  code
+    | 199,13764,296,<<<時間分配>>>
+  | 這個樣子。如果標籤存在，它在tag_tokens中就會是id，如果不存在，就會是<<<新標籤>>>。新標籤在
+  code
+    | Tag.get_ids_from_tokens
+  | 中被建立並換成id。
+p
+  | 5. 在BlogPost的controller中處理tag。
+pre
+  code.ruby.hljs
+    | class BlogPostsController < ApplicationController
+        #...
+        before_action :set_blog_post, only: [:show, :edit, :update]
+
+        def new
+          @blog_post = BlogPost.new()
+          @tags = []
+        end
+
+        def edit
+          @tags = @blog_post.tags.select("tags.id, tags.name")
+        end
+
+        def update
+          if @blog_post.update(blog_post_params)
+            flash[:notice] = "成功修改文章"
+            redirect_to blog_posts_path
+          else
+            flash[:notice] = "修改失敗"
+            render action: 'edit'
+          end
+        end
+
+        # ...
+
+        private
+
+        def set_blog_post
+          @blog_post = BlogPost.find(params[:id])
+        end
+
+        def blog_post_params
+          params.require(:blog_post).permit(:title, :content, :tag_tokens)
+        end
+      end
+p
+  | 記得在permit中加入
+  code
+    | tag_tokens
+  | 。
+p
+  | 6. 在edit view的form中加入tag_tokens的input。
+p
+  code
+    | app/views/blog_posts/edit.html.erb
+pre
+  code.ruby.hljs
+    | <%= f.input :tag_tokens, input_html: { class: "tag-selector", :"data-init-tag" => @tags.map { |t| "\#{t.id}==\#{t.name}" }.join(','), value: @tags.map { |t| t.id }.join(',') } %>
+  p
+    | 生成的input會長的像下面這個樣子：
+pre
+  code.html.hljs
+    = '<input class="string optional tag-selector form-control select2-offscreen" data-init-tag="199==MBA價值,13764==低頭族,296==企劃" id="blog_post_tag_tokens" name="blog_post[tag_tokens]" type="text" value="199,13764,296" tabindex="-1">'
+  p
+    | 這裡使用data-init-tag來儲存預設的標籤id與name，value則是用來儲存標籤id。要注意的是value一定要有值，不然光使用data-init-tag無法trigger select2的initSelection來顯示一開始的標籤。
+  p
+    | 7. 設定select2的js。
+pre
+  code.js.hljs
+    | $('.tag-selector').select2({
+          tags: true,
+          ajax: {
+              url: "/tags",
+              dataType: 'json',
+              quietMillis: 1000,
+              data: function (term, page) {
+                  return {
+                      q: term,
+                  };
+              },
+              results: function (data, page) {
+                  return { results: data.tags };
+              },
+              cache: true
+          },
+          minimumInputLength: 1,
+          createSearchChoice: function(term, data) {
+              if (data.length === 0) {
+                  return {
+                      id: "<<<" + term + ">>>",
+                      text: term
+                  };
+              } else {
+                  return data;
+              }
+          },
+          initSelection: function(element, callback) {
+              var data = [];
+              var tags = element.data("init-tag").split(",")
+              tags.forEach(function(tag) {
+                  var tag_arr = tag.split("==")
+                  var tag_name = tag_arr.slice(1).join("==")
+                  data.push({id: tag_arr[0], text: tag_name});
+              });
+              callback(data);
+          }
+      });
+p
+  | 其中的設定細節請參考select2的文件，這裡只大概說明一下。
+  code
+    | tags: true
+  | 就是讓select2採用標籤方式顯示，同時可以支援新增tag。
+  code
+    | ajax
+  | 用來設定如何呼叫API來取得標籤。
+  code
+    | createSearchChoice
+  | 用來設定怎麼插入一個新的標籤，如果選擇的是一個已經存在的標籤，就直接從選單的data取出id與text，但如果是一個新的標籤，id的地方就會用<<<新標籤>>>取代。
+  code
+    | initSelection
+  | 用來處理預設值，基本上是從input的data-init-tag取得並塞到data中。
+p
+  | 8. 完成。
+h1 Refs
+ul
+  li
+    a href="https://select2.github.io/" target="_blank"
+      | Select2 - The jQuery replacement for select boxes
+  li
+    a href="https://coderwall.com/p/d8kcsw/many-to-many-in-rails-tagging-with-select2" target="_blank"
+      | Many to many in Rails: Tagging with Select2 - by Sebastián González

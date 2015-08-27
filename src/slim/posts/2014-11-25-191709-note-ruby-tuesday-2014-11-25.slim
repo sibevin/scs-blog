@@ -1,0 +1,214 @@
+.meta-data title 筆記 - Ruby Tuesday 2014.11.25
+.meta-data description 筆記 - Ruby Tuesday 2014.11.25
+.meta-data datetime 2014-11-25 19:17:09
+.meta-data tags ruby,rails
+.meta-data category coding
+.meta-data link note-ruby-tuesday-2014-11-25
+.meta-data file 2014-11-25-191709-note-ruby-tuesday-2014-11-25
+.meta-data template post
+.meta-data end
+
+h1 紅寶石鐵道漫遊指南 - Juanito Fatas
+h2 Ref
+p
+  a href="http://www.slideshare.net/katehuang0320/ss-42007998" target="_blank"
+    | slideshare - 紅寶石鐵道漫遊指南
+ul
+  li
+    | ruby stblib - find twitter
+  li
+    | ruby-install - a tool to install ruby
+  li
+    | chruby - a tool to change ruby version
+  li
+    | .ruby-version
+  li
+    | gem: --no-nodoc
+  li
+    | Best Gems
+  li
+    | micro.rb
+  li
+    | bundler audit - gem 安檢
+  li
+    | brakeman - rails gem 安檢
+  li
+    | rails mailing list
+  li
+    | code of conduct - COC
+  li
+    | ATOM - editor
+  li
+    | ruby/rails style guide
+  li
+    | thor - command line
+  li
+    | Active Record - Object Relation Mapping
+  li
+    | mina / mamiya
+  li
+    | ruby association, seattle.rb, asakusa.rb
+  li
+    | ruby rogues parley, ruby china, ruby weekly, ruby daily, this week in rails, qiita
+  li
+    | ruby 5, ruby rogues, rebuild FM, teahour.fm
+  li
+    | upcase, pragmatic studio
+  li
+    | confreaks - conf video
+  li
+    | ruby tapas, gorails, rails tv, rails mania
+  li
+    | reddot
+  li
+    | ruby conferences, lanyrd
+  li
+    | thoughtbot, platoformatec, hashrocket, intridea, pivotal labs
+  li
+    | ruby heros
+  li
+    | friday hug
+  li
+    | arel - sql virtual
+  li
+    | railties - combination of rails膠水
+  li
+    | spring
+  li
+    | bourbon neat bitters
+  li
+    | ligature symbols
+  li
+    | high voltage
+  li
+    | devise, clearance, homebrew
+  li
+    | cancancan, pundit
+  li
+    | acrrierwave, fog aws-sdk
+  li
+    | elasticsearch, solr
+  li
+    | local_time, jquery-timeago
+  li
+    | html-pipeline
+  li
+    | dotenv , figaro
+  li
+    | acitve job, sidekiq, delayed_job
+  li
+    | seo - meta-tags, firendly_id
+  li
+    | act_as_*
+  li
+    | shoulda, email_spec, capybara, webmock
+  li
+    | cleaner - database_cleaner/rewinder
+  li
+    | rack/guard-livereload
+  li
+    | letter_opener
+  li
+    | bullet
+  li
+    | binding_of_caller, better_errors
+  li
+    | pry-rails, pry-byebug
+  li
+    | timecop
+  li
+    | jazz_case
+  li
+    | discourse
+  li
+    | heroku, aws, openshift, shelly cloud, trucker.io, anynines, engine yard
+  li
+    | rubocop, hound, code climate, pullreview, refactorcop, sideci
+  li
+    | new relic, scout, keen.io
+  li
+    | rollbar, runtimeerror.dot
+  li
+    | errbit
+  li
+    | mailgun
+  li
+    | uptime robot, pingdom
+  li
+    | formkeep, typeform, wufoo
+  li
+    | segment, intercom, customer.io, uservoice
+  li
+    | akamai, edgeecase
+  li
+    | route 52, dnsimple, namecheap, hover
+  li
+    | paypal, stripe
+  li
+    | gemnasium - gem check
+  li
+    | railsdiff.org
+  li
+    | cloudharmony
+  li
+    | tachikoma.io - update gem
+  li
+    | hello ruby, learn ruby the hard way, introduction to progarmming with ruby
+  li
+    | ruby 基礎教程
+  li
+    | practival ood in ruby, confident ruby, ruby under a microscope
+  li
+    | rails crash, trailblazer, crafting rails 4 applications
+  li
+    | rubyjobs, 66k jobs, 67k jobs, we work remotely, toptal, top ruby jobs
+  li
+    | open source, open source rails, code triage, docs doctor
+  li
+    | badges
+  li
+    | emoji - twemoji, megamoji, emojisaurus
+  li
+    | speaker deck
+  li
+    | explore github
+h1 log aggregation - fluentd + elasticsearch + kibana - Ash@hSATAC
+ul
+  li
+    | log files across servers, grep, autoscaling -> lost log, keep
+  li
+    | fluentd - data collector, simple, flexible
+  li
+    | fluentd instace is a node(server, client or server+client)
+  li
+    | dataflow - input/output
+  li
+    | input - in_forward, in_http, in_tail, in_exec, in_syslog
+  li
+    | output - out_file, out_foward, out_exec, out_copy(fork two ways), out_stdout, out_s3
+  li
+    | buffered output - delay over a period of time or over a fixedd size, for large traffic
+  li
+    | time sliced - daliy, hourly, ...
+  li
+    | elasticsearch - distributed restful search and analytics
+  li
+    | kibana - es frontend, realtime query frontend, data visualizer
+  li
+    | kiban - query & filter, panels(charts)
+  li
+    | rails & fluentd integration
+  li
+    | official doc - rails = lograge gem + act-fluent-logger-rails, fluentld = fluent-plugin-parser + fluent-plugin-elasticsearch
+  li
+    | x: lograge is hidding logs, act-fluent-logger-rails crasheds puma, JSON encode / decode
+  li
+    | solution 2 - act-fluent-logger-rails + unicore
+  li
+    | x: log is not search friendly, unicorn return 404 when massive requests
+  li
+    | logging should not effect the application
+  li
+    | solution 3 - don't use act-fluent-logger-rails, keep lograge, using logstash to format, logstash-logger to converts other logs to logstash format, output to production.log
+  li
+    | fluentd - tail production.log with format jsson, forward to staticon fluentd

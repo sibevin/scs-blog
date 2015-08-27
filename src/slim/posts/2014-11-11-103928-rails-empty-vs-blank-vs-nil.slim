@@ -1,0 +1,214 @@
+.meta-data title empty？blank？nil？傻傻分不清楚
+.meta-data description empty？blank？nil？傻傻分不清楚
+.meta-data datetime 2014-11-11 10:39:28
+.meta-data tags ruby,rails
+.meta-data category coding
+.meta-data link rails-empty-vs-blank-vs-nil
+.meta-data file 2014-11-11-103928-rails-empty-vs-blank-vs-nil
+.meta-data template post
+.meta-data end
+
+table.pt-table
+  thead
+    tr
+      td
+        | Method
+      td
+        | nil?
+      td
+        | if ()
+      td
+        | empty?
+      td
+        | blank?
+      td
+        | present?(!blank?)
+      td
+        | any?
+  tbody
+    tr
+      td
+        | Scope
+      td colspan="3"
+        | ruby
+      td colspan="3"
+        | rails only
+    tr
+      td
+        | Object
+      td colspan="2"
+        | all
+      td
+        | String, Array, Hash
+      td colspan="2"
+        | all
+      td
+        | Enumerable
+    tr
+      td
+        | nil
+      td.text-blue
+        | true
+      td.text-red
+        | false
+      td.text-grey
+        | NoMethodError
+      td.text-blue
+        | true
+      td.text-red
+        | false
+      td.text-grey
+        | NoMethodError
+    tr
+      td
+        | false
+      td.text-red
+        | false
+      td.text-red
+        | false
+      td.text-grey
+        | NoMethodError
+      td.text-blue
+        | true
+      td.text-red
+        | false
+      td.text-grey
+        | NoMethodError
+    tr
+      td
+        | true
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-grey
+        | NoMethodError
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-grey
+        | NoMethodError
+    tr
+      td
+        | 0
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-grey
+        | NoMethodError
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-grey
+        | NoMethodError
+    tr
+      td
+        | 1
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-grey
+        | NoMethodError
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-grey
+        | NoMethodError
+    tr
+      td
+        | ""
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-blue
+        | true
+      td.text-blue
+        | true
+      td.text-red
+        | false
+      td.text-grey
+        | NoMethodError
+    tr
+      td
+        | " "
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-red
+        | false
+      td.text-grey
+        | NoMethodError
+    tr
+      td
+        | []
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-blue
+        | true
+      td.text-blue
+        | true
+      td.text-red
+        | false
+      td.text-red
+        | false
+    tr
+      td
+        | [nil]
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-red
+        | false
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-red
+        | false
+    tr
+      td
+        | {}
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-blue
+        | true
+      td.text-blue
+        | true
+      td.text-red
+        | false
+      td.text-red
+        | false
+    tr
+      td
+        | { a:nil }
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-red
+        | false
+      td.text-red
+        | false
+      td.text-blue
+        | true
+      td.text-blue
+        | true
+h1 Refs
+a href="http://stackoverflow.com/a/20663389/232710" target="_blank"
+  | SO

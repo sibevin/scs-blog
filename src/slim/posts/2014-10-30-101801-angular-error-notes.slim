@@ -1,0 +1,41 @@
+.meta-data title AngularJS錯誤筆記
+.meta-data description AngularJS錯誤筆記
+.meta-data datetime 2014-10-30 10:18:01
+.meta-data tags angularjs
+.meta-data category coding
+.meta-data link angular-error-notes
+.meta-data file 2014-10-30-101801-angular-error-notes
+.meta-data template post
+.meta-data end
+
+h1 Error: error:unpr Unknown Provider
+h2 原因
+p
+  | 1. 最常出現在uglify之後的js檔，也就是原本都沒錯誤，但一uglify之後就出現問題了。主要的原因是dependence injection必須靠變數名稱來示別，而uglify的動作會將變數名稱改掉，就會出現這個錯誤。
+p
+  | 2. 另外就是
+  a href="https://docs.angularjs.org/error/$injector/unpr?p0=cProvider" target="_blank"
+    | 官方網站
+  | 提出來的幾種錯誤。
+h2 解法
+p
+  | 1. 使用明確的宣告方式，也就是：
+pre
+  code.hljs
+    | angular.module('MyApp').controller('MyController', function (MyService) {
+        // Do something with MyService
+      });
+p
+  | 要改成
+pre
+  code.hljs
+    | angular.module('MyApp').controller('MyController', ['MyService', function (MyService) {
+        // Do something with MyService
+      }]);
+p
+  | 特別注意的是，除了controller, directive, service之外，directive內的controller也要改成正確的宣告方式(這很容易漏掉)。
+p
+  | 2. 參見
+  a href="https://docs.angularjs.org/error/$injector/unpr?p0=cProvider" target="_blank"
+    | 官網
+  | 解法。

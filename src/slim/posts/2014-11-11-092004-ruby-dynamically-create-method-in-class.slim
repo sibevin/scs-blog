@@ -1,0 +1,43 @@
+.meta-data title 如何在ruby class中動態生成method？
+.meta-data description 如何在ruby class中動態生成method？
+.meta-data datetime 2014-11-11 09:20:04
+.meta-data tags ruby
+.meta-data category coding
+.meta-data link ruby-dynamically-create-method-in-class
+.meta-data file 2014-11-11-092004-ruby-dynamically-create-method-in-class
+.meta-data template post
+.meta-data end
+
+h1 動態生成instance method
+pre
+  code.hljs
+    | class A
+        METHODS = ["hello", "hi", "bye"]
+        METHODS.each do |m|
+          define_method("say_\#{m}") do |name|
+            return "\#{name}: \#{m}."
+          end
+        end
+      end
+
+      a = A.new
+      a.say_hello("Allen") # "Allen: hello."
+      a.say_hi("Bob") # "Bob: hi."
+      a.say_bye("Carlos") # "Carlos: bye."
+h1 動態生成class method
+pre
+  code.hljs
+    | class B
+        METHODS = ["hello", "hi", "bye"]
+        class << self
+          METHODS.each do |m|
+            define_method("say_\#{m}") do |name|
+              return "\#{name}: \#{m}."
+            end
+          end
+        end
+      end
+
+      B.say_hello("Allen") # "Allen: hello."
+      B.say_hi("Bob") # "Bob: hi."
+      B.say_bye("Carlos") # "Carlos: bye."

@@ -1,0 +1,312 @@
+.meta-data title rails 讀書會 - POODR - Ch3 管理相依性
+.meta-data datetime 2015-08-07 08:54:24
+.meta-data tags ruby,ooad,rails_study-group,test
+.meta-data category coding
+.meta-data link ruby-poodr-ch3-managing-dependencies
+.meta-data file 2015-08-07-085424-ruby-poodr-ch3-managing-dependencies
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+p
+  | 物件導向能有效的解決問題是因為它反應了真實世界的模型，而就如同現實中的物件，它們之間不可避免的一定會產生一些互動。
+p
+  | class的method可以區分成三類：
+ul
+  li
+    | class本身實作的method
+  li
+    | class經由繼承得知的method
+  li
+    | class呼叫其它class實作的method
+p
+  | 設計良好的物件應該都要遵循single responsibility，因此很自然的必須互相合作來完成複雜的問題，合作就必須知道彼此，知道彼此就會產生相依性。
+
+h1 了解相依性
+p
+  | 相依性的定義：一個物件相依於另一個物件表示當其中一個物件改變時，另一個物件可能會被強迫也跟著改變。
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, :rim, :tire
+        def initialize(chainring, cog, rim, tire)
+          @chainring = chainring
+          @cog       = cog
+          @rim       = rim
+          @tire      = tire
+        end
+
+        def gear_inches
+          ratio * Wheel.new(rim, tire).diameter
+        end
+
+        def ratio
+          chainring / cog.to_f
+        end
+      # ...
+      end
+
+      class Wheel
+        attr_reader :rim, :tire
+        def initialize(rim, tire)
+          @rim = rim
+          @tire = tire
+        end
+
+        def diameter
+          rim + (tire * 2)
+        end
+      # ...
+      end
+
+      Gear.new(52, 11, 26, 1.5).gear_inches
+p
+  | 一個物件有相依性，表示它知道：
+p
+  ul
+    li
+      | 另一個物件的「存在」，也就是知道物件的名稱。
+    li
+      | 另一個物件的「接受訊息的名稱」。
+    li
+      | 另一個物件的「接受訊息」所需要的「參數」。
+    li
+      | 另一個物件的「接受訊息」所需要的「參數」的「順序」。
+p
+  | 以程式的講法，一個class有相依性，表示它知道：
+p
+  ul
+    li
+      | 另一個class的「存在」，也就是知道class的名稱。
+    li
+      | 另一個class的「method的名稱」。
+    li
+      | 另一個class的「method」所需要的「參數」。
+    li
+      | 另一個class的「method」所需要的「參數」的「順序」。
+p
+  | 上面的範例大部分的相依性其實都沒有必要，不必要的相依性會讓程式碼顯的不合理。因為小幅度的修改可能會被迫造成程式其它許多地方的修改，牽一髮而動全身。而這部分的設計挑戰，就是要盡可能的讓相依性減少，一個類別應該只需要知道足夠做好事情的資訊就好。
+
+h2
+  | 物件之間的耦合 Coupling Between Objects (CBO)
+
+p
+  | 耦合 = 相依性，相依性越高 = 耦合程度就越高 = 多個物件會被視做同一個個體而很難切割或重複利用
+
+h2
+  | 其它的相依性 Other Dependencies
+
+p
+  ul
+    li
+      | 訊息鏈(message chaining)：一個物件知道其它物件知道什麼，也就是知道其它物件傳遞的訊息。
+      | - Ch 4. 建立有彈性的界面 (Creating Flexible Interface)
+pre
+  code
+    | user_phone = user.profile.contact.phone
+p
+  ul
+    li
+      | 程式與測試之間的相依性：當程式在做重構或是修改時，其對應的測試被迫也要跟著修改。
+      | - Ch 9 設計有效率的測試 (Design Cost-Effective Tests)
+
+h1
+  | 撰寫低耦合的程式 Writing loosely Coupled Code
+
+h2
+  | 插入相依性 Inject Dependencies
+
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, <span class="mk-red">:rim, :tire</span>
+        def initialize(chainring, cog, <span class="mk-red">rim, tire</span>)
+          @chainring = chainring
+          @cog       = cog
+          <span class="mk-red">@rim       = rim</span>
+          <span class="mk-red">@tire      = tire</span>
+        end
+
+        def gear_inches
+          ratio * <span class="mk-red">Wheel.new(rim, tire)</span>.diameter
+        end
+
+        def y_pos
+          <span class="mk-red">Wheel.new(rim, tire)</span>.diameter / 2
+        end
+
+        def ratio
+          chainring / cog.to_f
+        end
+      end
+
+      Gear.new(52, 11, 26, 1.5).gear_inches
+p
+  | 缺點：
+p
+  ul
+    li
+      | 當修改Wheel class的名稱時，Gear的gear_inches與y_pos也必須跟著修改。
+    li
+      | 輪子鋼圈大小(rim)與輪胎厚度(tire)只用在初始化Wheel的instance，Gear卻必須儲存這兩個變數，違反單一責任原則。
+p
+  | 改進方式：
+p
+  ul
+    li
+      | 將產生相依性的地方抽離出來，利用參數的方式插入到所需的class中。
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, <span class="mk-blue">:wheel</span>
+        def initialize(chainring, cog, <span class="mk-blue">wheel</span>)
+          @chainring = chainring
+          @cog       = cog
+          <span class="mk-blue">@wheel     = wheel</span>
+        end
+
+        def gear_inches
+          ratio * <span class="mk-blue">wheel</span>.diameter
+        end
+
+        def y_pos
+          <span class="mk-blue">wheel</span>.diameter / 2
+        end
+
+        def ratio
+          chainring / cog.to_f
+        end
+      end
+
+      Gear.new(52, 11, <span class="mk-blue">Wheel.new(26, 1.5)</span>).gear_inches
+p
+  | 優點：
+p
+  ul
+    li
+      | 上面的缺點都不見了。
+    li
+      | 增加了彈性，Gear在計算gear_inches的時候，不限定一定要是Wheel的instance，而是任何有diameter這個method的class都可以傳入，這就是一個鴨子型態的運用。 - Ch 5 使用鴨子型態減少開發成本 (Reduce Cost with Duck Typing)
+p
+  | 補充：
+p
+  ul
+    li
+      | instance的初始化一直是經典的相依性問題，在design pattern中，甚至有一個專門的Factory pattern就是為了要處理這類的問題。
+h2
+  | 隔離相依性 Isolate Dependencies
+p
+  | 假如很不幸的我們沒辦法更改Gear初始化的參數，一定要傳入chaining, cog, rim, tire這些值，換句話說在Gear中無法避免Wheel instance的建立，那要怎麼修改比較好？
+
+p
+  | 改進方式：
+p
+  ul
+    li
+      | 將instance的建立儲存在變數中，在其它地方改採用存取變數的方式來取代直接建立instance。
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, :rim, :tire, :wheel
+        def initialize(chainring, cog, <span class="mk-red">rim, tire</span>)
+          @chainring = chainring
+          @cog       = cog
+          <span class="mk-blue">@wheel     = Wheel.new(rim, tire)</span>
+        end
+
+        def gear_inches
+          ratio * wheel.diameter
+        end
+
+        def y_pos
+          wheel.diameter / 2
+        end
+
+        def ratio
+          chainring / cog.to_f
+        end
+      end
+
+      Gear.new(52, 11, 26, 1.5).gear_inches
+p
+  | 優點：
+p
+  ul
+    li
+      | 雖然無法完全除去Wheel的相依性，但減少了改變時需要修改的程度。例如當Wheel改名稱的時候，相較之前的版本必須每個Wheel.new的地方都要改，這個版本的Gear只需要改一個地方(第6行)。
+    li
+      | Wheel與Gear的gear_inches/y_pos method有做適當的隔離，gear_inches/y_pos只需要知道變數wheel，而不用知道Wheel這個class。
+p
+  | 進階版本：
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, :rim, :tire
+        def initialize(chainring, cog, rim, tire)
+          @chainring = chainring
+          @cog       = cog
+          @rim       = rim
+          @tire      = tire
+        end
+
+        def gear_inches
+          ratio * wheel.diameter
+        end
+
+        def y_pos
+          wheel.diameter / 2
+        end
+
+        def ratio
+          chainring / cog.to_f
+        end
+
+        <span class="mk-blue">def wheel</span>
+          <span class="mk-blue">@wheel ||= Wheel.new(rim, tire)</span>
+        <span class="mk-blue">end</span>
+      end
+
+      Gear.new(52, 11, 26, 1.5).gear_inches
+p
+  | 優點：
+p
+  ul
+    li
+      | 定義的wheel method讓Wheel instance建立時機點延後到呼叫gear_inches/y_pos時執行，也就是所謂的lazy loading的技巧，等到真的用到才做初始化。
+h2
+  | 隔離外部訊息 Isolate Vulnerable External Messages
+p
+  | 缺點：
+p
+  ul
+    li
+      | 上面的例子還有一個問題，gear_inches/y_pos仍知道wheel有diameter這個method，一旦diameter的名稱改了，gear_inches/y_pos也必須跟著改。
+p
+  | 改進方式：
+p
+  ul
+    li
+      | 將呼叫其它class method的部分隔離放在另一個method裡。
+pre
+  code
+    | class Gear
+        # ...
+        def gear_inches
+          ratio * <span class="mk-blue">diameter</span>
+        end
+
+        def y_pos
+          <span class="mk-blue">diameter</span> / 2
+        end
+
+        <span class="mk-blue">def diameter</span>
+          <span class="mk-blue">wheel.diameter</span>
+        <span class="mk-blue">end</span>
+        # ...
+      end
+p
+  | 優點：
+p
+  ul
+    li
+      | gear_inches/y_pos現在與wheel的diameter做適當的切割，當wheel.diameter修改時，只需要改Gear的diameter即可。

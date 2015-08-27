@@ -1,0 +1,37 @@
+.meta-data title rails使用turbolinks的時候，jquery不能動
+.meta-data description rails使用turbolinks的時候，jquery不能動
+.meta-data datetime 2015-01-02 17:32:56
+.meta-data tags rails
+.meta-data category coding
+.meta-data link rails-jquery-with-turbolinks
+.meta-data file 2015-01-02-173256-rails-jquery-with-turbolinks
+.meta-data template post
+.meta-data end
+
+h1 問題
+p
+  | rails使用turbolinks的時候，jquery不能動。
+h1 解法
+p
+  | 原因是turbolinks並不會重新載入整個頁面，所以
+  code
+    | $(document).ready
+  | 只會在第一次頁面被載入時跑過一次，之後都不會再執行。正確的做法是還要額外偵測
+  code
+    | page:load
+  | 這個event。
+pre
+  code
+    | ready = ->
+        # ...
+
+      $(document).ready(ready)
+      $(document).on('page:load', ready)
+h1 Ref
+ul
+  li
+    a href="http://railscasts.com/episodes/390-turbolinks" target="_blank"
+      | railscasts - #390 Turbolinks
+  li
+    a href="http://stackoverflow.com/questions/18769109/rails-4-turbo-link-prevents-jquery-scripts-from-working" target="_blank"
+      | SO - Rails 4 turbo-link prevents jQuery scripts from working

@@ -1,0 +1,69 @@
+.meta-data title 如何將顯示在view中變數值傳給AngularJS
+.meta-data description 如何將顯示在view中變數值傳給AngularJS
+.meta-data datetime 2014-11-01 11:59:58
+.meta-data tags angularjs,rails
+.meta-data category coding
+.meta-data link pass-variables-from-server-to-angular-with-view
+.meta-data file 2014-11-01-115958-pass-variables-from-server-to-angular-with-view
+.meta-data template post
+.meta-data end
+
+h1 問題
+p
+  | 在某些情況下，我們希望能將在view中使用的變數傳給AngularJS的變數來使用，舉個例子來說：
+pre
+  code.hljs
+    = '<form action="profile" method="put">' + "\n"
+    = '  <input type="text" name="name" value="<%= @profile.name%>" />' + "\n"
+    = '</form>'
+p
+  | 如果當
+  code
+    | @profile
+  | 有值的時候，我們希望可以將
+  code
+    | @profile.name
+  | 帶給input做為初始化的值。但用了ng-model之後，two-way binding的效果變成我們要將
+  code
+    | @profile.name
+  | 的值帶到AngularJS中
+  code
+    | $scope.profile.name
+  | 這個變數中。
+pre
+  code.hljs
+    = '<form action="profile" method="put">' + "\n"
+    = '  <input type="text" name="name" ng-model="profile.name" />' + "\n"
+    = '</form>'
+p
+  | 其實將變數從server傳給angular的方式很多，最標準的做法就是使用http API的方式讓angular去call，不過如果只是用在view中的變數，建API似乎有點太over了。另外原本render view就要一個requrest，使用API去取得變數又要另一個request，這樣就變成有點累贅。
+h1 解法
+p
+  | 找了許多的做法之後，看起來還是使用module constant最乾淨。步驟如下：
+p
+  | 1. 在rails controller中將@profile轉成json格式：
+pre
+  code.hljs
+    | @profile = profile.to_json
+p
+  | 2. 在rails view中加入javascript的程式碼，設定module constant：
+pre
+  code.hljs
+    = '<script type="text/javascript">angular.module("MyApp").constant("PROFILE_DATA", <%= @profile.html_safe %>)</script>'
+p
+  | 3. 在angular controller中使用module constant：
+pre
+  code.hljs
+    | angular.module("MyApp").controller "ProfileEditCtrl", [
+        '$scope', 'PROFILE_DATA'
+        ($scope,   PROFILE_DATA) ->
+        $scope.profile = PROFILE_DATA
+      ]
+h1 Refs
+ul
+  li
+    a href="http://www.mircozeiss.com/how-to-pass-javascript-variables-from-a-server-to-angular/" target="_blank"
+      | How to pass JavaScript variables from a server to AngularJS
+  li
+    a href="http://www.linkplugapp.com/a/224929" target="_blank"
+      | Frictionless data preloading in AngularJS

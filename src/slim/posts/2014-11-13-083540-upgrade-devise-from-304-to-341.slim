@@ -1,0 +1,174 @@
+.meta-data title 將devise從3.0.4升級到3.4.1遇到的問題
+.meta-data description 將devise從3.0.4升級到3.4.1遇到的問題
+.meta-data datetime 2014-11-13 08:35:40
+.meta-data tags rails,devise
+.meta-data category coding
+.meta-data link upgrade-devise-from-304-to-341
+.meta-data file 2014-11-13-083540-upgrade-devise-from-304-to-341
+.meta-data template post
+.meta-data end
+
+h1 confirmation, reset password與unlock token失效問題
+h2 問題
+p
+  | confirmation, reset password, unlock等需要token寄送的流程都會失效，使用者會看到「token 是無效的」。
+h2 原因
+p
+  | 這是3.1.0的backwards incompatible changes，新版的devise針對了token的部分做了加密流程，也就是在confirmation或reset password mail中帶的url的token並不會跟database中confirmation_token與reset_passwork_token一樣。所以舊版程式碼的mail將confirmation_token與reset_passwork_token直接帶入url就會造成「token無效問題」。
+p
+  | 下面是Devise
+  a href="https://github.com/plataformatec/devise/blob/master/CHANGELOG.md#310---2013-09-05" target="_blank"
+    | CHANGELOG
+  | 的說明：
+ul
+  li
+    | Do not store confirmation, unlock and reset password tokens directly in the database. This means tokens previously stored in the database are no longer valid. You can reenable this temporarily by setting config.allow_insecure_token_lookup = true in your configuration file. It is recommended to keep this configuration set to true just temporarily in your production servers only to aid migration
+  li
+    | The Devise mailer and its views were changed to explicitly receive a token argument as @token. You will need to update your mailers and re-copy the views to your application with rails g devise:views
+p
+  | 另外在
+  a href="http://blog.plataformatec.com.br/2013/08/devise-3-1-now-with-more-secure-defaults/" target="_blank"
+    | plataformatec的blog
+  | 也有提到：
+p Store digested tokens in the database
+p
+  | In previous versions, Devise stored the tokens for confirmation, reset password and unlock directly in the database. This meant that somebody with read access to the database could use such tokens to sign in as someone else by, for example, resetting their password.
+p
+  | In Devise 3.1, we store an encrypted token in the database and the actual token is sent only via e-mail to the user. This means that:
+ul
+  li
+    | Devise now requires a config.secret_key configuration. As soon as you boot your application under Devise 3.1, you will get an error with information about how to proceed;
+  li
+    | Every time the user asks a token to be resent, a new token will be generated;
+  li
+    | The Devise mailer now receives one extra token argument on each method. If you have customized the Devise mailer, you will have to update it. All mailers views also need to be updated to use @token, as shown here, instead of getting the token directly from the resource;
+  li
+    | Any previously stored token in the database will no longer work unless you set config.allow_insecure_token_lookup = true in your Devise initializer. We recomend users upgrading to set this option on production only for a couple days, allowing users that just requested a token to get their job done.
+h2 解法
+p
+  | 修正方式很簡單，只要將mail中的token改成新版mailer傳來的token即可。
+pre
+  code.hljs
+    | diff --git a/app/views/users/mailer/confirmation_instructions.html.erb b/app/views/users/mailer/confirmation_instructions.html.erb
+      index 2c84295..9d7d18e 100644
+      --- a/app/views/users/mailer/confirmation_instructions.html.erb
+      +++ b/app/views/users/mailer/confirmation_instructions.html.erb
+      @@ -3,7 +3,7 @@
+       <p><%= t('.instruction', :default => "You can confirm your account email through the link below:") %></p>
+       <p><%= link_to t('.action', :default => "Confirm my account"),
+      -    confirmation_url(@resource, :confirmation_token => @resource.confirmation_token) %></p>
+      +    confirmation_url(@resource, :confirmation_token => @token) %></p>
+       <p><%= t(".statement1") %></p>
+       <p><%= t(".statement2") %></p>
+      diff --git a/app/views/users/mailer/reset_password_instructions.html.erb b/app/views/users/mailer/reset_password_instructions.html.erb
+      index fa5bcec..8232037 100644
+      --- a/app/views/users/mailer/reset_password_instructions.html.erb
+      +++ b/app/views/users/mailer/reset_password_instructions.html.erb
+      @@ -2,7 +2,7 @@
+       <p><%= t('.instruction', :default => "Someone has requested a link to change your password, and you can do this through the link below.") %></p>
+      -<p><%= link_to t('.action', :default => "Change my password"), edit_password_url(@resource, :reset_password_token => @resource.reset_password_token) %></p>
+      +<p><%= link_to t('.action', :default => "Change my password"), edit_password_url(@resource, :reset_password_token => @token) %></p>
+       <p><%= t('.instruction_2') %></p>
+       <p><%= t('.instruction_3') %></p>
+      diff --git a/app/views/users/mailer/unlock_instructions.html.erb b/app/views/users/mailer/unlock_instructions.html.erb
+      index 8bd4887..54264d4 100644
+      --- a/app/views/users/mailer/unlock_instructions.html.erb
+      +++ b/app/views/users/mailer/unlock_instructions.html.erb
+      @@ -4,4 +4,4 @@
+       <p><%= t('.instruction', :default => "Click the link below to unlock your account:") %></p>
+      -<p><%= link_to t('.action', :default => "Unlock my account"), unlock_url(@resource, :unlock_token => @resource.unlock_token) %></p>
+      +<p><%= link_to t('.action', :default => "Unlock my account"), unlock_url(@resource, :unlock_token => @token) %></p>
+p
+  | 不過要注意的是，一旦更新完上production，原本已經存在的confirmation, reset password, unlock token都會失效。devise提供了一個設定
+  code
+    | config.allow_insecure_token_lookup = true
+  | 讓新版的devise可以延用舊的token，但文件上建議為了安全性的考量不要長期使用這個設定。
+p
+  | 比較好的做法是要將擁有這些token的帳號撈出來並重新寄送相對應的mail。下面是個簡單的rake來處理這個問題：
+pre
+  code.hljs
+    | namespace :devise_upgrade do
+        TEST_ACCOUNT = "test.example"
+        desc "Resent confirmation and reset password mail"
+        task resend: :environment do
+          if Rails.env.production?
+            puts "In production mode"
+            c_users = User.where(confirmed_at: nil)
+            p_users = User.where("reset_password_token IS NOT NULL")
+          else
+            # NOTE: should send email to test account only
+            puts "In \#{Rails.env} mode"
+            c_users = User.where("confirmed_at IS NULL and email LIKE \"%\#{TEST_ACCOUNT}%\"")
+            p_users = User.where("reset_password_token IS NOT NULL and email LIKE \"%\#{TEST_ACCOUNT}%\"")
+          end
+          puts "Found \#{c_users.count} accounts which need to send the confirmation mail"
+          c_users.each do |cu|
+            puts "Send to: \#{cu.email}"
+            cu.resend_confirmation_instructions
+          end
+          puts "Found \#{p_users.count} accounts which need to send the reset password mail:"
+          p_users.each do |pu|
+            puts "Send to: \#{pu.email}"
+            pu.send_reset_password_instructions
+          end
+        end
+      end
+h1 第一次產生的confirmation token會失效
+h2 問題
+p
+  | 升級成新版的devise之後，新註冊的user，在點選confirmation mail中的link做第一次confirmation時會失敗，但重寄confirmation mail後的第二次confirmation又會成功。
+h2 原因
+p
+  | 情況應該與這篇
+  a href="http://stackoverflow.com/q/21567625/232710" target="_blank"
+    | SO - Devise Confirmation invalid on first send
+  | 是相同的問題，上面的SO提到，如果在
+  code
+    | RegistrationsController#create
+  | 中update user object，就會讓confirmation_token被意外的重新產生，變成email裡的token會與database的token對不上。實際從log發現，我們的程式碼會在user的after_create中更新欄位，這個動作就會造成confirmation_token被重新更新。
+pre
+  code.hljs
+    | Started POST "/users" for 127.0.0.1 at 2014-11-12 17:16:02 +0800
+      Processing by Users::RegistrationsController#create as HTML
+        Parameters: {"utf8"=>"✓", "authenticity_token"=>"hbtvAY4Ds+jB/bVJsMl1LRk/P5Dr3bRskdt9EcI2aQE=", "user"=>{"email"=>"test@example.com", "name"=>"Kait007", "password"=>"[FILTERED]", "password_confirmation"=>"[FILTERED]", "referral_code"=>"", "is_policy_accepted"=>"1"}}
+         (0.2ms)  BEGIN
+        User Exists (0.9ms)  SELECT  1 AS one FROM `users`  WHERE `users`.`email` = BINARY 'test@example.com' LIMIT 1
+        User Load (25.0ms)  SELECT  `users`.* FROM `users`  WHERE `users`.`confirmation_token` = '0c5701d484010871605fb35a45bac7898e6461de2210783c092148c10e76df70'  ORDER BY `users`.`id` ASC LIMIT 1
+        SQL (3.6ms)  INSERT INTO `users` (`confirmation_sent_at`, `confirmation_token`, `created_at`, `email`, `encrypted_password`, `is_policy_accepted`, `name`, `referral_code`, `slug`, `updated_at`) VALUES ('2014-11-12 09:16:02', '<span class="mk-red">0c5701d484010871605fb35a45bac7898e6461de2210783c092148c10e76df70</span>', '2014-11-12 09:16:02', 'test@example.com', '$2a$10$jEKk/TiCe76nKB8iYmJN3.sj6Y.Y0AoUmaWr.q9vPVK5s40yW7/vu', 1, 'User 001', '', 'e533885908fd4943', '2014-11-12 09:16:02')
+        User Load (21.5ms)  SELECT  `users`.* FROM `users`  WHERE `users`.`confirmation_token` = '3fb4b1a2ecfb67a4e92d7b9777576da24547a7bf3ff9df13627ee5ab93908a34'  ORDER BY `users`.`id` ASC LIMIT 1
+        SQL (5.4ms)  UPDATE `users` SET `api_key` = '960d00f3-0684-4cdc-9e22-b147a7a84820', `api_secret` = 'c4221dc7-eede-4392-924b-0e4c063152b5', `confirmation_sent_at` = '2014-11-12 09:16:02', `confirmation_token` = '<span class="mk-red">3fb4b1a2ecfb67a4e92d7b9777576da24547a7bf3ff9df13627ee5ab93908a34</span>', `created_at` = '2014-11-12 09:16:02', `encrypted_password` = '$2a$10$jEKk/TiCe76nKB8iYmJN3.sj6Y.Y0AoUmaWr.q9vPVK5s40yW7/vu', `id` = 7508, `is_policy_accepted` = 1, `name` = 'User 001', `referral_code` = '', `slug` = 'e533885908fd4943', `unconfirmed_email` = 'test@example.com', `updated_at` = '2014-11-12 09:16:02' WHERE `users`.`id` = 7508
+         (0.7ms)  COMMIT
+      Redirected to http://localhost:1212/
+      Completed 302 Found in 191ms (ActiveRecord: 57.4ms)
+h2 解法
+p
+  | 將user model中的
+  code gen_key
+  | 從
+  code after_create
+  | 階段提前至
+  code before_create
+  | 的階段，並去掉
+  code gen_key
+  | 中的
+  code save
+  | (因為save會在create的時候做掉)。
+pre
+  code.hljs
+    | diff --git a/app/models/user.rb b/app/models/user.rb
+      index d25c05c..afcb63d 100644
+      --- a/app/models/user.rb
+      +++ b/app/models/user.rb
+      @@ -100,7 +100,7 @@ class User < ActiveRecord::Base
+         # callbacks
+      -  after_create :gen_api
+      +  before_create :gen_api
+       # other
+       def to_param
+
+      @@ -110,7 +110,7 @@ class User < ActiveRecord::Base
+         def gen_api
+           self.api_secret = SecureRandom.uuid
+           self.api_key = SecureRandom.uuid
+      -    self.save(validate: false)
+         end

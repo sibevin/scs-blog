@@ -1,0 +1,70 @@
+.meta-data title Simple Enum - 在model中加入enum的功能
+.meta-data description Simple Enum
+.meta-data datetime 2014-10-24 11:17:26
+.meta-data tags ruby_gem,rails_model
+.meta-data category coding
+.meta-data link gem-simple-enum
+.meta-data file 2014-10-24-111726-gem-simple-enum
+.meta-data template post
+.meta-data end
+
+ul
+  li
+    a href="http://lwe.github.io/simple_enum" target="_blank" Homepage
+  li
+    a href="https://github.com/lwe/simple_enum" target="_blank" Github
+  li
+    a href="https://rubygems.org/gems/simple_enum" target="_blank" RubyGem
+    code
+      |  (simple_enum)
+h1 What
+p
+  | 在model中加入enum的功能。
+h1 Why
+p
+  | 除了enum外，這個gem還提供了一些相對應的method可以使用。另外enum與column名稱的對應也比較簡單明瞭。
+h1 How
+p
+  | 摘錄至
+  a href="https://github.com/lwe/simple_enum/blob/master/README.md" target="_blank" README
+p
+  | 在model中加入enum的設定
+pre
+  code.hljs
+    | class User < ActiveRecord::Base
+        as_enum :gender, female: 1, male: 0
+      end
+  p
+    | 在migration中加入對應的column
+pre
+  code.hljs
+    | class AddGenderColumnToUser < ActiveRecord::Migration
+        def self.up
+          add_column :users, :gender_cd, :integer
+        end
+      def self.down
+        remove_column :users, :gender_cd
+      end
+    end
+p
+  | 內建有許多的method可以使用
+pre
+  code.hljs
+    | jane = User.new
+      jane.gender = :female
+      jane.female?   # => true
+      jane.male?     # => false
+      jane.gender    # => :female
+      jane.gender_cd # => 1
+      joe = User.new
+      joe.male!     # => :male
+      joe.gender    # => :male
+      joe.gender_cd # => 0
+      User.genders                            # => #<SimpleEnum::Enum:0x0....>
+      User.genders[:male]                     # => 0
+      User.genders.values_at(:male, :female)  # => [0, 1]
+      User.females                            # => #<ActiveRecord::Relation:0x0.....> (WHERE gender_cd = 1)
+p
+  | 更多細節的設定可以參考：
+  a href="https://github.com/lwe/simple_enum/blob/master/README.md#wait-theres-more" target="_blank"
+    | README - Wait, there's more!

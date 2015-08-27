@@ -1,0 +1,725 @@
+.meta-data title HTTP狀態碼
+.meta-data description HTTP狀態碼
+.meta-data datetime 2015-01-14 18:46:40
+.meta-data tags web,cheat-sheet
+.meta-data category coding
+.meta-data link http-status-code
+.meta-data file 2015-01-14-184640-http-status-code
+.meta-data template post
+table.pt-table
+  tbody
+    tr
+      td rowspan="2"
+        | http status code
+      td
+        | rails code
+      td
+        | 摘要
+    tr
+      td colspan="2"
+        | wiki描述
+    tr
+      td rowspan="2"
+        | 100
+      td
+        | :continue
+      td
+        | Client should continue with request
+    tr
+      td colspan="2"
+        | This means that the server has received the request headers, and that the client should proceed to send the request body (in the case of a request for which a body needs to be sent; for example, a POST request). If the request body is large, sending it to a server when a request has already been rejected based upon inappropriate headers is inefficient. To have a server check if the request could be accepted based on the request's headers alone, a client must send Expect: 100-continue as a header in its initial request and check if a 100 Continue status code is received in response before continuing (or receive 417 Expectation Failed and not continue).
+    tr
+      td rowspan="2"
+        | 101
+      td
+        | :switching_protocols
+      td
+        | Server is switching protocols
+    tr
+      td colspan="2"
+        | This means the requester has asked the server to switch protocols and the server is acknowledging that it will do so.
+    tr
+      td rowspan="2"
+        | 102
+      td
+        | :processing
+      td
+        | Server has received and is processing the request
+    tr
+      td colspan="2"
+        | As a WebDAV request may contain many sub-requests involving file operations, it may take a long time to complete the request. This code indicates that the server has received and is processing the request, but no response is available yet. This prevents the client from timing out and assuming the request was lost.
+    tr
+      td rowspan="2"
+        | 103
+      td
+        | 
+      td
+        | resume aborted PUT or POST requests
+    tr
+      td colspan="2"
+        | This code is used in the Resumable HTTP Requests Proposal to resume aborted PUT or POST requests.
+    tr
+      td rowspan="2"
+        | 122
+      td
+        | 
+      td
+        | URI is longer than a maximum of 2083 characters
+    tr
+      td colspan="2"
+        | This is a non-standard IE7-only code which means the URI is longer than a maximum of 2083 characters.
+    tr
+      td rowspan="2"
+        | 200
+      td
+        | :ok
+      td
+        | standard response for successful HTTP requests
+    tr
+      td colspan="2"
+        | Standard response for successful HTTP requests. The actual response will depend on the request method used. In a GET request, the response will contain an entity corresponding to the requested resource. In a POST request the response will contain an entity describing or containing the result of the action.
+    tr
+      td rowspan="2"
+        | 201
+      td
+        | :created
+      td
+        | request has been fulfilled;  new resource created
+    tr
+      td colspan="2"
+        | The request has been fulfilled and resulted in a new resource being created.
+    tr
+      td rowspan="2"
+        | 202
+      td
+        | :accepted
+      td
+        | request accepted, processing pending
+    tr
+      td colspan="2"
+        | The request has been accepted for processing, but the processing has not been completed. The request might or might not eventually be acted upon, as it might be disallowed when processing actually takes place.[2]
+    tr
+      td rowspan="2"
+        | 203
+      td
+        | :non_authoritative_information
+      td
+        | request processed, information may be from another source
+    tr
+      td colspan="2"
+        | The server successfully processed the request, but is returning information that may be from another source.
+    tr
+      td rowspan="2"
+        | 204
+      td
+        | :no_content
+      td
+        | request processed, no content returned
+    tr
+      td colspan="2"
+        | The server successfully processed the request, but is not returning any content.
+    tr
+      td rowspan="2"
+        | 205
+      td
+        | :reset_content
+      td
+        | request processed, no content returned, reset document view
+    tr
+      td colspan="2"
+        | The server successfully processed the request, but is not returning any content. Unlike a 204 response, this response requires that the requester reset the document view.
+    tr
+      td rowspan="2"
+        | 206
+      td
+        | :partial_content
+      td
+        | partial resource return due to request header
+    tr
+      td colspan="2"
+        | The server is delivering only part of the resource due to a range header sent by the client. The range header is used by tools like wget to enable resuming of interrupted downloads, or split a download into multiple simultaneous streams.
+    tr
+      td rowspan="2"
+        | 207
+      td
+        | :multi_status
+      td
+        | XML, can contain multiple separate responses
+    tr
+      td colspan="2"
+        | The message body that follows is an XML message and can contain a number of separate response codes, depending on how many sub-requests were made.
+    tr
+      td rowspan="2"
+        | 208
+      td
+        | 
+      td
+        | results previously returned 
+    tr
+      td colspan="2"
+        | The members of a DAV binding have already been enumerated in a previous reply to this request, and are not being included again.
+    tr
+      td rowspan="2"
+        | 226
+      td
+        | :im_used
+      td
+        | request fulfilled, reponse is instance-manipulations
+    tr
+      td colspan="2"
+        | The server has fulfilled a GET request for the resource, and the response is a representation of the result of one or more instance-manipulations applied to the current instance.
+    tr
+      td rowspan="2"
+        | 300
+      td
+        | :multiple_choices
+      td
+        | multiple options for the resource delivered
+    tr
+      td colspan="2"
+        | Indicates multiple options for the resource that the client may follow. It, for instance, could be used to present different format options for video, list files with different extensions, or word sense disambiguation.
+    tr
+      td rowspan="2"
+        | 301
+      td
+        | :moved_permanently
+      td
+        | this and all future requests directed to the given URI
+    tr
+      td colspan="2"
+        | This and all future requests should be directed to the given URI.
+    tr
+      td rowspan="2"
+        | 302
+      td
+        | :found
+      td
+        | temporary response to request found via alternative URI
+    tr
+      td colspan="2"
+        | This is an example of industrial practice contradicting the standard. HTTP/1.0 specification (RFC 1945) required the client to perform a temporary redirect (the original describing phrase was "Moved Temporarily"), but popular browsers implemented 302 with the functionality of a 303 See Other. Therefore, HTTP/1.1 added status codes 303 and 307 to distinguish between the two behaviours. However, some Web applications and frameworks use the 302 status code as if it were the 303.
+    tr
+      td rowspan="2"
+        | 303
+      td
+        | :see_other
+      td
+        | permanent response to request found via alternative URI
+    tr
+      td colspan="2"
+        | The response to the request can be found under another URI using a GET method. When received in response to a POST (or PUT/DELETE), it should be assumed that the server has received the data and the redirect should be issued with a separate GET message.
+    tr
+      td rowspan="2"
+        | 304
+      td
+        | :not_modified
+      td
+        | resource has not been modified since last requested
+    tr
+      td colspan="2"
+        | Indicates the resource has not been modified since last requested. Typically, the HTTP client provides a header like the If-Modified-Since header to provide a time against which to compare. Using this saves bandwidth and reprocessing on both the server and client, as only the header data must be sent and received in comparison to the entirety of the page being re-processed by the server, then sent again using more bandwidth of the server and client.
+    tr
+      td rowspan="2"
+        | 305
+      td
+        | :use_proxy
+      td
+        | content located elsewhere, retrieve from there
+    tr
+      td colspan="2"
+        | Many HTTP clients (such as Mozilla and Internet Explorer) do not correctly handle responses with this status code, primarily for security reasons.
+    tr
+      td rowspan="2"
+        | 306
+      td
+        | 
+      td
+        | subsequent requests should use the specified proxy
+    tr
+      td colspan="2"
+        | No longer used. Originally meant "Subsequent requests should use the specified proxy."
+    tr
+      td rowspan="2"
+        | 307
+      td
+        | :temporary_redirect
+      td
+        | connect again to different URI as provided
+    tr
+      td colspan="2"
+        | In this occasion, the request should be repeated with another URI, but future requests can still use the original URI. In contrast to 303, the request method should not be changed when reissuing the original request. For instance, a POST request must be repeated using another POST request.
+    tr
+      td rowspan="2"
+        | 308
+      td
+        | :no_content
+      td
+        | connect again to a different URI using the same method
+    tr
+      td colspan="2"
+        | The request, and all future requests should be repeated using another URI. 307 and 308 (as proposed) parallel the behaviours of 302 and 301, but do not allow the HTTP method to change. So, for example, submitting a form to a permanently redirected resource may continue smoothly.
+    tr
+      td rowspan="2"
+        | 400
+      td
+        | :bad_request
+      td
+        | request cannot be fulfilled due to bad syntax
+    tr
+      td colspan="2"
+        | The request cannot be fulfilled due to bad syntax.
+    tr
+      td rowspan="2"
+        | 401
+      td
+        | :unauthorized
+      td
+        | authentication is possible but has failed 
+    tr
+      td colspan="2"
+        | Similar to 403 Forbidden, but specifically for use when authentication is possible but has failed or not yet been provided. The response must include a WWW-Authenticate header field containing a challenge applicable to the requested resource. See Basic access authentication and Digest access authentication.
+    tr
+      td rowspan="2"
+        | 402
+      td
+        | :payment_required
+      td
+        | payment required, reserved for future use
+    tr
+      td colspan="2"
+        | Reserved for future use. The original intention was that this code might be used as part of some form of digital cash or micropayment scheme, but that has not happened, and this code is not usually used. As an example of its use, however, Apple's MobileMe service generates a 402 error ("httpStatusCode:402" in the Mac OS X Console log) if the MobileMe account is delinquent.
+    tr
+      td rowspan="2"
+        | 403
+      td
+        | :forbidden
+      td
+        | server refuses to respond to request
+    tr
+      td colspan="2"
+        | The request was a legal request, but the server is refusing to respond to it. Unlike a 401 Unauthorized response, authenticating will make no difference.
+    tr
+      td rowspan="2"
+        | 404
+      td
+        | :not_found
+      td
+        | requested resource could not be found
+    tr
+      td colspan="2"
+        | The requested resource could not be found but may be available again in the future. Subsequent requests by the client are permissible.
+    tr
+      td rowspan="2"
+        | 405
+      td
+        | :method_not_allowed
+      td
+        | request method not supported by that resource
+    tr
+      td colspan="2"
+        | A request was made of a resource using a request method not supported by that resource; for example, using GET on a form which requires data to be presented via POST, or using PUT on a read-only resource.
+    tr
+      td rowspan="2"
+        | 406
+      td
+        | :not_acceptable
+      td
+        | content not acceptable according to the Accept headers
+    tr
+      td colspan="2"
+        | The requested resource is only capable of generating content not acceptable according to the Accept headers sent in the request.
+    tr
+      td rowspan="2"
+        | 407
+      td
+        | :proxy_authentication_required
+      td
+        | client must first authenticate itself with the proxy
+    tr
+      td colspan="2"
+        | The client must first authenticate itself with the proxy.
+    tr
+      td rowspan="2"
+        | 408
+      td
+        | :request_timeout
+      td
+        | server timed out waiting for the request
+    tr
+      td colspan="2"
+        | The server timed out waiting for the request. According to W3 HTTP specifications: "The client did not produce a request within the time that the server was prepared to wait. The client MAY repeat the request without modifications at any later time."
+    tr
+      td rowspan="2"
+        | 409
+      td
+        | :conflict
+      td
+        | request could not be processed because of conflict
+    tr
+      td colspan="2"
+        | Indicates that the request could not be processed because of conflict in the request, such as an edit conflict.
+    tr
+      td rowspan="2"
+        | 410
+      td
+        | :gone
+      td
+        | resource is no longer available and will not be available again
+    tr
+      td colspan="2"
+        | Indicates that the resource requested is no longer available and will not be available again. This should be used when a resource has been intentionally removed and the resource should be purged. Upon receiving a 410 status code, the client should not request the resource again in the future. Clients such as search engines should remove the resource from their indices. Most use cases do not require clients and search engines to purge the resource, and a "404 Not Found" may be used instead.
+    tr
+      td rowspan="2"
+        | 411
+      td
+        | :length_required
+      td
+        | request did not specify the length of its content
+    tr
+      td colspan="2"
+        | The request did not specify the length of its content, which is required by the requested resource.
+    tr
+      td rowspan="2"
+        | 412
+      td
+        | :precondition_failed
+      td
+        | server does not meet request preconditions
+    tr
+      td colspan="2"
+        | The server does not meet one of the preconditions that the requester put on the request.
+    tr
+      td rowspan="2"
+        | 413
+      td
+        | :request_entity_too_large
+      td
+        | request is larger than the server is willing or able to process
+    tr
+      td colspan="2"
+        | The request is larger than the server is willing or able to process.
+    tr
+      td rowspan="2"
+        | 414
+      td
+        | :request_uri_too_long
+      td
+        | URI provided was too long for the server to process
+    tr
+      td colspan="2"
+        | The URI provided was too long for the server to process.
+    tr
+      td rowspan="2"
+        | 415
+      td
+        | :unsupported_media_type
+      td
+        | server does not support media type
+    tr
+      td colspan="2"
+        | The request entity has a media type which the server or resource does not support. For example, the client uploads an image as image/svg+xml, but the server requires that images use a different format.
+    tr
+      td rowspan="2"
+        | 416
+      td
+        | :requested_range_not_satisfiable
+      td
+        | client has asked for unprovidable portion of the file
+    tr
+      td colspan="2"
+        | The client has asked for a portion of the file, but the server cannot supply that portion. For example, if the client asked for a part of the file that lies beyond the end of the file.
+    tr
+      td rowspan="2"
+        | 417
+      td
+        | :expectation_failed
+      td
+        | server cannot meet requirements of Expect request-header field
+    tr
+      td colspan="2"
+        | The server cannot meet the requirements of the Expect request-header field.
+    tr
+      td rowspan="2"
+        | 418
+      td
+        | :"i'm_a_teapot" <small>(<a href="https://gist.github.com/3134563">explanation</a> <sup>gist.github.com</sup>)</small>
+      td
+        | I'm a teapot
+    tr
+      td colspan="2"
+        | This code was defined in 1998 as one of the traditional IETF April Fools' jokes, in RFC 2324, Hyper Text Coffee Pot Control Protocol, and is not expected to be implemented by actual HTTP servers. However, known implementations do exist. An Nginx HTTP server uses this code to simulate goto-like behaviour in its configuration.
+    tr
+      td rowspan="2"
+        | 420
+      td
+        | 
+      td
+        | Twitter rate limiting
+    tr
+      td colspan="2"
+        | Returned by the Twitter Search and Trends API when the client is being rate limited.
+    tr
+      td rowspan="2"
+        | 422
+      td
+        | :unprocessable_entity
+      td
+        | request unable to be followed due to semantic errors
+    tr
+      td colspan="2"
+        | The request was well-formed but was unable to be followed due to semantic errors.
+    tr
+      td rowspan="2"
+        | 423
+      td
+        | :locked
+      td
+        | resource that is being accessed is locked
+    tr
+      td colspan="2"
+        | The resource that is being accessed is locked.
+    tr
+      td rowspan="2"
+        | 424
+      td
+        | :failed_dependency
+      td
+        | request failed due to failure of a previous request
+    tr
+      td colspan="2"
+        | The request failed due to failure of a previous request (e.g. a PROPPATCH).
+    tr
+      td rowspan="2"
+        | 426
+      td
+        | :upgrade_required
+      td
+        | client should switch to a different protocol
+    tr
+      td colspan="2"
+        | The client should switch to a different protocol such as TLS/1.0.
+    tr
+      td rowspan="2"
+        | 428
+      td
+        | 
+      td
+        | origin server requires the request to be conditional
+    tr
+      td colspan="2"
+        | The origin server requires the request to be conditional. Intended to prevent "the 'lost update' problem, where a client GETs a resource's state, modifies it, and PUTs it back to the server, when meanwhile a third party has modified the state on the server, leading to a conflict." Proposed in an Internet-Draft.
+    tr
+      td rowspan="2"
+        | 429
+      td
+        | 
+      td
+        | user has sent too many requests in a given amount of time
+    tr
+      td colspan="2"
+        | The user has sent too many requests in a given amount of time. Intended for use with rate limiting schemes. Proposed in an Internet-Draft.
+    tr
+      td rowspan="2"
+        | 431
+      td
+        | 
+      td
+        | server is unwilling to process the request
+    tr
+      td colspan="2"
+        | The server is unwilling to process the request because either an individual header field, or all the header fields collectively, are too large. Proposed in an Internet-Draft.
+    tr
+      td rowspan="2"
+        | 444
+      td
+        | 
+      td
+        | server returns no information and closes the connection
+    tr
+      td colspan="2"
+        | An nginx HTTP server extension. The server returns no information to the client and closes the connection (useful as a deterrent for malware).
+    tr
+      td rowspan="2"
+        | 449
+      td
+        | 
+      td
+        | request should be retried after performing action
+    tr
+      td colspan="2"
+        | A Microsoft extension. The request should be retried after performing the appropriate action.
+    tr
+      td rowspan="2"
+        | 450
+      td
+        | 
+      td
+        | Windows Parental Controls blocking access to webpage
+    tr
+      td colspan="2"
+        | A Microsoft extension. This error is given when Windows Parental Controls are turned on and are blocking access to the given webpage.
+    tr
+      td rowspan="2"
+        | 451
+      td
+        | 
+      td
+        | the server cannot reach the client's mailbox
+    tr
+      td colspan="2"
+        | 
+    tr
+      td rowspan="2"
+        | 499
+      td
+        | 
+      td
+        | connection closed by client while HTTP server is processing
+    tr
+      td colspan="2"
+        | An Nginx HTTP server extension. This code is introduced to log the case when the connection is closed by client while HTTP server is processing its request, making server unable to send the HTTP header back.
+    tr
+      td rowspan="2"
+        | 500
+      td
+        | :internal_server_error
+      td
+        | generic error message
+    tr
+      td colspan="2"
+        | A generic error message, given when no more specific message is suitable.
+    tr
+      td rowspan="2"
+        | 501
+      td
+        | :not_implemented
+      td
+        | server does not recognise method or lacks ability to fulfill
+    tr
+      td colspan="2"
+        | The server either does not recognise the request method, or it lacks the ability to fulfill the request.[2]
+    tr
+      td rowspan="2"
+        | 502
+      td
+        | :bad_gateway
+      td
+        | server received an invalid response from upstream server
+    tr
+      td colspan="2"
+        | The server was acting as a gateway or proxy and received an invalid response from the upstream server.[2]
+    tr
+      td rowspan="2"
+        | 503
+      td
+        | :service_unavailable
+      td
+        | server is currently unavailable
+    tr
+      td colspan="2"
+        | The server is currently unavailable (because it is overloaded or down for maintenance).[2] Generally, this is a temporary state.
+    tr
+      td rowspan="2"
+        | 504
+      td
+        | :gateway_timeout
+      td
+        | gateway did not receive response from upstream server
+    tr
+      td colspan="2"
+        | The server was acting as a gateway or proxy and did not receive a timely response from the upstream server.[2]
+    tr
+      td rowspan="2"
+        | 505
+      td
+        | :http_version_not_supported
+      td
+        | server does not support the HTTP protocol version
+    tr
+      td colspan="2"
+        | The server does not support the HTTP protocol version used in the request.[2]
+    tr
+      td rowspan="2"
+        | 506
+      td
+        | 
+      td
+        | content negotiation for the request results in a circular reference
+    tr
+      td colspan="2"
+        | Transparent content negotiation for the request results in a circular reference.[23]
+    tr
+      td rowspan="2"
+        | 507
+      td
+        | :insufficient_storage
+      td
+        | server is unable to store the representation
+    tr
+      td colspan="2"
+        | The server is unable to store the representation needed to complete the request.[7]
+    tr
+      td rowspan="2"
+        | 508
+      td
+        | 
+      td
+        | server detected an infinite loop while processing the request
+    tr
+      td colspan="2"
+        | The server detected an infinite loop while processing the request (sent in lieu of 208).
+    tr
+      td rowspan="2"
+        | 509
+      td
+        | 
+      td
+        | bandwidth limit exceeded
+    tr
+      td colspan="2"
+        | This status code, while used by many servers, is not specified in any RFCs.
+    tr
+      td rowspan="2"
+        | 510
+      td
+        | :not_extended
+      td
+        | further extensions to the request are required
+    tr
+      td colspan="2"
+        | Further extensions to the request are required for the server to fulfill it.[24]
+    tr
+      td rowspan="2"
+        | 511
+      td
+        | 
+      td
+        | client needs to authenticate to gain network access
+    tr
+      td colspan="2"
+        | The client needs to authenticate to gain network access. Intended for use by intercepting proxies used to control access to the network (e.g. "captive portals" used to require agreement to Terms of Service before granting full Internet access via a Wi-Fi hotspot). Proposed in an Internet-Draft.[19]
+    tr
+      td rowspan="2"
+        | 598
+      td
+        | 
+      td
+        | network read timeout behind the proxy 
+    tr
+      td colspan="2"
+        | This status code is not specified in any RFCs, but is used by some HTTP proxies to signal a network read timeout behind the proxy to a client in front of the proxy.
+    tr
+      td rowspan="2"
+        | 599
+      td
+        | 
+      td
+        | network connect timeout behind the proxy
+    tr
+      td colspan="2"
+        | This status code is not specified in any RFCs, but is used by some HTTP proxies to signal a network connect timeout behind the proxy to a client in front of the proxy.
+h1 Refs
+ul
+  li
+    a href="http://httpstatus.es/" target="_blank"
+      | httpstatus.es - Database of HTTP status codes with their IETF + Wikipedia descriptions and helpful code references.

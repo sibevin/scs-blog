@@ -1,0 +1,63 @@
+.meta-data title rails i18n的lazy lookup
+.meta-data description rails i18n的lazy lookup
+.meta-data datetime 2014-12-14 17:26:43
+.meta-data tags rails_i18n
+.meta-data category coding
+.meta-data link rails-i18n-lazy-lookup
+.meta-data file 2014-12-14-172643-rails-i18n-lazy-lookup
+.meta-data template post
+.meta-data end
+
+p
+  | 最近在處理rails的i18n，發現它有lazy lookup的功能還蠻方便的。lazy lookup就是只要locale的路徑照一定的方式命名，在view或controller中就可以是使用縮寫的方式來使用翻譯字串。舉個例子來說：
+p
+  | 如果我們有個翻譯字串要用在
+  code
+    | views/users/index.html.erb
+  | 之中，我們可以將字串放在
+  code
+    | users.index.
+  | 之下：
+pre
+  code.hljs
+    | zh-TW:
+        users:
+          index:
+            user_list: "用戶列表"
+p
+  | 那原本在
+  code
+    | views/users/index.html.erb
+  | 中必須要列出完整的路徑的寫法：
+pre
+  code.hljs
+    | <%= t("users.index.user_list") %>
+p
+  | 就可以簡寫成：
+pre
+  code.hljs
+    | <%= t(".user_list") %>
+p
+  | 同樣的作法可以用在partial與controller，例如用在
+  code
+    | views/partials/_user_menu.html.erb
+  | 中的翻譯字串可以放在：
+pre
+  code.hljs
+    | zh-TW:
+        partials:
+          user_menu:
+            back: "回前頁"
+p
+  | 用在
+  code
+    | controllers/users_controller.rb
+  | 中的
+  code create
+  | action翻譯字串(通常是flash message)可以放在：
+pre
+  code.hljs
+    | zh-TW:
+        users:
+          create:
+            failed: "帳號建立失敗。"

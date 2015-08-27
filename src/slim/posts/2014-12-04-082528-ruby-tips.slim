@@ -1,0 +1,41 @@
+.meta-data title ruby雜記事本
+.meta-data description ruby雜記事本
+.meta-data datetime 2014-12-04 08:25:28
+.meta-data tags ruby,tips
+.meta-data category coding
+.meta-data link ruby-tips
+.meta-data file 2014-12-04-082528-ruby-tips
+.meta-data template post
+.meta-data end
+
+h2 如何在iterate一個string的時候同時取得index與char？
+p
+  | 用
+  code
+    | with_index
+  | 即可
+pre
+  code.hljs
+    | my_str.each_char.with_index {|char, index| p index; p char; }
+h2 字元與ASCII之間的切換
+p
+  | 字元轉ASCII
+pre
+  code.hljs
+    | "a".ord # 97
+p
+  | ASCII轉字元
+pre
+  code.hljs
+    | 97.chr # "a"
+h2 取亂數的做法
+p
+  | 在0到9之間取一個整數亂數
+pre
+  code.hljs
+    | rand(10) # 6
+p
+  | 在0到1之間取一個小數亂數
+pre
+  code.hljs
+    | rand() # 0.7651037452881309

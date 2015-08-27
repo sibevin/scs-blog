@@ -1,0 +1,279 @@
+.meta-data title 如何建立gem package
+.meta-data description 如何建立gem package
+.meta-data datetime 2014-10-15 10:11:21
+.meta-data tags ruby
+.meta-data category coding
+.meta-data link how-to-build-ruby-gem-package
+.meta-data file 2014-10-15-101121-how-to-build-ruby-gem-package
+.meta-data template post
+p
+  | 最近無聊做了一個小工具
+  a href="https://github.com/sibevin/sub_cipher" target="_blank"
+    | SubCipher
+  |，除了練習熟悉一下ruby的語法之外，順便也回憶一下怎麼從無到有產生一個gem package。
+.meta-data end
+
+h1 使用bundler建立gem package的骨架
+ul
+  li
+    | 事前準備：確認ruby的版本、安裝bundler
+  li
+    | 執行
+    code
+      | bundle gem 名稱
+    | ，基本上bundler把需要的檔案都幫你建好了，還會順便做git init
+pre
+  code.hljs
+    | $ bundle gem sub_cipher
+      create  sub_cipher/Gemfile
+      create  sub_cipher/Rakefile
+      create  sub_cipher/LICENSE.txt
+      create  sub_cipher/README.md
+      create  sub_cipher/.gitignore
+      create  sub_cipher/sub_cipher.gemspec
+      create  sub_cipher/lib/sub_cipher.rb
+      create  sub_cipher/lib/sub_cipher/version.rb
+      Initializing git repo in /Users/wangkaito/workspace/ruby/dev/test/sub_cipher
+p
+  | 生成的目錄長的像下面這個樣子：
+pre
+  code.hljs
+    | sub_cipher
+      ├── Gemfile
+      ├── LICENSE.txt
+      ├── README.md
+      ├── Rakefile
+      ├── lib
+      │   ├── sub_cipher
+      │   │   └── version.rb
+      │   └── sub_cipher.rb
+      └── sub_cipher.gemspec
+ul
+  li
+    | 修改sub_cipher.gemspec，填入gem相關的資訊，細節請參考
+    a href="http://guides.rubygems.org/specification-reference/" target="_blank"
+      | RubyGems Guides - Specification Reference
+    |。下面是sub_cipher的例子：
+pre
+  code.hljs
+    | # coding: utf-8
+      lib = File.expand_path('../lib', __FILE__)
+      $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+      require 'sub_cipher/version'
+      Gem::Specification.new do |spec|
+        spec.name          = "sub_cipher"
+        spec.version       = SubCipher::VERSION
+        spec.authors       = ["Sibevin Wang"]
+        spec.email         = ["sibevin@gmail.com"]
+        spec.summary       = %q{Encode/Decode text with substitution cipher}
+        spec.description   = %q{Encode/Decode text with substitution cipher, please see "README" to get more details.}
+        spec.homepage      = "https://github.com/sibevin/sub_cipher"
+        spec.license       = "MIT"
+        spec.files         = `git ls-files -z`.split("\x0")
+        spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+        spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+        spec.require_paths = ["lib"]
+        spec.add_development_dependency 'minitest', '~> 5.0'
+      end
+ul
+  li
+    | Gemfile與Rakefile：這兩個檔案是bundler會用到的檔案，基本上如果有用到其它的gem package，就需要bundler來處理package dependence的問題。看一下Gemfile會發現bundler預設就已經將gemspec的dependence加到Gemfile之中了，至於Rakefile預設則是加入了bundler相關的指令。基本上package dependence的資訊可以記錄在gemspec中，所以這兩個檔案都不用改什麼。
+p Gemifle
+pre
+  code.hljs
+    | source 'https://rubygems.org'
+      # Specify your gem's dependencies in sub_cipher.gemspec
+      gemspec
+p Rakefile
+pre
+  code.hljs
+    | require "bundler/gem_tasks"
+ul
+  li
+    | LICENSE.txt：預設是MIT，可以改成自己想要的。如果改的話，要注意的是gemspec也要跟著一起改。
+h1 Gem package的目錄架構
+p
+  | 你會發現bundler幫你很自動建了一個lib的目錄，連對應package名稱的module和version都建立好了。
+pre
+  code.hljs
+    | lib
+      ├── sub_cipher
+      │   └── version.rb
+      └── sub_cipher.rb
+p
+  | lib/sub_cipher.rb
+pre
+  code.hljs
+    | require "sub_cipher/version"
+      module SubCipher
+        # Your code goes here...
+      end
+p
+  | lib/sub_cipher/version.rb
+pre
+  code.hljs
+    | module SubCipher
+        VERSION = "0.0.1"
+      end
+  p
+    | 這樣的目錄其實就是標準一個gem應該要有的架構，lib/sub_cipher.rb就是gem的切入點。別人在
+    code
+      | require "sub_cipher"
+    | 的時候，require的目標就是lib/sub_cipher.rb這個檔案，至於其它的程式碼都應該放在lib/sub_cipher/之下。
+h1 測試
+p
+  | 自從ruby 2.0之後，官方建議使用minitest做為標準的測試工具。這個改變對於ruby 2.0以上的環境沒有什麼影響，但對於舊版本的ruby必須要在測試檔做一些修改。先看一下sub_cipher的測試檔範例：
+pre
+  code.hljs
+    | require 'minitest/autorun'
+      $LOAD_PATH.unshift("\#{File.dirname(__FILE__)}/../lib")
+      require "sub_cipher"
+      class TestByte < Minitest::Test
+        def test_should_encode_and_decode_with_default_seed
+          sc = SubCipher.gen()
+          target_str = 'In cryptography, a substitution cipher is a method of encoding by which units of plaintext are replaced with ciphertext, according to a regular system; the "units" may be single letters (the most common), pairs of letters, triplets of letters, mixtures of the above, and so forth. The receiver deciphers the text by performing an inverse substitution.'
+          encoded_str = sc.encode(target_str)
+          decoded_str = sc.decode(encoded_str)
+          assert_equal(decoded_str, target_str)
+          assert_equal(sc.seed, ('a'..'z').to_a.join)
+          assert_match(/^[a-z]*$/, sc.map)
+        end
+        # ... other tests ...
+      end
+p
+  code
+    | $LOAD_PATH.unshift("\#{File.dirname(__FILE__)}/../lib")
+  | 這行會將lib/這個目錄加到LOAD_PATH之中，之後的下一行
+  code
+    | require "sub_cipher"
+  | 就會優先使用lib/sub_cipher.rb的程式碼而不會去使用安裝在目前ruby環境中的gem。跑測試只要下
+  code
+    | ruby test/test_all.rb
+  | 就可以了。
+pre
+  code.hljs
+    | $ ruby test/test_all.rb
+      Run options: --seed 58072
+      # Running:
+      .........
+      Finished in 0.020684s, 435.1189 runs/s, 1643.7826 assertions/s.
+      9 runs, 34 assertions, 0 failures, 0 errors, 0 skips
+p
+  | 如果要在舊版本的ruby上跑minitest的測試，則還必須在測試檔的最上面加上下面的程式碼才行：
+pre
+  code.hljs
+    | require "rubygems"
+      gem "minitest"
+      require 'minitest/autorun'
+      # ...
+h1 建立與上傳gem
+p
+  | 只要gemspec寫了好，就可以使用指令
+  code
+    | gem build
+  | 來建立gem package
+pre
+  code.hljs
+    | $ gem build sub_cipher.gemspec
+      Successfully built RubyGem
+      Name: sub_cipher
+      Version: 1.0.0
+      File: sub_cipher-1.0.0.gem
+p
+  | 如果想要在irb中測試剛剛生成的gem，可以用
+  code
+    | gem install
+  | 將gem安裝到目前環境之中。
+pre
+  code.hljs
+    | $ gem install sub_cipher-1.0.0.gem
+      Successfully installed sub_cipher-1.0.0
+      1 gem installed
+      $ irb
+      2.1.3 :001 > require "sub_cipher"
+       => true
+p
+  | 最後就是使用
+  code
+    | gem push
+  | 上傳gem package到rubygem，這樣都可以透過gem install來進行安裝嘍。
+pre
+  code.hljs
+    | $ gem push sub_cipher-1.0.0.gem
+        Pushing gem to https://rubygems.org...
+        Successfully registered gem: sub_cipher (1.0.0)
+h1 References
+p
+  | 更多詳細的資訊可以參考
+  a href="http://guides.rubygems.org/" target="_blank"
+    | RubyGems Guides
+h1 同場加映
+h2 Travis CI
+p
+  | 1. 建立一個build branch。
+p
+  | 2. 新增.travis.yml檔案。
+p
+  | .travis.yml
+pre
+  code.hljs
+    | language: ruby
+      rvm:
+        - 2.0.0
+        - 1.9.3
+        - 1.9.2
+        - jruby-18mode
+        - jruby-19mode
+        - rbx-18mode
+        - rbx-19mode
+        - ruby-head
+        - 1.8.7
+        - ree
+      script: "ruby ./test/test_all.rb"
+      branches:
+        only:
+          - build
+          - cover-check
+p
+  | 3. 在github中開啟Travis CI的service。
+p
+  | 4. 做第一次push。
+p
+  | 備註1：如果不想每次push都觸發travis，可以在travis的設定頁面中關閉它(取消Active)，改按右上角的Test service按鈕來手動觸發travis。
+p
+  | 備註2：要讓travis安裝測試用的gem，必須要有Gemfile檔。
+p
+  | 備註3：要測試舊版本的ruby，必須要將程式碼改成舊語法(例如hash的symbol寫法)，另外測試檔也要做上面提到的修改。
+h2 Coveralls
+p
+  | 1. 建立一個cover-check branch。
+p
+  | 2. 將build branch merge到 cover-check。
+p
+  | 3. 修改.travis.yml如下：
+pre
+  code.hljs
+    | language: ruby
+      rvm:
+        - 2.0.0
+        - 1.9.3
+      before_install:
+        - gem install coveralls
+      script: "ruby ./test/test_all.rb"
+      branches:
+        only:
+          - build
+          - cover-check
+p
+  | 4. 在測試檔最上面加入coveralls的程式碼。
+pre
+  code.hljs
+    | require 'coveralls'
+      Coveralls.wear!
+      require "rubygems"
+      gem "minitest"
+      require 'minitest/autorun'
+p
+  | 5. 到coveralls的設定頁面開啟service。
+p
+  | 6. 觸發travis去跑cover-check的build。

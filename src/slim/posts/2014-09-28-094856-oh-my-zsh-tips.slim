@@ -1,0 +1,251 @@
+.meta-data title oh-my-zsh一些實用小技巧
+.meta-data description oh-my-zsh一些實用小技巧
+.meta-data datetime 2014-09-28 09:48:56
+.meta-data tags zsh,tips
+.meta-data category tools
+.meta-data template post
+.meta-data link oh-my-zsh-tips
+.meta-data file 2014-09-28-094856-oh-my-zsh-tips
+.meta-data end
+
+p
+  | 聽說有一個zsh shell framework叫
+  a href="https://github.com/robbyrussell/oh-my-zsh" target="_blank"
+    | oh-my-zsh
+  | 超級好用的，它包括了一系列plugin與theme，於是就裝來試試，結果就回不去了。安裝的方式也很簡單，按照README的步驟安裝即可。
+
+h1 設定rvm
+p
+  | 安裝完後，如果有用rvm，要記得將rvm的設定複製到.zshrc，如下所示：
+pre
+  code.hljs
+    | PATH=$PATH:$HOME/.rvm/bin
+      [[ -s "$HOME/.rvm/scripts/rvm"]] && source "$HOME/.rvm/script/rvm"
+
+h1 一些方便的技巧
+
+h2 cd可以省略
+p
+  | 使用shell最常做的動作的就是用cd切換目錄，在zsh中只輸入路徑按下[Enter]，就相當於cd到輸入的目錄。
+pre
+  code.hljs
+    | ex-app $ app/views/home<span class="mk-blue">[Enter]</span>
+      ex-app/app/views/home $
+
+h2  跳回上層目錄
+p
+  | 通常要跳回上一層，我們會用
+  code cd ..
+  | ，跳回上兩層是
+  code cd ../..
+  | ，跳回上三層是
+  code cd ../../..
+  |，可是
+  code ..
+  | 打久了也是很煩人的。在zsh中，
+  code cd ../..
+  | 可以用
+  code cd ...
+  | (
+  code ..
+  | 後多一個
+  code .
+  | )，
+  code cd ../../..
+  | 可以用
+  code cd ....
+  | (
+  code ..
+  | 後多二個
+  code .
+  | )。
+
+h2  路徑模糊搜尋
+p
+  | 任何需要路徑的地方都可以使用模糊搜尋，再按[Tab]自動補完完整的路徑。
+pre
+  code.hljs
+    | $ vim a/vi/home/<span class="mk-red">dex</span><span class="mk-blue">[Tab]</span>
+      $ vim app/views/home/in<span class="mk-red">dex</span>.html.erb
+
+h2  回到前一個路徑
+p
+  | 另一個很常用的就是
+  code cd -
+  | ，但一般的shell只能跳回前一個路徑。在zsh中，輸入
+  code cd -
+  | 再按下[Tab]，會列出前幾次的路徑，選擇對應的號碼就可以跳到對應的路徑。
+
+pre
+  code.hljs
+    | $ cd app<span class="mk-blue">[Enter]</span>
+      app $
+
+      app $ cd views/home<span class="mk-blue">[Enter]</span>
+      app/views/home $
+
+      app/views/home $ cd -<span class="mk-blue">[Tab]</span>
+      1 -- /app/
+      2 -- /
+
+      app/views/home $ cd -<span class="mk-blue">[2][Enter]</span>
+      1 -- /app/
+      2 -- /
+      $
+
+h2 前次指令的搜尋
+p
+  | 當要執行之前執行過的指令，我們通常用
+  code history
+  | 來查詢，再用
+  code !
+  | 加上歷史記錄代碼來執行。在zsh中，可以在
+  code !
+  | 後加上指令的關鍵字進行搜尋，再按[Enter]就會切換成之前的指令。
+pre
+  code.hljs
+    | $ !<span class="mk-red">mys</span><span class="mk-blue">[Enter]</span>
+      $ <span class="mk-red">mys</span>ql -uex_dev -pex_dev ex_dev<span class="mk-blue">[Up]</span>
+      $ <span class="mk-red">mys</span>ql -uex_test -pex_test ex_test
+p
+  | 如果不是你想要的指令，可以再按[Up/Down]切到一下個符合搜尋的指令。
+p
+  | 另一種是直接按[Ctrl]+[r]，再輸入關鍵字搜尋。如果不是你想要的指令，可以再按[Ctrl]+[r]切到一下個符合搜尋的指令。
+
+h2 用process的名稱來kill
+p
+  | 通常要kill一個process，我們都要先找出對應的PID，再用kill PID來砍掉它。在zsh中，可以直接在kill後面接process的名稱，再按[Tab]就會切換成對應的PID。
+pre
+  code.hljs
+    | $ kill pow<span class="mk-blue">[Tab]</span>
+      $ kill 33785
+
+h2 用*列出多個檔案
+p
+  | 在zsh中，可以用*當做萬用字元將多個符合條件的檔案路徑一起找出來。
+pre
+  code.hljs
+    | $ ls **/*user*<span class="mk-blue">[Tab]</span>
+      $ ls app/models/user.rb db/migrate/20140104024658_create_users.rb spec/factories/users.rb spec/models/user_spec.rb app/controllers/users app/views/users
+pre
+  code.hljs
+    | $ ls **/*user*<span class="mk-blue">[Enter]</span>
+      app/models/user.rb
+      db/migrate/20140104024658_create_users.rb
+      spec/factories/users.rb
+      spec/models/user_spec.rb
+
+      app/controllers/users:
+      sessions_controller.rb
+
+      app/views/users:
+      sessions
+
+h2
+  | [builtin] Zmv
+p
+  | mv的超級強化版，可以做到批次改名。
+p
+  | 設定：zsh預設並沒有載入zmv這個module，必須下指令
+  code autoload -U zmv
+  | 才可以使用它。你可以將這段指令加到你的
+  code .zshrc
+  | 中。
+p
+  | 最常用的方式是使用
+  code
+    | (*)
+  | 搭配
+  code $1
+  | ,
+  code $2
+  | 等變數，舉個例子，如果我們有下面三個檔案：
+pre
+  code.hljs
+    | pic01-001.png
+      pic02-002.png
+      pic03-003.png
+p
+  | 我們想將
+  code pic
+  | 換成
+  code fig
+  | ，
+  code -
+  | 換成
+  code _
+  | ，也就是改成下面的檔名
+pre
+  code.hljs
+    | fig01_001.png
+      fig02_002.png
+      fig03_003.png
+p
+  | 用zmv只要下面一行就搞定了，超簡單的吧。
+pre
+  code.hljs
+    | zmv 'pic<span class="mk-blue">(*)</span>-<span class="mk-red">(*)</span>' 'fig<span class="mk-blue">$1</span>_<span class="mk-red">$2</span>'
+p
+  | 另外如果只想看更改名稱的結果，但不要真的更改名稱，可以加上參數
+  code -n
+  | 。更多例子可以參考：
+  a href="http://strcat.de/zsh/#zmv" target="_blank"
+    | zmv
+
+h1 Plugin
+
+p
+  | oh-my-zsh的plugin只能說是繁族不及備載，大部分的plugin，例如：git與rails都會幫你內建快捷指令，節省很多打指令的時間。不過快捷鍵這種東西，不會用就是不會用，但會用就是覺得不能沒有它，所以還是要去了解才能會去用它。另一方面，如果常用git的人不會使用
+  code gc
+  | 來取代
+  code git commit
+  | ，
+  code gst
+  | 來取代
+  code git status
+  | ，這樣顯然還不夠專業啊。oh-my-zsh的plugin都放在
+  a href="https://github.com/robbyrussell/oh-my-zsh/tree/master/plugins" target="_blank"
+    | plugin目錄
+  | 之中。有興趣的話可以看看plugin的原始碼，也可以趁機學習一下怎麼寫出屬於自己的plugin。這裡我列出一些有趣的plugin。
+
+h2 設定
+p
+  | 要加入一個plugin很簡單，只要在
+  code .zshrc
+  | 中的plugin設定值中加入plugin的檔名即可，不過要記得重啟你的terminal。
+
+h2 Jump
+p
+  | Jump plugin最主要的功能就是在shell中加入路徑書籤。
+ul
+  li
+    | 用
+    code mark 書籤名稱
+    | 將目前所在目錄加上書籤。
+  li
+    | 用
+    code unmark 書籤名稱
+    | 刪除書籤。
+  li
+    | 用
+    code marks
+    | 列出目前所有的書籤。
+  li
+    | 用
+    code jump 書籤名稱
+    | 跳至書籤對應的目錄。
+
+h2 Pow
+p
+  | 加了一些控制pow的快捷指令。
+ul
+  li
+    | 在rails app的目錄下，用
+    code kapow
+    | 執行
+    code touch tmp/restart.txt
+    | ，也就是重啟pow server。
+  li
+    | 在rails app的目錄下，用
+    code powit
+    | 執行將app掛載到pow下執行。

@@ -1,0 +1,65 @@
+.meta-data title Sub Cipher - 使用取代加密法(Substitution cipher)對字串進行加解密
+.meta-data description Sub Cipher - 使用取代加密法(Substitution cipher)對字串進行加解密
+.meta-data datetime 2014-10-18 11:49:13
+.meta-data tags ruby_gem,work
+.meta-data category coding
+.meta-data link gem-sub-cipher
+.meta-data file 2014-10-18-114913-gem-sub-cipher
+.meta-data template post
+.meta-data end
+
+ul
+  li
+    a href="https://github.com/sibevin/sub_cipher" target="_blank" Github
+  li
+    a href="https://rubygems.org/gems/sub_cipher" target="_blank" RubyGem
+    code
+      |  (sub_cipher)
+h1 What
+p
+  | 使用取代加密法(Substitution cipher)對字串進行加解密。
+h1 Why
+p
+  | 大部分的相關的gem只有做到簡易替換方式的加密，另外在定義字母對應的時候也沒有看到一個比較好用的方式，所以決定自己做一個。
+h1 How
+p
+  | 基本使用方式如下：
+pre
+  code.hljs
+    | sc = SubCipher.gen
+      sc.encode("Here is a secret.")
+      # "Wyky gn q nyakyr."
+      sc.decode("Wyky gn q nyakyr.")
+      # "Here is a secret."
+      sc.seed
+      # "abcdefghijklmnopqrstuvwxyz"
+      sc.map
+      # "qeahyftwgpjixodzbknrlscvum"
+p
+  code SubCipher.gen
+  | 會使用預設的參數(也就是英文字母)建立一個SubCipherObject，接著可以用
+  code encode
+  | 與
+  code decode
+  | 來進行加解密。注意的是同一個字母但不同大小寫會對應到同一個字母，例如：如果a對應到b，那表示A會對應到B。
+  code seed
+  | 與
+  code map
+  | 則是用來表示字母的對應情況，以上面的例子來說就是將
+  code abcdefghijklmnopqrstuvwxyz
+  | 對應到
+  code qeahyftwgpjixodzbknrlscvum
+  | 。
+p
+  | 另外
+  code SubCipher.gen
+  | 也提供了一些參數可以自定義要加解密的字母(
+  code seed
+  | )與如何做字母對應(
+  code map, keep_case
+  | )。詳細的使用方式請參考
+  a href="https://github.com/sibevin/sub_cipher/blob/master/README.md#options" target="_blank" README - Options
+  | 。
+h1 心得
+p
+  | 想要做一個簡單的加解密方法讓存在資料庫的敏感資料可以做個轉換，不要單純以明碼的方式做儲存。另外覺得自己太久沒有寫ruby了，所以就順便練習一下。

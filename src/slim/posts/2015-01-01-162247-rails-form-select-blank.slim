@@ -1,0 +1,44 @@
+.meta-data title 處理空白選項的下拉式選單
+.meta-data description 處理空白選項的下拉式選單
+.meta-data datetime 2015-01-01 16:22:47
+.meta-data tags rails_view
+.meta-data category coding
+.meta-data link rails-form-select-blank
+.meta-data file 2015-01-01-162247-rails-form-select-blank
+.meta-data template post
+.meta-data end
+
+h1 問題
+p
+  | 想做一個下拉式選單讓使用者可以選取語言，如果使用者不選則預設為使用瀏覽器預設語系。不過預設的
+  code
+    | select
+  | 似乎無法顯示空白選項。
+h1 解法
+p
+  | 第一種方式是用
+  code
+    | prompt
+  | 這個設定，它會在使用者尚未選取任何選項時顯示，不過一旦使用者選取其它項目，就不能選回空白。
+pre
+  code.hljs
+    | f.input :locale, prompt: t(".use_browser_locale")
+p
+  | 第二種是將
+  code
+    | include_blank
+  | 設成
+  code
+    | true
+  | ，這樣的確就會有一個空白的選項出現可以選擇，不過它完全沒有任何提示字顯示在選項上，真的就是空白。
+pre
+  code.hljs
+    | f.input :locale, include_blank: true
+p
+  | 第三種就是在
+  code
+    | include_blank
+  | 後面接上要顯示的字串，這時候就會讓空白選項有提示字串顯示在上面。
+pre
+  code.hljs
+    | f.input :locale, include_blank: t(".use_browser_locale")
