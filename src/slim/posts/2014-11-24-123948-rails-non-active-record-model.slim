@@ -10,35 +10,39 @@
 
 h1 問題
 p
-  | 最近處理一些使用simple form的頁面遇到了一個問題。有一個頁面有兩個email input的欄位，要使用者輸入兩次email，rails這邊要做email格式與email確確認的檢查。我們知道如果要讓simple form支援錯誤顯示，則simple_form必須要跟一個model做關連，但以這個例子而言，這個model只有兩個attribute - email與email_confirmation，很明顯不會跟database有關係，但又要支援model的validation，所以要想辦法做一個不關聯到資料庫的model。
+  | 最近處理一些使用simple form的頁面遇到了一個問題。有一個頁面有兩個email input的欄位，要使用者輸入兩次email，rails這邊要做email格式與email確認的檢查。我們知道如果要讓simple form支援錯誤顯示，則simple_form必須要跟一個model做關連，但以這個例子而言，這個model只有兩個attribute - email與email_confirmation，很明顯不會跟database有關係，但又要支援model的validation，所以要想辦法做一個不關聯到資料庫的model。
 h1 解法
 p
   | 下面是一個範例：
 pre
-  code.hljs
+  code.ruby
     | class ExtraauthMail
         include ActiveModel::Validations
         include ActiveModel::Conversion
         extend ActiveModel::Naming
         extend ActiveModel::Translation
-      attr_accessor :email, :email_confirmation
-      attr_reader   :errors
-      validates :email, presence: true,
-                        confirmation: true,
-                        format: { with: /\A[-a-z0-9_+\.]+\@([-a-z0-9]+\.)+[a-z0-9]{2,4}\z/i }
-      validates :email_confirmation, presence: true
-      validate :check_duplicated_email
-      def initialize(params = {})
-        @email = params[:email]
-        @email_confirmation = params[:email_confirmation]
-        @errors = ActiveModel::Errors.new(self)
-      end
-      def check_duplicated_email
-        if @email.present? && User.where(email: @email).take
-          @errors.add(:email, I18n.t("activemodel.errors.models.extraauth_mail.duplicated"))
+        
+        attr_accessor :email, :email_confirmation
+        attr_reader   :errors
+        
+        validates :email, presence: true,
+                          confirmation: true,
+                          format: { with: /\A[-a-z0-9_+\.]+\@([-a-z0-9]+\.)+[a-z0-9]{2,4}\z/i }
+        validates :email_confirmation, presence: true
+        validate :check_duplicated_email
+        
+        def initialize(params = {})
+          @email = params[:email]
+          @email_confirmation = params[:email_confirmation]
+          @errors = ActiveModel::Errors.new(self)
+        end
+        
+        def check_duplicated_email
+          if @email.present? && User.where(email: @email).take
+            @errors.add(:email, I18n.t("activemodel.errors.models.extraauth_mail.duplicated"))
+          end
         end
       end
-    end
 p
   | 在網路上有許多類似的topic，例如在code school中的rails4 pattern也有提到怎麼做這種model。不過在實際上還是會遇到很多坑，在這裡記錄一下：
 ul
@@ -58,7 +62,7 @@ ul
   li
     | 預設的translation路徑需要改變，從activerecord變成activemodel。
 pre
-  code.hljs
+  code
     | zh-TW:
         activemodel:
           errors:
