@@ -1,8 +1,10 @@
 # SCS (Slim, Coffeescript and SASS) Blog
 
+Demo: http://sibevin.github.io/
+
 ## Why?
 
-1. I don't like markdown, it is only a boring plane text and has no table, no block and no css.
+1. I don't like markdown, it is just a boring text and has no table, no block and no css.
 2. I want to write some js codes in my post or design a page I want.
 3. I need a flexible and elegant way to display tags and categories.
 4. I want a smarter search on my blog.
