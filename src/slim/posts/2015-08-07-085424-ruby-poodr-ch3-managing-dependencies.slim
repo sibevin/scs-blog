@@ -310,3 +310,166 @@ p
   ul
     li
       | gear_inches/y_pos現在與wheel的diameter做適當的切割，當wheel.diameter修改時，只需要改Gear的diameter即可。
+h1
+  | 消除參數順序的相依性 Managing Argument-Order Dependencies
+
+h2
+  | 使用Hash做為初始化的參數 Use Hashes for Initialization Arguments
+
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, :wheel
+        def initialize(<span class="mk-red">chainring, cog, wheel</span>)
+          <span class="mk-red">@chainring = chainring</span>
+          <span class="mk-red">@cog       = cog</span>
+          <span class="mk-red">@wheel     = wheel</span>
+        end
+        # ...
+      end
+
+      Gear.new(<span class="mk-red">52, 11, Wheel.new(26, 1.5)</span>).gear_inches
+p
+  | 缺點：
+p
+  ul
+    li
+      | 在初始化Gear時，必須明確依照順序傳入chainring, cog, wheel這三個參數。假如之後需要更改Gear initialize傳入的參數，任何初始化Gear的程式都必須跟著改變。
+p
+  | 改善方式：
+p
+  ul
+    li
+      | 利用傳入hash的方式取代傳入一連串的參數。
+
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, :wheel
+        def initialize(<span class="mk-blue">args</span>)
+          <span class="mk-blue">@chainring = args[:chainring]</span>
+          <span class="mk-blue">@cog       = args[:cog]</span>
+          <span class="mk-blue">@wheel     = args[:wheel]</span>
+        end
+        # ...
+      end
+
+      Gear.new(
+        <span class="mk-blue">chainring: 52,</span>
+        <span class="mk-blue">cog: 11,</span>
+        <span class="mk-blue">wheel: Wheel.new(26, 1.5)</span>).gear_inches
+
+p
+  | 優點：
+p
+  ul
+    li
+      | 上面的缺點都不見了。
+      
+h2 明確地定義預設值 Explicitly Define Defaults
+
+p 有三種方式：
+
+h3 使用 ll 
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, :wheel
+        def initialize(args)
+          @chainring = <span class="mk-blue">args[:chainring] || 40</span>
+          @cog       = <span class="mk-blue">args[:cog] || 18</span>
+          @wheel     = args[:wheel]
+        end
+        # ...
+      end
+
+p 缺點：
+p
+  ul
+    li
+      | 使用 || 的話，你無法傳入一個false的boolean值，它會被預設值蓋掉。
+
+h3 使用Hash的fetch
+
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, :wheel
+        def initialize(args)
+          @chainring = <span class="mk-blue">args.fetch(:chainring, 40)</span>
+          @cog       = <span class="mk-blue">args.fetch(:cog, 18)</span>
+          @wheel     = args[:wheel]
+        end
+        # ...
+      end
+
+p 優點：
+p
+  ul
+    li
+      | 上面的缺點不見了。
+
+h3 使用Hash的merge
+
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, :wheel
+        def initialize(args)
+          <span class="mk-blue">args = defaults.merge(args)</span>
+          @chainring = args[:chainring]
+          @cog       = args[:cog]
+          @wheel     = args[:wheel]
+        end
+        # ...
+        <span class="mk-blue">def defaults</span>
+          <span class="mk-blue">{ chaining: 40, cog: 18 }</span>
+        <span class="mk-blue">end</span>
+        # ...
+      end
+
+p 優點：
+p
+  ul
+    li
+      | 同樣沒有 || 的問題。
+    li
+      | 預設值都集中定義在defaults中，方便管理與取用。
+
+h2 使用hash當參數的缺點
+
+p 缺點：
+p
+  ul
+    li
+      | 程式的可讀性降低，從method的參數列來看，只知道有一個args的參數，但看不出來要放什麼東西進args。
+    li
+      | 失去原本參數列檢查必要參數的功能。如果使用原本的參數列，當必要參數沒給或是參數的數量不對，就會出現
+      code
+        | ArgumentError: wrong number of arguments (x for y)
+      | 。但改成hash之後，如果必要參數沒給，出錯的地方會變成在使用參數的時候出現，增加debug的困難。
+p 改善方式：
+p
+  ul
+    li 使用Ruby 2.0 的 Key Arguments
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, :wheel
+        def initialize(<span class="mk-blue">chainring: 40, cog: 18, wheel:</span>)
+          @chainring = chainring
+          @cog   = cog
+          @wheel = wheel
+        end 
+        # ...
+      end 
+
+      Gear.new(
+        chainring: 52, 
+        cog: 11, 
+        wheel: Wheel.new(26, 1.5)).gear_inches
+p 優點：
+p
+  ul
+    li
+      | 上面的缺點不見了。
