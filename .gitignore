@@ -1,5 +1,8 @@
 # outputs
-build/
+build/*.html
+build/css
+build/js
+build/posts
 
 # Gemfile.lock
 Gemfile.lock
@@ -9,6 +12,9 @@ Gemfile.lock
 
 # sass cache
 .sass-cache
+
+# mac
+**.DS_Store
 
 # temp
 temp/
