@@ -43,7 +43,7 @@ opt_parser = OptionParser.new do |opts|
                 "Assign the templates to support. The default value is \"post\".") do |template|
     options.template = template
   end
-  opts.on("-D", "--draft", "Create a draft instead, the file would be stored in src/drafts/.") do |d|
+  opts.on("-D", "--draft", "Create a draft instead, the draft meta would be added in the post.") do |d|
     options.draft = d
   end
   opts.on("-e", "--editor editor",

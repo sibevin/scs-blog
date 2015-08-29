@@ -1,4 +1,5 @@
 @import "modules/globals"
+@import "compass/css3/box-shadow"
 
 .menu
   position: fixed
@@ -6,6 +7,7 @@
   bottom: $header_h
   width: $menu_main_w
   border-left: $menu_border_w solid
+  +single-box-shadow(-10px, 0px, 10px, -5px, $c_l, inset)
   ul
     position: absolute
     bottom: 0px
