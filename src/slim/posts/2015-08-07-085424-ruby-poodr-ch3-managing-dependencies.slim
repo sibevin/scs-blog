@@ -1,11 +1,10 @@
 .meta-data title rails 讀書會 - POODR - Ch3 管理相依性
 .meta-data datetime 2015-08-07 08:54:24
-.meta-data tags ruby,ooad,rails_study-group,test
+.meta-data tags ruby,ooad,rails_study-group
 .meta-data category coding
 .meta-data link ruby-poodr-ch3-managing-dependencies
 .meta-data file 2015-08-07-085424-ruby-poodr-ch3-managing-dependencies
 .meta-data template post
-.meta-data draft
 .meta-data end
 
 p
@@ -25,6 +24,10 @@ p
 h1 了解相依性
 p
   | 相依性的定義：一個物件相依於另一個物件表示當其中一個物件改變時，另一個物件可能會被強迫也跟著改變。
+.image-center
+  img src="/images/post/20150830080115851-gear-class.png" alt="範例程式碼參數示意圖"
+  .image-text
+    | 範例程式碼參數示意圖
 pre
   code
     | class Gear
@@ -473,3 +476,171 @@ p
   ul
     li
       | 上面的缺點不見了。
+h2 隔離多參數的初始化 Isolate Multiparameter Initialization
+p
+  | 事情總是沒有想像的美好，如果Gear無法更改它的參數列(例如Gear是一個SomeFramework的class，我們無法更動它)，但我們希望之後可以使用hash參數的好處，那要怎麼修改比較好？
+
+pre
+  code
+    | module SomeFramework
+        class Gear
+          attr_reader :chainring, :cog, :wheel
+          def initialize(chainring, cog, wheel)
+            @chainring = chainring
+            @cog       = cog
+            @wheel     = wheel
+          end
+          # ...
+        end
+      end
+p
+  | 修改方式：
+p
+  ul
+    li
+      | 使用wrapper(factory)當跳板。
+pre
+  code
+    | module GearWrapper
+        def self.gear(args)
+          SomeFramework::Gear.new(
+            args[:chainring]
+            args[:cog]
+            args[:wheel])
+        end
+      end
+
+      GearWrapper.gear(
+        chainring: 52, 
+        cog: 11,
+        wheel: Wheel.new(26, 1.5)).gear_inches
+p 補充：
+p
+  ul
+    li
+      | 這裡不得不提到design pattern中的proxy pattern，簡單來說就是一個轉接頭的概念。
+
+h1 管理相依性的方向 Managing Dependency Direction 
+
+h2 逆轉相依性的方向 Reversing Dependencies
+
+p
+  | 相依是具有向相性的，以上面的例子而言，改了Wheel會使Gear也跟著改，但改了Gear並不會影響Wheel，也就是Gear是相依於Wheel。我們可以重新撰寫程式碼讓相依的方向完全顛倒，下面就是一個例子。
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog
+        def initialize(chainring, cog)
+          @chainring = chainring
+          @cog = cog
+        end
+
+        def gear_inches(diameter)
+          ratio * diameter
+        end
+
+        def ratio
+          chainring / cog.to_f
+        end
+        # ...
+      end
+
+      class Wheel
+        attr_reader :rim, :tire, :gear
+        def initialize(rim, tire, chainring, cog)
+          @rim = rim
+          @tire = tire
+          @gear = Gear.new(chainring, cog)
+        end
+
+        def diameter
+          rim + (tire * 2)
+        end
+
+        def gear_inches
+          gear.gear_inches(diameter)
+        end
+
+        def y_pos
+          diameter / 2
+        end
+        # ...
+      end
+
+      Wheel.new(26, 1.5, 52, 11).gear_inches
+p
+  | 即然我們可以改變相依性的方向，挑選相依於哪一個class就顯得特別重要。
+
+h2 挑選相依性的方向 Choosing Dependency Direction
+
+p
+  | 原則：相依於一個比你還少變動的東西。
+
+p
+  | 程式碼有下面三個事實：
+p
+  ul
+    li
+      | 有些class相較於其它的class是比較容易產生變動的。
+    li
+      | 實體的(Concrete) class相較於抽象的(Abstract) class是比較容易產生變動的。
+    li
+      | 變動一個擁有許多相依性的class會造成擴散性的災難。
+
+h2 了解變動的程度 Understanding Likelihood of Change
+p
+  | ruby原生的class變動的程度 < framework的class變動的程度 < 你自己寫的class變動的程度
+
+h2 辨識實體性與抽象性 Recognizing Concretions and Abstractions
+
+p
+  | 抽象性：不關聯於一個特定的instance。
+p
+  | 一個Wheel.new所建立的instance v.s. 一個只需要respond_to diameter的@wheel變數
+
+h2 避免擁有大量相依性的類別 Avoiding Dependent-Laden Classes
+
+p
+  | 如果很多class都相依於某個class，則當這個class變動的時候，就是痛苦的開始。
+
+h2 找出重要的相依性 Finding the Dependencies That Matter
+
+table
+  tbody
+    tr
+      td rowspan="2"
+        | 相依程度
+      td
+        | 高(許多class相依於它)
+      td
+        | A
+      td
+        | D
+    tr
+      td
+        | 低(很少class相依於它)
+      td
+        | B
+      td
+        | C
+    tr
+      td rowspan="2" colspan="2"
+      td
+        | 少(不常變動)
+      td
+        | 多(很常變動)
+    tr
+      td colspan="2"
+        | 變動頻率
+p
+  ul
+    li
+      | A (Abstract Zone)：很少變動，但很多class相依於它。(Interface)
+    li
+      | B (Neutral Zone)：很少變動，而且變動的時候不會有什麼影響。
+    li
+      | C (Neutral Zone)：很常變動，但變動的時候不會有什麼影響。
+    li
+      | D (Danger Zone)：很常變動，而且一旦變動會造成災難。
+p
+  | 規劃良好的程式碼，它的class會分佈在A, B, C這三個區域之中。而D則是在寫程式時應該要盡量避免。
