@@ -5,14 +5,17 @@ module Rack
     def call(env)
       status, headers, response = @file_server.call(env)
       if status == 404
-        if env["PATH_INFO"] == "/"
+        ori_path = env["PATH_INFO"]
+        if ori_path == "/"
           env["PATH_INFO"] = "index.html"
         else
-          env["PATH_INFO"] = "#{env["PATH_INFO"]}.html"
-        end
-        status, headers, response = @file_server.call(env)
-        if status == 404
-          env["PATH_INFO"] = App::ERROR_404_PATH
+          env["PATH_INFO"] = "#{ori_path}.html"
+          status, headers, response = @file_server.call(env)
+          if status == 404
+            env["PATH_INFO"] = "#{ori_path}/index.html"
+            status, headers, response = @file_server.call(env)
+            env["PATH_INFO"] = App::ERROR_404_PATH if status == 404
+          end
         end
       end
       super
