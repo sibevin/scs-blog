@@ -115,11 +115,11 @@ pre
     | module SubCipher
         VERSION = "0.0.1"
       end
-  p
-    | 這樣的目錄其實就是標準一個gem應該要有的架構，lib/sub_cipher.rb就是gem的切入點。別人在
-    code
-      | require "sub_cipher"
-    | 的時候，require的目標就是lib/sub_cipher.rb這個檔案，至於其它的程式碼都應該放在lib/sub_cipher/之下。
+p
+  | 這樣的目錄其實就是標準一個gem應該要有的架構，lib/sub_cipher.rb就是gem的切入點。別人在
+  code
+    | require "sub_cipher"
+  | 的時候，require的目標就是lib/sub_cipher.rb這個檔案，至於其它的程式碼都應該放在lib/sub_cipher/之下。
 h1 測試
 p
   | 自從ruby 2.0之後，官方建議使用minitest做為標準的測試工具。這個改變對於ruby 2.0以上的環境沒有什麼影響，但對於舊版本的ruby必須要在測試檔做一些修改。先看一下sub_cipher的測試檔範例：

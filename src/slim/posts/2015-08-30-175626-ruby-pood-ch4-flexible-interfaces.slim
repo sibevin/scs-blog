@@ -1,0 +1,192 @@
+.meta-data title rails 讀書會 - POODR - Ch4 建立具有彈性的界面
+.meta-data datetime 2015-08-30 17:56:26
+.meta-data tags ruby,ooad,rails_study-group
+.meta-data category coding
+.meta-data link ruby-pood-ch4-flexible-interfaces
+.meta-data file 2015-08-30-175626-ruby-pood-ch4-creating-flexible-interfaces
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+p
+  | class決定你的程式碼長什麼樣子，message決定你的程式怎麼運作。因此設計除了要考慮class知道什麼(responsiblities)，或是知道誰(dependencies)，它們之間怎麼溝通也必須要加入考慮，而界面就是用來決定怎麼溝通。
+
+h1 了解界面
+
+h2
+  | 彼此都相互關聯的class v.s. 只有定義特定的class才有關聯
+table
+  thead
+    tr
+      th
+        | 彼此都相互關聯的class
+      th
+        | 只有定義特定的class才有關聯
+  tbody
+    tr
+      td
+        | 不容易reuse，class很難抽離出來，改一個地方，其它相關連的class也要跟著改。
+      td
+        | class之間關聯性低，可以模組化。
+    tr
+      td
+        | 過度暴露，所有的class都可以存取。
+      td
+        | 明確的定義哪些class可以用。
+h2
+  | Interface的定義：
+ul
+  li
+    | 定義在class之中，class的public methods即稱作這個class的interface。(本章內容)
+  li
+    | 定義在class之間，interface即是virtual class，定義了一些需要實作的methods。 - Ch 5 使用鴨子型態減少開發成本 (Reduce Cost with Duck Typing)
+    
+h1 定義界面
+
+p
+  | 想像餐廳運作的方式，客人來餐廳吃飯，應該只能經由菜單點餐，點完餐之後，餐廳廚房根據點餐的訂單來煮菜，最後客人會得到他想要的餐點。而廚房可以看做一個class，菜單可以看作是這個class的public interface，至於菜要怎麼煮其實就是對應這個class的private message，客人不應該干涉廚房要怎麼煮菜。 
+
+h2 公開界面(Public Interface) v.s. 私有界面(Private Interface)
+
+table
+  thead
+    tr
+      th
+        | 公開界面(Public Interface)
+      th
+        | 私有界面(Private Interface)
+  tbody
+    tr
+      td
+        | 讓別人可以存取。
+      td
+        | 隱藏的實作細節。
+    tr
+      td
+        | 預期會有別人來呼叫它。
+      td
+        | 不會有其它的物件來呼叫它。
+    tr
+      td
+        | 不常變動。
+      td
+        | 可以隨時變動。
+    tr
+      td
+        | 其它人可以相依於它。
+      td
+        | 其它人不可以相依於它。
+    tr
+      td
+        | 可以藉由測試來當做它的使用文件。
+      td
+        | 測試不一定會存取它。
+
+h2 責任、相依性與界面的關係
+p
+  | 公開界面應該要能描述一個class的責任，而且也表明了一個class有哪些method是可以相依的。
+
+h1 尋找公開界面
+p
+  | 設計的目標應應要保留未來需求的彈性，同時達到只實作目前所需要的功能。好的界面減少未預期的改變所帶來的成本，反之亦然。
+  
+h2 範例：單車旅遊公司
+p
+  | 需求列表：
+p
+  ul
+    li
+      | 提供平路(road trip)與山路(mountain trip)行程。
+    li
+      | 每個行程(trip)都有一定的路線(route)，而且每年會舉辦很多次。
+    li
+      | 每個行程(trip)都有規定參加人數(customer)，而且也需要一定數量的導遊擔任技工(mechanics)的工作。
+    li
+      | 每個路線(route)都對應一個有氧運動困難度(aerobic difficulty)，而山路行程的路線則額外有另一個技術困難度(technical difficulty)。
+    li
+      | 每個參與行程的人(customer)都會評量對應的有氧運動困難度(aerobic difficulty)與技術困難度(technical difficulty)來決定適合的行程(trip)。
+    li
+      | 每個參與行程的人(customer)可以選擇自備單車(their own bicycle)或是租用單車(rental bicycle)。
+    li
+      | 租賃用的單車可以是公司(FastFeet)提供或是由當地的單車店(local bike shops)提供。
+    li
+      | 租賃用的單車有分不同的大小(size)，分別適用於不同的平路(road trip)與山路(mountain trip)行程。
+p
+  | 情境：
+p
+  ul
+    li
+      | 一個客戶(customer)想要知道他可以參加的行程(trip)，根據適合的困難度(difficulty)、日期(date)、與可租用的單車(rental bicycle)。
+
+h2 建構意圖 Constructing an Intention
+
+p
+  | 你可能預期會有Customer, Trip, Route, Bike, Mechanic等class，這些稱做domain object。它們很容易被找出來，因為它們是出現在需求中的名詞，會帶有資料(data)與行為(behavior)。但要注意的是domain object不能當作設計的基準，一旦你建立了domain object，你就會試圖在object中加上行為，而這可能會是個錯誤的安排。有設計經驗的人會注意到domain object，但會更著重在object彼此要如何傳遞message，進而找出更為重要但不是這麼明顯的object。
+
+h2 使用循序圖 Using Sequence Diagrams
+
+.image-center
+  img src="/images/post/20150830201516055-ch4_4.3.png" alt="4.3"
+  .image-text
+    | 4.3
+p
+  | 上面的圖可以解釋成
+  code 
+    | Customer Meo
+  | 呼叫了
+  code
+    | Trip
+  | class的
+  code
+    | suitable_trips
+  | ，而
+  code
+    | suitable_trips
+  | 需要三個參數：
+  code
+    | on_date, of_difficulty, need_bike
+  | 。我們在畫圖的時候就會發現一個問題，
+  code
+    | Trip
+  | 適合用來尋找可以用的單車嗎？感覺好像不適合。
+p.text-blue
+  | 這是一個重要的改變，設計的方式從「我知道我需要一個class，那它需要做什麼？(思考一個class裡要放什麼method)」轉變成「我需要送這個message，那要由哪個class來接收它？(思考哪個class適合接受這個message)」。
+p
+  | 如果
+  code
+    | Trip
+  | 不適合找可以用的單車，那將找單車的事情交給
+  code
+    | Bicycle
+  | 來做，先對
+  code
+    | Trip
+  | 呼叫
+  code
+    | suitable_trips
+  | 找出適合的行程，再將每個行程對
+  code
+    | Bicycle
+  | 呼叫
+  code
+    | suitable_bicycle
+  | 。
+.image-center
+  img src="/images/post/20150830203827833-ch4_4.4.png" alt="4.4"
+  .image-text
+    | 4.4
+p
+  | 這樣的修改雖然改善了責任歸屬的問題，可是
+  code 
+    | Customer
+  | 卻知道太多「如何取得適合的行程」的細節。
+h2 問「要什麼」而非「怎麼做」 Asking for “What” Instead of Telling “How”
+p
+  | 情境：在出發之前，行程Trip需要技工Mechanic調整每一台單車。
+p
+  | 由圖4.5可以發現Trip控制了Mechanic要怎麼做事(how)，變成Trip知道太多整理單車的細節，很明顯是一備錯誤。而圖4.6則稍為改善了程式碼，將技工調整單車的動作放在
+  codde
+    | prepare_bicycle(bike)
+  | 這個method中，也就是Trip不需要知道如何整理單車，而是知道呼叫完
+  code
+    | prepare_bicycle(bike)會得到什麼(what)，降低了Trip與Mechanic的相依性。
