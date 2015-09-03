@@ -27,6 +27,7 @@ $tags = {
     color: "#f5f500",
   },
   "angularjs" => {
+    name: "AngularJS",
     color: "#b94a48",
   },
   "jasmine" => {
