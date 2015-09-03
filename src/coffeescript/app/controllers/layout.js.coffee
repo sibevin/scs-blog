@@ -1,6 +1,6 @@
 angular.module("scsBlogApp").controller "LayoutCtrl", [
-  '$scope', '$filter', 'TabSwitcher', 'APP_TAG_DATA', 'APP_CATEGORY_DATA', 'APP_POST_DATA'
-  ($scope,   $filter,   TabSwitcher,   APP_TAG_DATA,   APP_CATEGORY_DATA,   APP_POST_DATA) ->
+  '$scope', '$filter', '$window', 'TabSwitcher', 'APP_TAG_DATA', 'APP_CATEGORY_DATA', 'APP_POST_DATA'
+  ($scope,   $filter,   $window,   TabSwitcher,   APP_TAG_DATA,   APP_CATEGORY_DATA,   APP_POST_DATA) ->
 
     $scope.switchFooter = (tab, is_switch = true) ->
       if is_switch
@@ -36,6 +36,28 @@ angular.module("scsBlogApp").controller "LayoutCtrl", [
         $scope.search_count = filtered_posts.length
         filtered_posts = $filter("orderBy")(filtered_posts, "datetime", true)
       filtered_posts
+
+    $scope.layoutKeyDown= (event) ->
+      if event.keyCode == 27 # esc
+        $scope.footer_ts.switch("close")
+      unless $scope.footer_ts.isTab("search")
+        switch event.keyCode
+          when 191 # /
+            $scope.footer_ts.switch("search")
+          when 77 # m
+            $scope.footer_ts.switch("menu")
+          when 80 # p
+            $window.location.href = "/posts"
+          when 84 # t
+            $window.location.href = "/tags"
+          when 67 # c
+            $window.location.href = "/categories"
+          when 87 # w
+            $window.location.href = "/works"
+          when 65 # a
+            $window.location.href = "/about"
+          when 72 # h
+            $window.location.href = "/"
 
     initVars = ->
       $scope.footer_ts = new TabSwitcher("close")

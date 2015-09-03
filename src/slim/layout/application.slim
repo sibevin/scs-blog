@@ -20,7 +20,7 @@ html
     script src="/js/app.min.js"
     javascript:
       hljs.initHighlightingOnLoad();
-  body.theme-color-default.layout ng-controller="LayoutCtrl" ng-class="{'lo-menu-open':footer_ts.isTab('menu')}"
+  body.theme-color-default.layout ng-controller="LayoutCtrl" ng-class="{'lo-menu-open':footer_ts.isTab('menu')}" ng-keydown="layoutKeyDown($event)"
     .main-container
       section.main
         == yield
