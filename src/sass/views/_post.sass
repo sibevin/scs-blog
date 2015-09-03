@@ -11,7 +11,13 @@
       tr
         &:hover
           background: $c_ll
-      td
+      @mixin cell
         border: 1px $c_black solid
         +adjust-font-size-to($fs_def)
         padding: 0px 8px
+      td
+        +cell
+      th
+        +cell
+        font-weight: bold
+        background: $c_ll
