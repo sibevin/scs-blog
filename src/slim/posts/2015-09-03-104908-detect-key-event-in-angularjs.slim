@@ -1,0 +1,115 @@
+.meta-data title 使用AngularJS偵測按鍵事件
+.meta-data datetime 2015-09-03 10:49:08
+.meta-data tags angularjs
+.meta-data category coding
+.meta-data link detect-key-event-in-angularjs
+.meta-data file 2015-09-03-104908-detect-key-event-in-angularjs
+.meta-data template post
+.meta-data end
+
+p
+  | AngualrJs提供了
+  code
+    | ng-keyup, ng-keydown, ng-keypress
+  | 可以用來偵測按鍵事件。
+h1 範例
+h2
+  | html
+pre
+  code
+    = '<div ng-controller="MyCtrl">' + "\n"
+    = '  <input.search-input ng-keydown="onSearchKeyDown($event)">' + "\n"
+    = '</div>'
+h2
+  | js
+pre
+  code
+    | angular.module("exApp").controller("MyCtrl", function ($scope)
+      {
+          $scope.onSearchKeyDown = function (event) {
+            # do something ...
+            $scope.key = event.keyCode
+          };
+      }
+.demo ng-controller="MyCtrl"
+  javascript:
+    angular.module("scsBlogApp").controller("MyCtrl", function ($scope)
+    {
+      $scope.onSearchKeyDown = function (event) {
+        $scope.key = "key code = " + event.keyCode
+        event.stopPropagation();
+      };
+      function init() {
+        $scope.key = "key code = "
+      };
+      init();
+    });
+  p
+    input ng-keydown="onSearchKeyDown($event)"
+  p
+    | {{key}}
+p
+  | 注意AngularJS的event會被傳遞至上層的DOM，例如：
+h2
+  | html
+pre
+  code
+    = '<div ng-controller="MyCtrl">' + "\n"
+    = '  <div.menu-panel ng-keydown="onMenuKeyDown($event)">' + "\n"
+    = '    <input.search-input ng-keydown="onSearchKeyDown($event)">' + "\n"
+    = '  </div>' + "\n"
+    = '</div>'
+h2
+  | js
+pre
+  code
+    | angular.module("exApp").controller("MyCtrl", function ($scope)
+      {
+          $scope.onMenuKeyDown = function (event) {
+            $scope.keyMenu = event.keyCode
+          };
+          $scope.onSearchKeyDown = function (event) {
+            $scope.keySearch = event.keyCode
+          };
+      }
+.demo ng-controller="My2Ctrl"
+  javascript:
+    angular.module("scsBlogApp").controller("My2Ctrl", function ($scope)
+    {
+      $scope.onMenuKeyDown = function (event) {
+        $scope.keyMenu = "key code = " + event.keyCode
+        event.stopPropagation();
+      };
+      $scope.onSearchKeyDown = function (event) {
+        $scope.keySearch = "key code = " + event.keyCode
+      };
+      function init() {
+        $scope.keyMenu = "key code = "
+        $scope.keySearch = "key code = "
+      };
+      init();
+    });
+  p
+    div style="color:red;border:2px solid red" ng-keydown="onMenuKeyDown($event)"
+      | {{keyMenu}}
+      br
+      span style="color:blue;border:2px solid blue"
+        input ng-keydown="onSearchKeyDown($event)"
+        | {{keySearch}}
+p
+  | 這時可以加上
+  code
+    | event.stopPropagation();
+  | 來停止事件的傳遞。
+pre
+  code
+    | angular.module("exApp").controller("MyCtrl", function ($scope)
+      {
+          $scope.onMenuKeyDown = function (event) {
+            $scope.keyMenu = event.keyCode
+          };
+          $scope.onSearchKeyDown = function (event) {
+            $scope.keySearch = event.keyCode
+            <span class="mk-blue">event.stopPropagation();</span>
+          };
+      }
