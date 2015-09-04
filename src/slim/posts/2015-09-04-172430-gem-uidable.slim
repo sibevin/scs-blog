@@ -1,0 +1,81 @@
+.meta-data title Uidable - 在model或class中建立uid
+.meta-data datetime 2015-09-04 17:24:30
+.meta-data tags ruby_gem,work
+.meta-data category coding
+.meta-data link gem-uidable
+.meta-data file 2015-09-04-172430-gem-uidable
+.meta-data template gem
+.meta-data end
+
+ul
+  li
+    a href="https://github.com/sibevin/uidable" target="_blank" Homepage
+  li
+    a href="https://github.com/sibevin/uidable" target="_blank" Github
+  li
+    a href="https://rubygems.org/gems/uidable" target="_blank" RubyGem
+    code
+      |  (uidable)
+h1 What
+p
+  | 在model或class中建立uid(unique identifier)
+h1 Why
+p
+  | 如果你希望能在model中建立新資料的時候能自動生出一個uid，但這個uid必須是read-only，而且有presence與uniqueness的vaildation，那麼這個gem就是在做這件事。
+h1 How
+h2 Model
+p
+  ul
+    li
+      | 建立一個migration將uid的column加到你的model中。
+    li
+      | 在model中include Uidable。
+    li
+      | 在model設定uidable。
+    li
+      | 當新的資料被建立的時候，uid會自動生成。注意：如果只是new一個資料，那uid仍然是空值。
+pre
+  code.ruby
+    | class AddUidToMyModels < ActiveRecord::Migration
+        def change
+          add_column :my_models, :uid, :string, null: false
+          add_index :my_models, :uid, unique: true
+        end
+      end
+pre
+  code.ruby
+    | class MyModel
+        include Uidable
+        uidable
+      end
+
+      a = MyClass.new
+      a.uid # nil
+      a.save
+      a.uid "cmerft8rotdy7wvmtxc63ljoxos67bc8"
+h2 Ruby Class
+p
+  ul
+    li
+      | 在class中include Uidable。
+    li
+      | 在class設定uidable。
+    li
+      | 當新的instance被建立的時候，uid會自動生成。
+pre
+  code.ruby
+    | class MyClass
+        include Uidable
+        uidable uid_size: 64, read_only: false
+      end
+
+      a = MyClass.new
+      a.uid # "zcf45ltmkyh4w2ofsc1rp8dka6wi4flt3h3szwo1z4rkfsvk387mclg1cikutbc7"
+p
+  | 這個gem還提供了一些選項可以做調整，例如更新uid的欄位名稱，或是讓
+  code
+    | to_param
+  | 回傳uid而非id，詳細的使用方式可以參考它的測試檔案。
+h1 心得
+p
+  | 從很早之前，我就已經在我的project中使用了uidable，只是它是一個自己寫的concern，最近才決定把它寫成一個gem。不過因為之前都沒有寫過用在ActiveRecord的gem，所以參考了enumerize與sunspot的程式碼，發現裡面用了超多的meta-programming的技巧，再加上module的include與extend，真的讓我功力大增啊。
