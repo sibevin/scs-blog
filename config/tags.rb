@@ -64,4 +64,7 @@ $tags = {
   "work" => {
     name: "作品"
   },
+  "devise" => {
+    color: "#0f4361"
+  },
 }
