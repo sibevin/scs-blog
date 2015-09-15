@@ -1,0 +1,361 @@
+.meta-data title rails 讀書會 - POODR - Ch5 使用鴨子型態來降低開發成本
+.meta-data datetime 2015-09-15 08:12:58
+.meta-data tags ruby,ooad,rails_study-group
+.meta-data category coding
+.meta-data link ruby-poodr-ch5-duck-typing
+.meta-data file 2015-09-15-081258-ruby-poodr-ch5-duck-typing
+.meta-data template post
+.meta-data end
+
+h1 Understanding Duck Typing
+p
+  ul
+    li
+      | 如何使用一個物件，並不是看物件本身是什麼(what it is)，而是看它有什麼行為(what it does)。
+    li
+      | Duck Typing就是一系列的public methods不關連或綁定在某個特定的class。
+    li
+      | 當我看見一隻鳥，它在叫的時候像一隻鴨子在叫，在游泳的時候像一隻鴨子在游泳，在飛的時候像一隻鴨子在飛，那我就認定它是一隻鴨子。
+
+h2 Overlooking the Duck
+p
+  | 一個行程(Trip)在開始之前需要準備東西(prepare)，根據不同的身份，要準備的東西也不同，例如：技工(Mechanic)必須要準備腳踏車(prepare_bicycles)，行程規劃人員(TripCoordinator)要去買食物(buy_food)，駕使(Driver)要將車子油(gas_up)與水(fill_water_tank)加滿。
+pre
+  code
+    | class Trip
+        attr_reader :bicycles, :customers, :vehicle
+
+        def prepare(preparers)
+          preparers.each {|preparer|
+            case preparer
+            when Mechanic
+              preparer.prepare_bicycles(bicycles)
+            when TripCoordinator
+              preparer.buy_food(customers)
+            when Driver
+              preparer.gas_up(vehicle)
+              preparer.fill_water_tank(vehicle)
+            end
+          }
+        end
+      end
+      
+      class Mechanic
+        def prepare_bicycles(bicycles)
+          bicycles.each {|bicycle| prepare_bicycle(bicycle)}
+        end
+        
+        def prepare_bicycle(bicycle)
+          #...
+        end 
+      end
+
+      class TripCoordinator
+        def buy_food(customers)
+          # ...
+        end
+      end
+
+      class Driver
+        def gas_up(vehicle)
+          #...
+        end
+
+        def fill_water_tank(vehicle)
+          #...
+        end
+      end
+
+p
+  | 缺點：
+p
+  ul
+    li
+      | 如果
+      code
+        | Mechanic
+      | 的
+      code
+        | prepare_bicycles
+      | 改了它的名字，
+      code
+        | Trip
+      | 這個class的
+      code
+        | prepare
+      | method就必須跟著改變。
+    li
+      | 當有一個新的身份加進來，
+      code
+        | Trip
+      | 這個class的
+      code
+        | prepare
+      | method也要跟著改變。
+
+h2 Finding the Duck
+p
+  | 改善方式：
+p
+  ul
+    li
+      | 讓 Mechanic, TripCoodinator, Driver 有共同的public method
+      code
+        | prepare_trip
+      | ，Trip的prepare只需要呼叫prepare_trip即可。
+pre
+  code
+    | class Trip
+        attr_reader :bicycles, :customers, :vehicle
+        def prepare(preparers)
+          preparers.each do |preparer|
+            preparer.prepare_trip(self)
+          end
+        end
+      end
+
+      class Mechanic
+        def prepare_trip(trip)
+          trip.bicycles.each do |bicycle|
+            prepare_bicycle(bicycle)
+          end
+        end
+        # ...
+      end
+
+      class TripCoordinator
+        def prepare_trip(trip)
+          buy_food(trip.customers)
+        end
+        # ...
+      end
+
+      class Driver
+        def prepare_trip(trip)
+          vehicle = trip.vehicle
+          gas_up(vehicle)
+          fill_water_tank(vehicle)
+        end
+        # ...
+      end
+p
+  ul
+    li
+      | 之前的問題都不見了。
+    li
+      | 只要是實作prepare_trip的class都可以傳進Trip的prepare，不用管實際傳進來的是什麼object，增加了使用的彈性。
+
+h2 Consequences of Duck Typing
+p
+  | 多型(Polymorphism)：同一個method在不同的class中有不同的實作。Duck Typing就是其中一種polymorphism的方式。
+
+h1 Writing Code That Relies on Ducks
+
+h2 Recognizing Hidden Ducks
+
+p
+  | 只要程式之中有下面三種情況，就要考慮是否要改用Duck Typing：
+
+h4
+  | 在case switch中判斷class的種類
+pre
+  code
+    | case preparer
+      when Mechanic
+        preparer.prepare_bicycles(bicycles)
+      when TripCoordinator
+        preparer.buy_food(customers)
+      when Driver
+        preparer.gas_up(vehicle)
+        preparer.fill_water_tank(vehicle)
+      end
+h4
+  | 使用
+  code
+    | kind_of?
+  | 或是
+  code
+    | is_a?
+pre
+  code
+    | if preparer.kind_of?(Mechanic)
+        preparer.prepare_bicycles(bicycle)
+      elsif preparer.kind_of?(TripCoordinator)
+        preparer.buy_food(customers)
+      elsif preparer.kind_of?(Driver)
+        preparer.gas_up(vehicle)
+        preparer.fill_water_tank(vehicle)
+      end      
+h4
+  | 使用
+  code
+    | responds_to?
+pre
+  code
+    | if preparer.responds_to?(:prepare_bicycles)
+        preparer.prepare_bicycles(bicycle)
+      elsif preparer.responds_to?(:buy_food)
+        preparer.buy_food(customers)
+      elsif preparer.responds_to?(:gas_up)
+        preparer.gas_up(vehicle)
+        preparer.fill_water_tank(vehicle)
+      end
+h2 Placing Trust in Your Ducks
+h2 Documenting Duck Types
+h2 Sharing Code Between Ducks
+h2 Choosing Your Ducks Wisely
+p
+  | 在某些情況下可以不使用Duck Typing，例如下面的例子：
+pre
+  code
+    | def first(*args)
+        if args.any?
+          if args.first.kind_of?(Integer) ||
+               (loaded? && !args.first.kind_of?(Hash))
+            to_a.first(*args)
+          else
+            apply_finder_options(args.first).first
+          end
+        else
+          find_first
+        end
+      end
+p
+  | 主要的原因是考量下面幾點：
+p
+  ul
+    li
+      | 這裡判斷的class類別都是ruby原生的class，相對來說變動的可能性很低。
+    li
+      | 為了要做Duck Typing，必須要patch ruby原生的class，除了增加開發的困難也會增加修改的風險。
+h1 Conquering a Fear of Duck Typing
+h2 Subverting Duck Types with Static Typing
+h2 Static versus Dynamic Typing
+h2 Embracing Dynamic Typing
+h1
+  | 補充
+p
+  | Duck Typing有幾個缺點：
+p
+  ul
+    li
+      | 比較難確定要實作哪些method。
+    li
+      | 不知道哪些class有實作method。
+    li
+      | 沒辦法定義default method。
+pre
+  code
+    | class MediaPlayer
+        def play(device)
+          device.play
+        end
+        
+        def stop(device)
+          device.stop
+        end
+      end
+
+      class Dvd
+        def play
+          puts "play a movie"
+        end
+        def stop
+          puts "stop"
+        end
+      end
+
+      class Cd
+        def play
+          puts "play a music"
+        end
+        def stop
+          puts "stop"
+        end
+      end
+
+      mp = MediaPlayer.new
+      mp.play(Dvd.new)
+      mp.play(Cd.new)
+      mp.stop(Dvd.new)
+      mp.stop(Cd.new)
+p 
+  | 缺點：
+p
+  ul
+    li
+      | 如果要加一個device，不知道要實作哪一些method才能放進MediaPlayer，必須去看MediaPlayer中怎麼使用device。
+    li
+      | 不知道有哪些class有實作支援MediaPlayer的device。
+    li
+      | 不能實作一個有預設行為的method用在device中，例如上面的Dvd與Cd中stop的實作方式都一樣，可是必須分別寫在Dvd與Cd中。
+p
+  | 改善方式：
+p
+  ul
+    li 將method定義在一個 Device module中，如果要放在MediaPlayer中當device時要include這個module。
+pre
+  code
+    | class MediaPlayer
+        def play(device)
+          device.play
+        end
+        
+        def stop(device)
+          device.stop
+        end
+      end
+
+      module Device
+        def play
+          raise "Should implment the play method in your device."
+        end
+
+        def stop
+         puts "stop"
+        end
+      end
+
+      class Dvd
+        include Device
+        def play
+          puts "play a movie"
+        end
+      end
+
+      class Cd
+        include Device
+        def play
+          puts "play a music"
+        end
+      end
+
+      class WrongDevice
+        include Device
+      end
+
+      mp = MediaPlayer.new
+      mp.play(Dvd.new)
+      mp.play(Cd.new)
+      mp.stop(Dvd.new)
+      mp.stop(Cd.new)
+      # mp.play(WrongDevice.new) # raise an exception if play method is not implemented
+p
+  | 優點：
+p
+  ul
+    li
+      | Device明確的定義有哪些method需要實作，甚至可以做檢查，例如上面的WrongDevice沒有實作play就會出exception。
+    li
+      | 只要include Device的class，就知道它可以用在MediaPlayer中的device。
+    li
+      | 預設的method可以在Device中定義，例如上面的stop。
+h1 Refs
+p
+  ul
+    li
+      a href="https://robots.thoughtbot.com/back-to-basics-polymorphism-and-ruby" target="_blank"
+        | Back to Basics: Polymorphism and Ruby
+    li
+      a href="http://confreaks.tv/videos/railsconf2015-nothing-is-something" target="_blank"
+        | Sandy Metz: Nothing is something

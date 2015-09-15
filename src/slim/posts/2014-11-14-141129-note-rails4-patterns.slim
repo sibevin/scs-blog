@@ -21,41 +21,46 @@ p
 p
   | 6. 可以使用scope merge在model scope中使用另一個model的scope。
 pre
-  code.hljs
+  code.ruby
     | class Comment < ActiveRecord
         belongs_to :post
         scope :approved, -> { where(approved: true) }
       end
-    class Post < ActiveRecord
-      has_many :comments
-      scope :with_approved_comments, -> { joins(:comments).merge(Comment.approved) }
-    end
+      
+      class Post < ActiveRecord
+        has_many :comments
+        scope :with_approved_comments, -> { joins(:comments).merge(Comment.approved) }
+      end
 pre
-  code.hljs
+  code.sql
     | SELECT "posts".* FROM "posts" INNER JOIN "comments" ON "comments"."post_id" = "post"."id" WHERE ("comments"."approved" = "t")
-  p
-    | 另一個scope merge的用處是決定存取相同attribute的scope優先權，當兩個scope chain在一起時，rails4會將兩個scope的結果都放進query中。而rails3則是後chain的scope贏，如果要讓rails4有相同的效果，可以用merge做chain，這時候後merge的scope贏。
-  p
-    | 7. rails4在models與controllers下都有concerns的目錄，可以將在多個model或是多個controller中重複用到的code放在concerns中再include進來。
-  p
-    | 8. 不應該將使用在view的邏輯運算放在model中，因為model不應該直接控制view。取而代之的是將view的邏輯運算搬到decorator，另外可以使用method_missing與respond_to_missing的技巧將model的method導向decorator。
+p
+  | 另一個scope merge的用處是決定存取相同attribute的scope優先權，當兩個scope chain在一起時，rails4會將兩個scope的結果都放進query中。而rails3則是後chain的scope贏，如果要讓rails4有相同的效果，可以用merge做chain，這時候後merge的scope贏。
+p
+  | 7. rails4在models與controllers下都有concerns的目錄，可以將在多個model或是多個controller中重複用到的code放在concerns中再include進來。
+p
+  | 8. 不應該將使用在view的邏輯運算放在model中，因為model不應該直接控制view。取而代之的是將view的邏輯運算搬到decorator，另外可以使用method_missing與respond_to_missing的技巧將model的method導向decorator。
 pre
-  code.hljs
+  code.ruby
     | class PostDecorator
         attr_reader :post
-      def initialize(post)
-        @post = post
+        
+        def initialize(post)
+          @post = post
+        end
+        
+        def is_front_page?
+          post.published_at > 2.days.ago
+        end
+        
+        def method_missing(method_name, *args, &block)
+          post.send(method_name, *args, &block)
+        end
+        
+        def respond_to_missing?(method_name, include_private = false)
+          post.respond_to?(method_name, include_private) || super
+        end
       end
-      def is_front_page?
-        post.published_at > 2.days.ago
-      end
-      def method_missing(method_name, *args, &block)
-        post.send(method_name, *args, &block)
-      end
-      def respond_to_missing?(method_name, include_private = false)
-        post.respond_to?(method_name, include_private) || super
-      end
-    end
 p
   | 相較於view helper，decorator可以限制存取的model，另外decorator是obejct，使用起來更方便直覺。
 p

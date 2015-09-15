@@ -1,0 +1,430 @@
+.meta-data title Rails Guides 筆記 - Asset Pipeline
+.meta-data datetime 2015-09-07 15:44:08
+.meta-data tags rails_asset,rails_guides,notes
+.meta-data category coding
+.meta-data link rails-guides-asset-pipeline-notes
+.meta-data file 2015-09-07-154408-rails-guides-asset-pipeline-notes
+.meta-data template post
+.meta-data end
+
+h1 1 What is the Asset Pipeline
+h2 1.1 Main Features
+p
+  ul
+    li 合併assets，頁面可以用更少的requests。
+    li 做minification或是compression，減少傳遞的資料量。
+    li 可以使用更高階的語言，例如：sass for css、coffeescript for javascript
+h2 1.2 Fingerpinting
+p
+  | fingerprint 是讓檔案名稱與檔案內容做配對，當內容更改時，檔名就會更改，主要用在cache的更新(cache busting)。rails預設的做法是在檔名中塞入一串由檔案內容hash而成的字串，例如：
+  code
+    | global.css 
+  | 會變成
+  code 
+    | global-908e25f4bf641868d8683022a5b62f54.css
+  |。
+p
+  | fingerprint 在production預設是開啟，但在其它的environment是關閉的。可以用
+  code
+    | config.assets.digest
+  | 來設定。
+h1 2 How to Use the Asset Pipeline
+p
+  | asset應該要放在
+  code
+    | app/assets
+  | 中，asset被處理完之後後會放在
+  code
+    | public/assets
+  | 中。而放在
+  code
+    | public
+  | 其它的地方的檔案會以靜態檔案的方式呈現(environment中要設定
+  code
+    | config.serve_static_files
+  | )。
+h2 2.1 Controller Specific Assets
+p
+  | 當使用scaffold建立controller時，針對controller中所使用的js與css，會建立一個對應的coffeescript與scss檔案。例如：controller如果是
+  code
+    | ProjectsController
+  | ，則
+  code
+    | app/assets/javascripts/projects.js.coffee
+  | 與
+  code
+    | app/assets/stylesheets/projects.css.scss
+  | 會被建立。它們會自動被require到applicaiton.js與applicaiton.css之中。
+p
+  | 你也可以在頁面中使用下面的語法做到獨立使用這兩個檔案，但記得要從application.js與application.css中移除它們。
+pre
+  code
+    = '<%= javascript_include_tag params[:controller] %>' + "\n"
+    = '<%= stylesheet_link_tag params[:controller] %>'
+p
+  | 如果你不想在scaffold建立controller的時候建立coffeescript與scss，你可以在
+  code
+    | config/application.rb
+  | 中加入下面的設定。
+pre
+  code.ruby
+    | config.generators do |g|
+        g.assets false
+      end
+h2 2.2 Asset Organization
+p
+  ul
+    li
+      code
+        | app/assets
+      | 放只有這個專案用到，自己寫的asset。
+    li
+      code
+        | lib/assets
+      | 放自己寫的asset，但比較像是跨專案的libaray。
+    li
+      code
+        | vendor/assets
+      | 不是自己寫的asset。注意放在這裡的第三方asset若有用到其它加入asset pipeline中的檔案，則需要使用asset_path來更改相依的asset路徑。
+p
+  | 注意放在
+  code
+    | lib/assets
+  | 與
+  code
+    | vendor/assets
+  | 下的asset不會自動做precompile。
+h3 2.2.1 Search Paths
+p
+  | 上面三個路徑預設都會加入asset pipleline的搜尋。預設有
+  code
+    | javascripts, stylesheet, images
+  | 三個子目錄，但其實任何其它在assets下的folder都會搜尋，如果還有sub folder，則要將sub folder也列出，例如：
+pre.bash
+  code
+    | app/assets/javascripts/home.js
+      app/assets/javascripts/sub/something.js
+      lib/assets/javascripts/moovinator.js
+      vendor/assets/javascripts/slider.js
+      vendor/assets/somepackage/phonebox.js
+pre
+  code
+    | //= require home
+      //= require sub/something
+      //= require moovinator
+      //= require slider
+      //= require phonebox
+p
+  | 你可以使用
+  code
+    | Rails.application.config.assets.paths
+  | 來查詢哪些路徑已經加入asset pipeline的搜尋。除了預設的assets/路徑之外，你也可以在
+  code 
+    | config/application.rb
+  | 中將其它的路徑加入到asset pipeline。
+pre
+  code
+    | config.assets.paths << Rails.root.join("lib", "videoplayer", "flash")
+p
+  | 另外，若有相同名稱的asset，會根據找到的優先序順，先找到的優先使用。例如：在app/assets下的檔案會優先於lib/assets與vendor/assets。
+  
+h3 2.2.2 Using Index Files
+p
+  | Sprockets對於命名為index的asset有特殊用途。例如你有一個library的js放在
+  code
+    | lib/assets/javascripts/library_name
+  | ，則
+  code
+    | lib/assets/javascripts/library_name/index.js
+  | 可以用來當作這個library的manifest，你可以在這個檔案裡列出所有的asset，或是使用
+  code
+    | require_tree
+  | 。這個時候，你可以直接使用下面的方式將這個library加入asset pipeline。
+pre
+  code
+    | //= require library_name
+h2 2.3 Coding Links to Assets
+p 
+  | 可以使用下面的method在view中使用asset pipeline的js與css：
+pre
+  code
+    = '<%= stylesheet_link_tag "application", media: "all" %>' + "\n"
+    = '<%= javascript_include_tag "application" %>'
+p
+  | 如果有使用turbolinks，則可以加上
+  code
+    | "data-turbolinks-track" => true
+  | 的設定，這樣turbolinks會去檢查asset有沒有做更動，如果有的話會自動去讀最新的asset。
+pre
+  code
+    = '<%= stylesheet_link_tag "application", media: "all", "data-turbolinks-track" => true %>' + "\n"
+    = '<%= javascript_include_tag "application", "data-turbolinks-track" => true %>'
+p
+  | 你可以使用
+  code
+    = '<%= image_tag "rails.png" %>'
+  | 來取得經過precompile的圖片(也就是帶有fingerprint的圖)
+  code
+    | public/assets/rails-af27b6a414e6da00003503148be9b409.png
+  | 。至於放在public下沒有fingerprint的圖，例如：
+  code
+    | public/assets/rails.png
+  | ，則與pipeline沒有關係，它是由web server直接提供。你也可以使用sub folder來管理你的asset，例如放在
+  code
+    | public/assets/images/icons
+  | 下的圖，可以用
+  code
+    = '<%= image_tag "icons/rails.png" %>'
+  | 來取得。
+p
+  | 要注意的是，如果
+  code
+    | image_tag
+  | 連到的是一個不存在的asset，會出exception。所以如果在處理使用者上傳的asset時，要特別小心。
+h3 2.3.1 CSS and ERB
+p
+  | 如果要在css中使用pipeline的檔案，你必須將你的css命名為.css.erb，接著使用
+  code
+    | asset_path
+  | 來取得對應的asset，例如：
+pre
+  code
+    = '.class { background-image: url(<%= asset_path \'image.png\' %>) }'
+p
+  | 這表示它會使用放在
+  code
+    | app/assets/images/image.png
+  | 的這個圖。如果你想要直接將圖embed到css中，可以用
+  code
+    | asset_data_uri
+  | ，例如：
+pre
+  code
+    = '#logo { background: url(<%= asset_data_uri \'logo.png\' %>) }'
+h3 2.3.2 CSS and Sass
+p
+  | 如果是sass的話，可以使用sass-rails中提供的-url與-path等helper，例如：
+pre
+  code
+    | image-url("rails.png") -> url(/assets/rails-af27b6a414e6da00003503148be9b409.png)
+      image-path("rails.png") -> "/assets/rails-af27b6a414e6da00003503148be9b409.png"
+p
+  | 或是更一般的helper
+pre
+  code
+    | asset-url("rails.png") -> url(/assets/rails-af27b6a414e6da00003503148be9b409.png)
+      asset-path("rails.png") -> "/assets/rails-af27b6a414e6da00003503148be9b409.png"
+h3 2.3.3 JavaScript/CoffeeScript and ERB
+p
+  | 要在js中使用pipeline的檔案，用的方式與css一樣，只是檔名要改成.js.erb。如果是coffeescript，則改成.js.coffee.erb。
+h2 2.4 Manifest Files and Directives
+p
+  | Sprockets使用manifest來決定哪些asset要被加進來，而在manifest中用來指定asset的語法我們稱做directives。如果加上
+  code
+    | Rails.application.config.assets.compress
+  | 的設定，則除了會合併多個asset到同一個檔案外，還會進行壓縮。下面是一個application.js與application.css的例子：
+p
+  i
+    | app/assets/javascripts/application.js
+pre
+  code.js
+    | // ...
+      //= require jquery
+      //= require jquery_ujs
+      //= require_tree .
+p
+  i
+    | app/assets/stylesheets/application.css
+pre
+  code.css
+    | /* ...
+      *= require_self
+      *= require_tree .
+      */
+p
+  | 有四種directive可以使用：
+p
+  ul
+    li
+      | require - 指定單一檔案，要注意的是require的檔案必須是在asset pipeline的搜尋路徑之中，另外副檔名可以不用寫。
+    li
+      | require_tree - 指定一個目錄下所有的檔案，同時也會遞迴找對應的子目錄下所有檔案。
+    li
+      | require_directory - 指定一個目錄下的檔案，但不包含子目錄下的檔案。
+    li
+      | require_self - 將定義在manifest中的程式碼也加進來。通常不建議使用這個，manifest應該只用來指定載入的檔案，而不應該包含其它的程式碼。
+p
+  | 使用directive要注意幾件事：
+p
+  ul
+    li
+      | 在manifest中的require是有順序性的，但從require_tree中取的的檔案順序則是未定義的，如果需要指定加進來的順序，只能用require先把要的檔案加進來。
+    li
+      | require會自動防止重複載入相同的asset。
+    li
+      | 除了applicaiton.js與application.css之外，你可以建立屬於自己的manifest，例如：admin.js與admin.css。
+    li
+      | 如果你是使用sass來撰寫你的css，建議使用
+      code
+        | @import *
+      | 或是
+      code
+        | @import **/*
+      | 等語法來組織你的css，而不要使用directive。使用import的好處是可以使用sass中的mixin與variable。
+h2 2.5 Preprocessing
+p
+  ul
+    li
+      | asset pipeline是根據副檔名來決定要採用哪一種preprocessing，例如.coffee就會compile成js、scss就會compile成css。
+    li
+      | 當在development environment，asset pipeline預設是關閉的，這時候當網頁送來asset的request時，這些asset檔案是直接經由coffee-script或是sass gem所提供的processor來compile asset檔案，再送回對應的js或css給瀏覽器。當asset pipeline是開啟的時候，asset的檔案會事先就compile好並放置到public/assets下，由rails app或是web server直接提供asset檔案給瀏覽器。
+    li
+      | 一個asset檔案可以同時使用多的preprocessing，是由副檔名來決定processing的順序，執行的順序是從右到左，例如：app/assets/stylesheets/projects.css.scss.erb表示會依序使用erb、scss 等preprocessing。要注意的是順序不能交換，因為如果先跑scss，則檔案中仍有erb的語法便會出錯。
+h1 3 In Development
+p
+  | 在development environment下，asset會以個別檔案的方式呈現，例如：
+p
+  i
+    | app/assets/javascripts/application.js
+pre
+  code
+    | //= require core
+      //= require projects
+      //= require tickets
+p
+  | 在html中會產生
+pre
+  code
+    = '<script src="/assets/core.js?body=1"></script>' + "\n"
+    = '<script src="/assets/projects.js?body=1"></script>' + "\n"
+    = '<script src="/assets/tickets.js?body=1"></script>'
+p
+  | 其中body=1是Sprockets需要用的參數。
+h2 3.1 Runtime Error Checking / 3.2 Turning Digests Off / 3.3 Turning Debugging Off
+p
+  | 在developement environment中可以設定下面的參數：
+p
+  ul
+    li
+      | config.assets.raise_runtime_errors - true：會檢查所有include的asset是否都列在config.assets.precompile。如果config.assets.digest也是true，則還會檢查require的asset是否都有fingerprint。false：不做runtime檢查。
+    li
+      | config.assets.digest - true：會讓asset帶有fingerpint。false：不使用fingerprint。
+    li
+      | config.assets.debug - false：關閉debug模式，表示會執行preprocessing，並使用manifest指定產生壓縮的檔案，例如
+      code
+        = '<script src="/assets/application.js"></script>'
+      | 。產生的檔案在第一次瀏覽器做request的時候會compile並cache起來，之後Sprockets會設定must-revalidate Cache-Control HTTP header讓瀏覽器得到304的response。如果manifest中的任何一個asset有做變更，則新的壓縮檔案會重新compile。
+p
+  | 當config.assets.debug = false時，你可以在html中用帶參數的方式來開啟debug模式，例如：
+pre
+  code
+    = '<%= stylesheet_link_tag "application", debug: true %>' + "\n"
+    = '<%= javascript_include_tag "application", debug: true %>'
+h1 4 In Production
+p
+  | 在production environment中，asset預設會進行precompile並產生對應的壓縮檔案放在public/assets下，並且會帶有fingerprint。例如：
+pre
+  code
+    = '<%= stylesheet_link_tag "application" %>' + "\n"
+    = '<%= javascript_include_tag "application" %>'
+p
+  | 會產生
+pre
+  code
+    = '<script src="/assets/application-908e25f4bf641868d8683022a5b62f54.js"></script>' + "\n"
+    = '<link href="/assets/application-4dd5b109ee3439da54f5bdfd78a80473.css" media="screen" rel="stylesheet" />'
+p
+  | 注意：你應該要在production中開啟config.assets.digest = true，因為如果不打開，當asset更新時，壓縮的檔案會因為cache的機制導致不會更新。
+h2 4.1 Precompiling Assets
+p
+  | 在environment中可以設定config.assets.prefix來指定產生的壓縮檔案要放在什麼地方，預設是/assets。在deployment的時候，可以在production server中下
+  code
+    | $ RAILS_ENV=production bin/rake assets:precompile
+  | 的rake指令來產生新的壓縮檔案。在Capistrano v2.15.1之後的版本可以加上
+  code
+    | load 'deploy/assets'
+  | 這個設定，則asset的壓縮檔案預設會放在shared/assets下，放在share/assets下的好處在於當我們在做deploy的時候，舊版本的asset仍然保留下來可以存取，因此在deploy的途中，舊版本的網頁仍然可以正在運作 。
+p
+  | 在production中，預設只會針對application.js, application.css與其它非js與css的asset進行precompile，也就是說其它的manifest檔案預設並不會做precomile。如果要加入其它的manifest，必須要將他們加到asset的設定中，如下所示：
+p
+  i
+    | config/initializers/assets.rb
+pre
+  code
+    | Rails.application.config.assets.precompile += ['admin.js', 'admin.css', 'swfObject.js']
+p
+  | 在做precomile的時候還會另外產生一個manifest-md5hash.json的檔案放在config.assets.prefix指定的路徑下，長的像下面這個樣子：
+pre
+  code.json
+    | {"files":{"application-723d1be6cc741a3aabb1cec24276d681.js":{"logical_path":"application.js","mtime":"2013-07-26T22:55:03-07:00","size":302506, "digest":"723d1be6cc741a3aabb1cec24276d681"},"application-12b3c7dd74d2e9df37e7cbb1efa76a6d.css":{"logical_path":"application.css","mtime":"2013-07-26T22:54:54-07:00","size":1560,"digest":"12b3c7dd74d2e9df37e7cbb1efa76a6d"},"application-1c5752789588ac18d7e1a50b1f0fd4c2.css":{"logical_path":"application.css","mtime":"2013-07-26T22:56:17-07:00","size":1591,"digest":"1c5752789588ac18d7e1a50b1f0fd4c2"},"favicon-a9c641bf2b81f0476e876f7c5e375969.ico":{"logical_path":"favicon.ico","mtime":"2013-07-26T23:00:10-07:00","size":1406,"digest":"a9c641bf2b81f0476e876f7c5e375969"},"my_image-231a680f23887d9dd70710ea5efd3c62.png":{"logical_path":"my_image.png","mtime":"2013-07-26T23:00:27-07:00","size":6646,"digest":"231a680f23887d9dd70710ea5efd3c62"}},"assets":{"application.js":"application-723d1be6cc741a3aabb1cec24276d681.js","application.css":"application-1c5752789588ac18d7e1a50b1f0fd4c2.css", "favicon.ico":"favicona9c641bf2b81f0476e876f7c5e375969.ico","my_image.png":"my_image-231a680f23887d9dd70710ea5efd3c62.png"}}
+p
+  | 這是讓helper可以不經由Sprockets就可以快速找到對應的asset路徑。另外要注意的是，如果manifest中require不存在的asset，則在production進行precompile時會出現
+  code
+    | Sprockets::Helpers::RailsHelper::AssetPaths::AssetNotPrecompiledError
+  | 的exception。
+h3 4.1.1 Far-future Expires Header
+p
+  | 為了能讓fingerprint的cache機制發揮最大效益，我們會將web server的cache時間拉長，也就是只有當檔案更新(也就是包含fingerprint的檔名更新)時才更新cache。這時我們可以在web server中加入下面的設定：
+p
+  i
+    | For Apache
+pre
+  code
+    | # The Expires* directives requires the Apache module
+      # `mod_expires` to be enabled.
+    = "\n" + '<Location /assets/>' + "\n"
+    |   # Use of ETag is discouraged when Last-Modified is present
+        Header unset ETag
+        FileETag None
+        # RFC says only cache for 1 year
+        ExpiresActive On
+        ExpiresDefault "access plus 1 year"
+    = "\n" + '</Location>'
+p
+  i
+    | For NGINX
+pre
+  code
+    | location ~ ^/assets/ {
+        expires 1y;
+        add_header Cache-Control public;
+       
+        add_header ETag "";
+        break;
+      }
+h2 4.2 Local Precompilation
+p
+  | 有幾種情況會需要在本地端進行precomile：
+p
+  ul
+    li
+      | 沒有production server的寫入權限。
+    li
+      | 有多個production server，而不想每一台server在做deploy的時候都進行重複的precomile。
+    li
+      | 很常做deploy，但asset幾乎都沒有更動。
+p
+  | 這時候你可以將本地端precomile好的壓縮檔案放在source control中，然後照一般的方式進行deploy。但要注意下面幾件事：
+p
+  ul
+    li
+      | 不能使用Capistrano預設的task進行precomile。
+    li
+      | 必須確定開發環境中有preprocessing所需要的工具。
+    li
+      | 需要更改development environemnt中的asset的設定，如下所示：
+p
+  i
+    | config/environments/development.rb
+pre
+  code
+    | config.assets.prefix = "/dev-assets"
+p
+  i
+    | config/environments/production.rb
+pre
+  code
+    | config.assets.prefix = "/assets"
+p
+  | 也就是在development中改掉預設的prefix，但在production仍保留原本預設的prefix。這是因為如果你不改掉development的prefix，在預設的debug模式下，你必須要經過precomile才看的到變更過後的檔案。因此經過上面的設定，development的時候會跟之前的行為一樣，也就是當asset變動時會立刻反應至網頁上。
+h2 4.3 Live Compilation
