@@ -67,4 +67,7 @@ $tags = {
   "devise" => {
     color: "#0f4361"
   },
+  "grape" => {
+    color: "#501f77"
+  },
 }

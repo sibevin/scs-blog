@@ -12,61 +12,97 @@ h1 如何下載多個repo到同一個目錄？
 ul
   li
     | 建立一個新的remote：
-    code
-      | git remote add [remote_name] /path/to/other/repo/.git
+pre
+  code
+    | git remote add [remote_name] /path/to/other/repo/.git
+ul
   li
     | 更新remote到最新狀態：
-    code
-      | git fetch [remote_name]
+pre
+  code
+    | git fetch [remote_name]
+ul
   li
     | 建立新的branch：
-    code
-      | git branch [branch_name] [remote_name]/[remote_branch_name]
+pre
+  code
+    | git branch [branch_name] [remote_name]/[remote_branch_name]
 h1 如何救回被刪除的檔案？
 h2
   | 如果檔案被rm：
 ul
   li
     | 如果你知道檔名，用git checkout-index即可：
-    code
-      | git checkout -- [被rm的檔案]
-    | 或是
-    code
-      | git checkout-index [被rm的檔案]
+pre
+  code
+    | git checkout -- [被rm的檔案]
+p
+  | 或是
+pre
+  code
+    | git checkout-index [被rm的檔案]
+ul
   li
     | 如果你忘了刪了什麼檔，或是有許多檔案被刪除了，可以用git ls-file -d將被刪的檔案列出來：
-    code
-      | git ls-files -d | xargs git checkout --
+pre
+  code
+    | git ls-files -d | xargs git checkout --
 h2
   | 如果檔案被git rm：
 ul
   li
     | 先用reset回復index的內容：
-    code
-      | git reset HEAD
+pre
+  code
+    | git reset HEAD
+ul
   li
     | 再用前面的指令回復檔案：
-    code
-      | git ls-files -d | xargs git checkout-index
+pre
+  code
+    | git ls-files -d | xargs git checkout-index
 h2
   | 如果檔案被git rm並git commit：
 ul
   li
     | 如果你知道是在哪一次的commit刪除了檔案，你可以用git checkout從那次commit的前一次commit中回復被刪除的檔案：
-    code
-      | git checkout [刪除檔案的那次commit]^ -- [被刪除的檔案]
+pre
+  code
+    | git checkout [刪除檔案的那次commit]^ -- [被刪除的檔案]
+ul
   li
     | 如果你忘了是在哪一次的commit刪除了檔案，先用git rev-list找出刪除檔案時是在哪一次的commit：
-    code
-      | git rev-list -n 1 HEAD -- [被刪除的檔案]
-    | 接著再前面的指令回復檔案：
-    code
-      | git checkout [刪除檔案的那次commit]^ -- [被刪除的檔案]
+pre
+  code
+    | git rev-list -n 1 HEAD -- [被刪除的檔案]
+p
+  | 接著再前面的指令回復檔案：
+pre
+  code
+    | git checkout [刪除檔案的那次commit]^ -- [被刪除的檔案]
+ul
   li
     | 上面兩個指令可以合在一起寫：
-    code
-      | git checkout $(git rev-list -n 1 HEAD -- [被刪除的檔案])^ -- [被刪除的檔案]
+pre
+  code
+    | git checkout $(git rev-list -n 1 HEAD -- [被刪除的檔案])^ -- [被刪除的檔案]
 h1 利用git建立patch
-p
+pre
   code
     | git format-patch -s -n --stdout --text HEAD^..HEAD > file_name.patch
+
+h1 如何刪除branch
+p
+  | 刪除本地端的branch，注意不能刪除所在的branch，要先checkout到其它的branch再進行刪除。
+  code
+    | -D
+  | 是表示強制刪除，不檢查branch是否已經有合併至其它的branch。
+pre
+  code
+    | git branch -d [要刪除的branch名稱]
+      git branch -D [要刪除的branch名稱]
+p
+  | 刪除完本地端的branch，還想要刪除遠端對應的branch，那可以用push
+pre
+  code
+    | git push origin :[遠端的branch名稱]

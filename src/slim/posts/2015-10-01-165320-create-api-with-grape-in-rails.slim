@@ -1,0 +1,180 @@
+.meta-data title 在rails中使用grape來建立API
+.meta-data datetime 2015-10-01 16:53:20
+.meta-data tags rails,grape
+.meta-data category coding
+.meta-data link create-api-with-grape-in-rails
+.meta-data file 2015-10-01-165320-create-api-with-grape-in-rails
+.meta-data template post
+.meta-data end
+
+h1 什麼是Grape？
+p
+  | Grape是一個用來建立API的framework，它有下面的優點：
+ul
+  li
+    | 採用自己獨特的DSL來簡化建立API的流程。
+  li
+    | 雖然我們也可以使用controller來建立API，但controller在啟動時會載入許多module，而其中有很多module在實作API上其實是用不到的。相較於rails的controller，使用輕量化的Grape所建立的API在使用上會更有效率。
+  li
+    | 內建的API版本機制與模組化的設計讓我們更容易管理維護API。
+  li
+    | 支援swagger文件自動生成。
+h1 Grape on Rails
+p
+  | Grape的一個好處是可以在rails中使用。設定的步驟如下：
+ul
+  li
+    | 在Gemfile中加入
+    code
+      | grape
+    | 的gem。
+p
+  i
+    | Gemfile
+pre
+  code
+    | gem 'grape'
+ul
+  li
+    | 在config/application.rb中設定儲放Api相關檔案的目錄，目前我們設定在
+    code
+      | app/api
+    | 之下。
+p
+  i
+    | config/application.rb
+pre
+  code
+    | module MyApp
+        class Application < Rails::Application
+          # ...
+          # Support grape API
+          config.paths.add File.join('app', 'api'), glob: File.join('**', '*.rb')
+          config.autoload_paths += Dir[Rails.root.join('app')]
+          # ...
+        end
+      end
+ul
+  li
+    | 建立一個測試用的API。
+p
+  i
+    | app/api/test.rb
+pre
+  code
+    | module Api
+        class Test < Grape::API
+          get :ping do
+            { data: "pong" }
+          end
+        end
+      end
+ul
+  li
+    | 在routes中掛載api的路徑。
+p
+  i
+    | config/routes.rb
+pre
+  code
+    | Rails.application.routes.draw do
+        # ...
+        mount Api::Test => '/'
+        # ...
+      end
+ul
+  li
+    | 重新啟動rails server，在網址列輸入
+    code
+      | localhost:3000/ping
+    | 就可以呼叫API了。
+h1 使用swagger自動生成API文件
+p
+  | 使用Grape的另一個好處是它可以自動生成swagger的API文件，所以只要API寫好了，APIjj文件就寫好了。除此之外，還可以整合swagger-ui直接將API文件掛載在rails的routes下，超級方便的啊。下面是設定的步驟：
+ul
+  li
+    | 在Gemfile中加入
+    code
+      | grape-swagger
+    | 與
+    code
+      | grape-swagger-rails
+    | ，基本上我們會將這兩個gem放在development的group下，因為production用不到。
+p
+  i
+    | Gemfile
+pre
+  code
+    | group :development do
+        gem 'grape-swagger'
+        gem 'grape-swagger-rails'
+      end
+ul
+  li
+    | API最上層的class加入
+    code
+      | add_swagger_documentation
+    | ，讓grape可以自動生成swagger doc。
+p
+  i
+    | app/api/test.rb
+pre
+  code
+    | module Api
+        class Test < Grape::API
+          get :ping do
+            { data: "pong" }
+          end
+          
+          if Rails.env.development?
+            add_swagger_documentation(
+              mount_path: 'api/swagger_doc',
+              hide_format: true,
+              hide_documentation_path: true
+            )
+          end
+        end
+      end
+p
+  | 更多有關grape-swagger的設定選項可以參考
+  a href="https://github.com/ruby-grape/grape-swagger" target="_blank"
+    | grape-swagger的文件
+  | 。
+ul
+  li
+    | 在initializer中加入一個新檔案用來初使化grape-swagger-rails。 
+p
+  i
+    | config/initializers/grape_swagger_rails.rb
+pre
+  code
+    | if Rails.env.development?
+        GrapeSwaggerRails.options.url = "api/swagger_doc"
+        GrapeSwaggerRails.options.app_name = 'My App'
+        GrapeSwaggerRails.options.app_url = '/'
+      end
+ul
+  li
+    | 在routes中掛載api文件的路徑。
+p
+  i
+    | config/routes.rb
+pre
+  code
+    | Rails.application.routes.draw do
+        # ...
+        if Rails.env.development?
+          mount GrapeSwaggerRails::Engine => '/apidoc'
+        end
+        # ...
+      end
+ul
+  li
+    | 重新啟動rails server，在網址列輸入
+    code
+      | localhost:3000/apidoc
+    | 就可以看到由swagger-ui生成的API文件了。
+.image-center
+  img src="/images/post/20151002084548772-swagger-ui.png" alt="Swagger UI"
+  .image-text
+    | Swagger UI
