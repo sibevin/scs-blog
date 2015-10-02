@@ -7,21 +7,23 @@
 .meta-data template post
 .meta-data end
 
-h1 什麼是Grape？
+h1 什麼是grape？
 p
-  | Grape是一個用來建立API的framework，它有下面的優點：
+  a href="https://github.com/ruby-grape/grape" target="_blank"
+    | grape
+  | 是一個用來建立API的framework，它有下面的優點：
 ul
   li
     | 採用自己獨特的DSL來簡化建立API的流程。
   li
-    | 雖然我們也可以使用controller來建立API，但controller在啟動時會載入許多module，而其中有很多module在實作API上其實是用不到的。相較於rails的controller，使用輕量化的Grape所建立的API在使用上會更有效率。
+    | 雖然我們也可以使用controller來建立API，但controller在啟動時會載入許多module，而其中有很多module在實作API上其實是用不到的。相較於rails的controller，使用輕量化的grape所建立的API在使用上會更有效率。
   li
     | 內建的API版本機制與模組化的設計讓我們更容易管理維護API。
   li
     | 支援swagger文件自動生成。
 h1 Grape on Rails
 p
-  | Grape的一個好處是可以在rails中使用。設定的步驟如下：
+  | grape的一個好處是可以在rails中使用。設定的步驟如下：
 ul
   li
     | 在Gemfile中加入
@@ -90,7 +92,7 @@ ul
     | 就可以呼叫API了。
 h1 使用swagger自動生成API文件
 p
-  | 使用Grape的另一個好處是它可以自動生成swagger的API文件，所以只要API寫好了，APIjj文件就寫好了。除此之外，還可以整合swagger-ui直接將API文件掛載在rails的routes下，超級方便的啊。下面是設定的步驟：
+  | 使用grape的另一個好處是它可以自動生成swagger的API文件，所以只要API寫好了，APIjj文件就寫好了。除此之外，還可以整合swagger-ui直接將API文件掛載在rails的routes下，超級方便的啊。下面是設定的步驟：
 ul
   li
     | 在Gemfile中加入
@@ -178,3 +180,16 @@ ul
   img src="/images/post/20151002084548772-swagger-ui.png" alt="Swagger UI"
   .image-text
     | Swagger UI
+h1 小結
+p
+  | 在這裡我們介紹了怎麼在rails中使用grape，有空再跟大家分享怎麼使用grape來建立API(這才是重點啊)。
+h1 Refs
+ul
+  li
+    a href="http://www.ruby-grape.org/" target="_blank"
+      | http://www.ruby-grape.org/
+    | - Grape官方網站，有很多範例、相關的文件與資源。
+  li
+    a href="https://github.com/ruby-grape/grape-on-rails" target="_blank"
+      | https://github.com/ruby-grape/grape-on-rails
+    | - Grape官方的rails範例。
