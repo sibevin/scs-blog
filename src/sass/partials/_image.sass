@@ -2,6 +2,7 @@
 @import "compass/css3/box-sizing"
 @import "compass/css3/box-shadow"
 
+
 .image-center
   text-align: center
   padding: 32px 0px
@@ -9,6 +10,10 @@
     +single-box-shadow(0px, 0px, 10px, 0px, $c_l)
     border: $c_white 8px solid
     margin-bottom: 8px
+.image-plane
+  img
+    +single-box-shadow(0px, 0px, 0px, 0px, $c_l)
+    border-width: 0px
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px)
   .image-center
     img
