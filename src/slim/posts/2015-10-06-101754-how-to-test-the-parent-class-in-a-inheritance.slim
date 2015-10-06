@@ -1,0 +1,201 @@
+.meta-data title 如何針對繼承體系下的父類別寫測試
+.meta-data datetime 2015-10-06 10:17:54
+.meta-data tags ruby,test,ooad
+.meta-data category coding
+.meta-data link how-to-test-the-parent-class-in-a-inheritance
+.meta-data file 2015-10-06-101754-how-to-test-the-parent-class-in-a-inheritance
+.meta-data template post
+.meta-data end
+
+h1 問題
+p
+  | 通常繼承體系下的父類別有時候是抽象類別，所以沒辦法在測試中實體化它，那要怎麼針對父類別的行為進行測試呢？
+
+h1 解法1
+p
+  | 其中一種做法就是針對子類別測試由父類別繼承而來的method，但如果有很多子類別，那繼承而來的method它的測試就必須在每一個子類別都要測試一遍，這樣的做法會造成很多重複的測試，不過如果以「測試即是文件」的概念來說，這種方式是最完整可以明確的呈現每個子類別可以使用的method。
+  
+h1 解法2
+p
+  | 另一種做法是我個人比較會用的方式，就是寫是一個測試用的子類別繼承父類別，父類別所有的行為都在這個測試用的子類別中做測試，至於其它的子類別只要測試它實作的method即可，下面是一個範例：
+pre
+  code
+    | require 'minitest/autorun'
+      require 'minitest/spec'
+
+      class NoImplementedError < StandardError; end
+
+      class Bicycle
+        attr_reader :size, :chain, :tire_size
+        def initialize(args = {})
+          @size = args[:size]
+          @chain = args[:chain] || default_chain
+          @tire_size = args[:tire_size] || default_tire_size
+          post_initialize(args)
+        end
+
+        def spares
+          { tire_size: tire_size, chain: chain }.merge(local_spares)
+        end
+
+        def default_tire_size
+          raise NoImplementedError
+        end
+
+        def post_initialize(args)
+          nil
+        end
+       
+        def local_spares
+          {}
+        end
+       
+        def default_chain
+          '10-speed'
+        end
+      end
+
+      class TestBike < Bicycle
+        attr_reader :test_spare
+        def post_initialize(args)
+          @test_spare = args[:test_spare]
+        end
+
+        def default_tire_size
+          'test_tire_size'
+        end
+
+        def local_spares
+          { test_spare: test_spare }
+        end
+
+        def default_chain
+          'test_chain'
+        end
+      end
+
+      describe Bicycle do
+        describe "#initialize" do
+          it "should initialize size, chain, tire_size" do
+            given_size = rand(20)
+            given_chain = "given_chain"
+            given_tire = "given_tire"
+            b = TestBike.new(size: given_size, chain: given_chain, tire_size: given_tire)
+            b.size.must_equal given_size
+            b.chain.must_equal given_chain
+            b.tire_size.must_equal given_tire
+          end
+
+          it "should use default value if chain and tire_size is not given" do
+            given_size = rand(20)
+            b = TestBike.new(size: given_size)
+            b.chain.must_equal b.default_chain
+            b.tire_size.must_equal b.default_tire_size
+          end
+
+          it "should initialize local spares" do
+            given_size = rand(20)
+            given_test_spare = "given_test_spare"
+            b = TestBike.new(size: given_size, test_spare: given_test_spare)
+            b.test_spare.must_equal given_test_spare
+          end
+        end
+
+        describe "#spares" do
+          it "should return chain and tire_size" do
+            given_size = rand(20)
+            given_chain = "given_chain"
+            given_tire = "given_tire"
+            b = TestBike.new(size: given_size, chain: given_chain, tire_size: given_tire)
+            b.spares[:chain].must_equal given_chain
+            b.spares[:tire_size].must_equal given_tire
+          end
+
+          it "should return the local spares" do
+            given_size = rand(20)
+            given_test_spare = "given_test_spare"
+            b = TestBike.new(size: given_size, test_spare: given_test_spare)
+            b.spares[:test_spare].must_equal given_test_spare
+          end
+        end
+
+        describe "#default_tire_size" do
+          it "should raise an NoImplementedError if no defautl_tire_size method is implemeted" do
+            given_size = rand(20)
+            given_tire = "given_tire"
+            b = Bicycle.new(size: given_size, tire_size: given_tire)
+            proc { b.default_tire_size }.must_raise NoImplementedError
+          end
+        end
+
+        describe "#post_initialize" do
+          it "should do nothing by default" do
+            given_size = rand(20)
+            given_tire = "given_tire"
+            b = Bicycle.new(size: given_size, tire_size: given_tire)
+            b.post_initialize({}).must_equal nil
+          end
+        end
+
+        describe "#local_spares" do
+          it "should return empty hash by default" do
+            given_size = rand(20)
+            given_tire = "given_tire"
+            b = Bicycle.new(size: given_size, tire_size: given_tire)
+            b.local_spares.must_equal Hash.new
+          end
+        end
+
+        describe "#default_chain" do
+          it "should return default chain value by default" do
+            given_size = rand(20)
+            given_tire = "given_tire"
+            b = Bicycle.new(size: given_size, tire_size: given_tire)
+            b.default_chain.must_equal '10-speed'
+          end
+        end
+      end
+
+      class RoadBike < Bicycle
+        attr_reader :tape_color
+        def post_initialize(args)
+          @tape_color = args[:tape_color]
+        end
+
+        def local_spares
+          { tape_color: tape_color }
+        end
+
+        def default_tire_size
+          '24'
+        end
+      end
+
+      describe RoadBike do
+        describe "#post_initialize" do
+          it "should initalize tape_color" do
+            given_size = rand(20)
+            given_color = "given_color"
+            b = RoadBike.new(size: given_size)
+            b.post_initialize(tape_color: given_color)
+            b.tape_color.must_equal given_color
+          end
+        end
+
+        describe "#local_spares" do
+          it "should return tape_color" do
+            given_size = rand(20)
+            given_color = "given_color"
+            b = RoadBike.new(size: given_size, tape_color: given_color)
+            b.local_spares[:tape_color].must_equal given_color
+          end
+        end
+
+        describe "#default_tire_size" do
+          it "should return 24" do
+            given_size = rand(20)
+            b = RoadBike.new(size: given_size)
+            b.default_tire_size.must_equal '24'
+          end
+        end
+      end

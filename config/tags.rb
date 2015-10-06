@@ -16,6 +16,7 @@ $tags = {
   },
   "ooad" => {
     name: "OOAD",
+    color: "#008040",
   },
   "rails_study-group" => {
     name: "讀書會",
@@ -62,7 +63,8 @@ $tags = {
     color: "#2b830a",
   },
   "work" => {
-    name: "作品"
+    name: "作品",
+    color: "#66ccff"
   },
   "devise" => {
     color: "#0f4361"
@@ -70,4 +72,8 @@ $tags = {
   "grape" => {
     color: "#501f77"
   },
+  "test" => {
+    name: "測試",
+    color: "#0748b3"
+  }
 }

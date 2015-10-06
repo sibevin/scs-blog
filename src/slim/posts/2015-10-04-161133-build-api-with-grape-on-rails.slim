@@ -1,0 +1,123 @@
+.meta-data title 在rails中使用Grape來建立API
+.meta-data datetime 2015-10-04 16:11:33
+.meta-data tags rails,grape
+.meta-data category coding
+.meta-data link build-api-with-grape-on-rails
+.meta-data file 2015-10-04-161133-build-api-with-grape-on-rails
+.meta-data template slice
+.meta-data end
+
+.slice
+  section
+    .slice-title.block-full.pos-middle.text-center
+      | 在rails中使用Grape來建立API 
+    .slice-block.block-full.pos-bottom.text-right
+      | Kait Wang 2015/10/04
+  section
+    .slice-title.block-full.pos-top.text-left
+      | 大網
+    .slice-block.with-top-title
+      ul
+        li
+          | Grape簡介
+        li
+          | 在rails中配置grape建立的API
+        li
+          | API的基本概念
+        li
+          | 使用grape來設計API
+  section
+    .slice-title.block-full.pos-top.text-left
+      | Grape簡介
+    .slice-block.with-top-title
+      p
+        | Grape是一套用來建立API的framework
+      p
+        | 使用grape的優點：
+      ul
+        li
+          | 獨特的DSL讓建立API變簡單了
+        li
+          | 比起controller，輕量化的grape所建立的API在使用上更有效率
+        li
+          | 內建版本機制與模組化的設計
+        li
+          | 支援swagger文件的自動生成
+  section
+    .slice-title.block-full.pos-top.text-left
+      | 在rails中配置grape建立的API
+    .slice-block.with-top-title
+      p
+        | 目標：建立一個API長的像下面這個樣子
+      table
+        tbody
+          tr
+            td
+              | Method
+            td
+              | GET
+          tr
+            td
+              | Path
+            td
+              code
+                | /api/ping
+          tr
+            td
+              | Return
+            td
+              pre
+                code
+                  | {
+                      "data":"pong"
+                    }
+    
+          
+  section
+    .slice-block.w_2
+      pre
+        code.hljs
+          | module A
+              A_CONST = 1
+              def self.a_method
+                p 'a_method'
+              end
+
+              class << self
+                def b1_method
+                  p 'b1_method'
+                end
+
+                def b2_method
+                  p 'b2_method'
+                end
+              end
+
+              def self.c_method
+                a_method
+              end
+
+              def self.d_method
+                p 'd_method'
+              end
+              private_class_method :d_method
+
+              def self.e_method
+                d_method
+              end
+
+              def f_method
+                f_method
+              end
+            end
+  section
+    .slice-title.block-full.pos-top.text-center
+      | Top Center
+    .slice-title.block-fit.pos-middle.text-left
+      | Middle Left
+    .slice-title.block-full.pos-middle.text-right
+      | Middle Right
+    .slice-title.block-full.pos-middle.text-center
+      | Middle Center
+    .slice-title.block-full.pos-bottom.text-right
+      | Bottom Right
