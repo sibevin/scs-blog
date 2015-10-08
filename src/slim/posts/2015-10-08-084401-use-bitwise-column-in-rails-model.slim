@@ -1,0 +1,245 @@
+.meta-data title 在model中使用bitwise欄位
+.meta-data datetime 2015-10-08 08:44:01
+.meta-data tags rails_model
+.meta-data category coding
+.meta-data link use-bitwise-column-in-rails-model
+.meta-data file 2015-10-08-084401-use-bitwise-column-in-rails-model
+.meta-data template post
+.meta-data end
+
+h1 問題
+p
+  | 我們有一個User model，每個user會有不同的角色(admin, manager, member)，而且一個user可以同時擁有多個角色，那要怎麼儲存user的角色資訊呢？
+ul
+  li
+    | 方法1：最直覺的做法是建另一個model例如叫UserRole，裡面有
+    code
+      | user_id
+    | 與
+    code
+      | role
+    | 這兩個欄位，則一個user會有多個user_role。這是標準使用model association的做法，如果你需要查詢哪一些user有某個role，或是之後想要動態增加新的角色，其實這是最正確的做法。但如果沒有這些需求，也就是說角色已經固定，而且只想確定某個user的角色是什麼，那麼為了要儲存role而多建了一個model似乎有點殺雞牛刀的感覺。另外，因為role是儲存在另一個table，意味著每次要做role的判斷都要同時讀取users與user_roles這兩個table，顯然在效能上會受到一些影響。
+  li
+    | 方法2：將role的資訊存在users裡的某個欄位，例如users裡建一個
+    code
+      | roles
+    | 的欄位。但如果要存多個值，第一個會想到的就是用serialize data，也就是在
+    code
+      | roles
+    | 中儲存的是
+    code
+      | [:admin, :member]
+    | 之類的值，這樣可以不用開另一個table來儲存role的資訊。但如果只是存role，卻要用到serialize data似乎有點殺雞牛刀的感覺(你到底有多少把牛刀啊)，serialize data本身也有沒辦法判斷dirty而有強迫更新的問題。
+  li
+    | 方法3：如果只是存儲role，感覺可以用bitwise的方式來做，也就是將每個role都定義在一個bit的位置，roles實際上只儲存一個integer。例如：
+table
+  thead
+    tr
+      th
+        | 角色
+      th
+        | 所在的bit位置(由左到右)
+      th
+        | 用bitwise的方式表示
+      th
+        | 實際會儲存在
+        code
+          | roles
+        | 的值
+  tbody
+    tr
+      td
+        | admin
+      td
+        | 1
+      td
+        | 001
+      td
+        | 1
+    tr
+      td
+        | manager
+      td
+        | 2
+      td
+        | 010
+      td
+        | 2
+    tr
+      td
+        | member
+      td
+        | 3
+      td
+        | 100
+      td
+        | 4
+p
+  | 如果某個user有admin又有member的角色，那在
+  code
+    | roles
+  | 中儲存的值就會像下面所表示的：
+table
+  thead
+    tr
+      th
+        | 角色
+      th
+        | 用bitwise的方式表示
+      th
+        | 實際會儲存在
+        code
+          | roles
+        | 的值
+  tbody
+    tr
+      td
+        | [:admin, :member]
+      td
+        | 101
+      td
+        | 4 + 1 = 5
+p
+  | 看起來是個不錯的方法，可是要怎麼實作呢？
+h1 解法
+h4
+  | 在users table加上一個integer的roles欄位。
+p
+  i
+    | db/migrate/20151008032103_add_roles_to_users.rb
+pre
+  code
+    | class AddRolesToUsers < ActiveRecord::Migration
+        def change
+          add_column :users, :roles, :integer, null: false, default: 0
+        end
+      end
+h4
+  | 在User model裡加上
+  code
+    | ROLES
+  | 用來定義有哪些角色。另外再加上
+  code
+    | roles_bitwise
+  | 與
+  code
+    | roles_bitwise=
+  | 這兩個method。
+p
+  i
+    | app/models/user.rb
+pre
+  code
+    | class User < ActiveRecord::Base
+        ROLES = {
+          admin: 1,
+          manager: 2,
+          member: 3,
+        }
+        
+        attr_accessor :role_bitwise
+        
+        # ...
+        
+        def roles_bitwise
+          result = []
+          ROLES.each do |bit_key, bit_value|
+            result << bit_key if (self.roles & 2**(bit_value - 1)) != 0
+          end
+          result
+        end
+
+        def roles_bitwise=(bitwise_val)
+          result = 0
+          bitwise_val.each do |bv|
+            result = result | 2**(ROLES[bv.to_sym] - 1) if ROLES[bv.to_sym]
+          end
+          self.roles = result
+          self.roles
+        end
+      end
+p
+  | 有了
+  code
+    | roles_bitwise
+  | 與
+  code
+    | roles_bitwise=
+  | 就可以用Array的方式設定角色，而roles_bitwise會自動將array轉成integer並assign到roles中。
+pre
+  code.ruby
+    | u = User.new
+      u.roles_bitwise = [:admin, :manager]
+      puts u.roles # 5
+      u.roles = 1
+      puts u.roles_bitwise # [:admin]
+h4
+  | 在controller與view中我們就直接用
+  code
+    | roles_bitwise
+  | 來取代
+  code
+    | roles
+  |，使用
+  code
+    | roles_bitwise
+  | 的方式就跟一般的欄位一樣，但要注意的是strong parameter中的
+  code
+    | roles_bitwise
+  | 需要設成Array的方式傳入。
+p
+  i
+    | app/controllers/user/roles_controller.rb
+pre
+  code
+    | class User::RolesController < ApplicationController
+        def update
+          if @user.update_attributes(user_params)
+            # ...
+          end
+        end
+        
+        # ...
+        
+        private
+        
+        def user_params
+          params.require(:user).permit(roles_bitwise:[])
+        end
+      end
+p
+  i
+    | app/views/user/roles/edit.html.erb
+pre
+  code.erb
+    = '<%= simple_form_for(@user) do |f| %>' + "\n"
+    = '  <%= f.input :roles_bitwise,' + "\n"
+    = '    collection: User::ROLES,' + "\n"
+    = '    as: :check_boxes,' + "\n"
+    = '    label_method: -> (r){ t("user.role.#{r.first}") },' + "\n"
+    = '    value_method: :first %>' + "\n"
+    = '  <%= f.button :submit %>' + "\n"
+    = '<% end %>' + "\n"
+h1 小結
+p
+  | 這裡介紹了如何使用bitwise的方式儲存multiple value的值，我覺得很重要的兩點就是：
+ul
+  li
+    | 注意使用的時機，如果你需要做查詢或是動態新增角色，使用model的方式才是正解。
+  li
+    | User model中的
+    code
+      | roles_bitwise
+    | 與
+    code
+      | roles_bitwise=
+    | 這兩個method簡化了roles的計算與處理，我們不直接使用
+    code
+      | roles
+    | 而是藉由
+    code
+      | roles_bitwise
+    | 來處理
+    code
+      | roles
+    | 是一個重要的技巧。
