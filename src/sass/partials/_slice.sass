@@ -1,0 +1,75 @@
+@import "modules/globals"
+@import "compass/css3/box-sizing"
+@import "compass/css3/box-shadow"
+
+@mixin slice-size($slice_w)
+  $slice_h: $slice_w/3*2
+  $slice_title_fs: $slice_w/15
+  $slice_fs: $slice_w/30
+  $slice_lh: $slice_fs*1.5
+  $slice_padding: $slice_w/90
+  $slice_fs_m: $slice_fs*0.8
+  section
+    width: $slice_w
+    height: $slice_h
+    font-size: $slice_fs
+  p
+    line-height: $slice_lh
+    &:before
+      +header-style($slice_fs)
+  pre
+    code
+      font-size: $slice_fs_m
+      line-height: $slice_fs_m*1.2
+  li
+    font-size: $slice_fs_m
+    line-height: $slice_lh
+    margin-left: $slice_padding*2
+    &:before
+      content: "_"
+      +header-style($slice_fs*0.8)
+  .slice-title
+    font-size: $slice_title_fs
+    padding: $slice_padding*2
+  .pos-middle
+    bottom: ($slice_h - $slice_title_fs)/2
+  .slice-block
+    padding: ($slice_padding)*3
+  .with-top-title
+    padding-top: $slice_title_fs + ($slice_padding)*7
+  .w_2
+    width: $slice_w/2
+  .w_3
+    width: $slice_w/3
+
+.slice
+  @include slice-size(60vw)
+  section
+    position: relative
+    margin: 16px auto
+    +single-box-shadow(0px, 0px, 10px, 0px, $c_l)
+  .slice-title
+    color: $c_white
+    background: $c_black
+  .block-full
+    +box-sizing(border-box)
+    width: 100%
+  .block-fit
+    width: auto
+  .pos-top
+    position: absolute
+    top: 0px
+  .pos-bottom
+    position: absolute
+    bottom: 0px
+  .pos-middle
+    position: absolute
+  .text-center
+    text-align: center
+  .text-left
+    text-align: left
+  .text-right
+    text-align: right
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px)
+  .slice
+    @include slice-size(96vw)

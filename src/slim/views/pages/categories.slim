@@ -8,25 +8,28 @@
         | {{title}}
       .title-info
         .title-tcs
-          .category ng-style="{'background-color':current_category.color}"
+          .tag ng-style="{'background-color':current_category.color}"
             | {{list_count}}
   .category-list
     .category ng-repeat="category in getCategories()" ng-style="{'background-color':category.color}"
+      .category-icon
+        a ng-href="/categories?c={{category.code}}"
+          div class="ca-icon-{{category.code}}"
       a.category-link ng-href="/categories?c={{category.code}}"
         | {{category.name}} [{{category.count}}]
   .posts
     .post-list
       .pl-row ng-repeat="post in getCategoryPosts()"
         .pl-cell.pl-title
+          .category-icon
+            a ng-href="/categories?c={{getPostCategory(post).code}}"
+              div class="ca-icon-{{getPostCategory(post).code}}"
           a href="/posts/{{post.file}}"
             | {{post.title}}
         .pl-cell.pl-tcs
           .tag ng-repeat="tag in getPostTags(post)" ng-style="{'background-color':tag.color}"
             a.tag-link ng-href="/tags?t={{tag.code}}"
               | {{tag.name}}
-          .category
-            a.category-link ng-href="/categories?c={{getPostCategory(post).code}}"
-              | {{getPostCategory(post).name}}
         .pl-cell.pl-time
           .time
             | {{post.datetime}}
