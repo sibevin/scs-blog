@@ -16,9 +16,9 @@ javascript:
           .tag ng-repeat="tag in getPostTags(current_post)" ng-style="{'background-color':tag.color}"
             a.tag-link ng-href="/tags?t={{tag.code}}"
               | {{tag.name}}
-          .category
-            a.category-link ng-href="/categories?c={{getPostCategory(current_post).code}}"
-              | {{getPostCategory(current_post).name}}
+          .category-icon
+            a ng-href="/categories?c={{getPostCategory(current_post).code}}"
+              div class="ca-icon-{{getPostCategory(current_post).code}}"
   .content
     - if @meta["draft"]
       .draft

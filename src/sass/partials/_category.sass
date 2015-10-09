@@ -5,12 +5,20 @@
   display: inline-block
   margin: 3px
   padding: 8px
-  color: $c_white
-  background: $c_grey
+  color: $c_black
+  background: $c_white
   line-height: 1em
   +border-radius(3px)
   .category-link
-    color: $c_white
+    color: $c_black
     text-decoration: none
-    &:hover
-      color: $c_ll
+.category-icon
+  display: inline-block
+  padding-right: 8px
+  @each $ca_icon in $ca_icons
+    .ca-icon-#{$ca_icon}
+      display: inline-block
+      height: 50px
+      width: 50px
+      vertical-align: middle
+      background: url("/images/category/#{$ca_icon}_50x.svg")
