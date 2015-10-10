@@ -112,11 +112,11 @@ pre
       | cleaning up          | 0.000006 |
       +----------------------+----------+
       16 rows in set (0.00 sec)
-  p
-    | 除了時間資訊，還可以查其它例如cpu time, block IO等資訊(更多說明請參考：
-    a href="https://dev.mysql.com/doc/refman/5.5/en/show-profile.html"
-      | MySQL 5.1 Reference Manual - 13.7.5.32 SHOW PROFILE Syntax
-    | )：
+p
+  | 除了時間資訊，還可以查其它例如cpu time, block IO等資訊(更多說明請參考：
+  a href="https://dev.mysql.com/doc/refman/5.5/en/show-profile.html"
+    | MySQL 5.1 Reference Manual - 13.7.5.32 SHOW PROFILE Syntax
+  | )：
 pre
   code.sql
     | mysql> show profile cpu for query 1;
