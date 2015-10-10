@@ -1,0 +1,150 @@
+.meta-data title 從無到有建立一個rails專案
+.meta-data datetime 2015-10-10 10:40:39
+.meta-data tags rails
+.meta-data category coding
+.meta-data link build-a-rails-app-from-zero
+.meta-data file 2015-10-10-104039-build-a-rails-app-from-zero
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+h1 事前準備
+ul
+  li
+    | 檢查ruby與rails的版本
+    
+h1 使用rails new建立一個新專案
+p
+  | rails提供了許多選項可以使用，例如可以使用
+  code
+    | -d
+  | 修改預設的資料庫設定，或是用
+  code
+    | -T
+  | 將預設的unit test關閉(如果你想用其它的test framework，例如rspec)。你可以下
+  code
+    | rails new -h
+  | 查看更多選項與細節。下面是一個範例：
+pre
+  code
+    | $ rails new ex-app -d mysql -T --no-rc 
+    
+h1 設定config/database.yml與config/secrets.yml
+p
+  | 這兩個檔案都屬於重要的機密檔案，不應該commit到git裡，所以要把這兩個檔案加到.gitignore。
+p
+  i
+    | .gitignore
+pre
+  code
+    | # ...
+      # Ignore configs
+      /config/database.yml
+      /config/secrets.yml
+p
+  | 另外我會複製一份原始的database.example.yml與secrets.example.yml commit到git中當做設定的範例，當然，要記得要改掉secrets.example.yml裡面的值。
+  
+h1 做第一次git commit
+pre
+  code
+    | $ cd ex-app
+      $ git init
+      $ git add ./
+      $ git commit -v
+
+h1 設定database
+p
+  | 更改config/database.yml，加入資料庫相關的設定，包含連線用的帳密。設定完之後下
+  code
+    | rake db:create
+  | 建立資料庫。
+
+h1 啟動測試網站
+pre
+  code
+    | $ rails s
+
+h1 同場加映 - 加入常用的gem
+p
+  i 
+    | (all environments)
+ul
+  li
+    | devise - 使用者authentication
+  li
+    | simple_form - 用簡單的語法快速建立form
+  li
+    | enumerize - 在model中建立類似enum的column
+  li
+    | uidable - 在model中建立unique id的column
+  li
+    | kaminari - 專門處理分頁的gem
+p
+  i 
+    | (development)
+ul
+  li
+    | letter_opener - 用browser開啟信件
+  li
+    | pry-byebug - pry的debugger
+  li
+    | rubocap - 檢查ruby語法
+  li
+    | rails_best_practices - 檢查rails的語法
+p
+  i
+    | (development, test)
+ul
+  li
+    | rspec-rails - rspec for rails
+  li
+    | factory_girl_rails - factory girl for rails
+  li
+    | annotate - 在model、migration與routes中自動產生註解
+  li
+    | faker - 建立假資料
+    
+h2 FB登入會用到的
+p
+  i 
+    | (all environments)
+ul
+  li
+    | omniauth
+  li
+    | omniauth-facebook
+
+h2 建立API會用到的
+p
+  i 
+    | (all environments)
+ul
+  li
+    | grape
+p
+  i 
+    | (development)
+ul
+  li
+    | grape-swagger
+    | grape-swagger-rails
+
+h2 前端 - React
+p
+  i 
+    | (all environments)
+ul
+  li
+    | react-rails
+  li
+    | browserify-rails
+p
+  i 
+    | source 'https://rails-assets.org'
+ul
+  li
+    | rails-assets-reflux
+  li
+    | rails-assets-fetch
+    
+    

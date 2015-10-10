@@ -1,0 +1,29 @@
+.meta-data title 用rake stats查看一些有趣的統計資料
+.meta-data datetime 2015-10-10 12:01:21
+.meta-data tags rails
+.meta-data category tools
+.meta-data link rake-stats
+.meta-data file 2015-10-10-120121-rake-stats
+.meta-data template post
+.meta-data end
+
+p
+  | 無意間發現rails的rake竟然有這種東西…(難道是我log太久了嗎)
+pre
+  code
+    | $ rake stats
+      +----------------------+-------+-------+---------+---------+-----+-------+
+      | Name                 | Lines |   LOC | Classes | Methods | M/C | LOC/M |
+      +----------------------+-------+-------+---------+---------+-----+-------+
+      | Controllers          |   639 |   568 |      13 |      56 |   4 |     8 |
+      | Helpers              |    34 |    32 |       0 |       3 |   0 |     8 |
+      | Models               |  1344 |  1025 |      16 |      77 |   4 |    11 |
+      | Mailers              |     0 |     0 |       0 |       0 |   0 |     0 |
+      | Javascripts          |    99 |    72 |       0 |      10 |   0 |     5 |
+      | Libraries            |     0 |     0 |       0 |       0 |   0 |     0 |
+      | Feature specs        |   275 |   256 |       0 |       0 |   0 |     0 |
+      | Model specs          |   396 |   325 |       0 |       0 |   0 |     0 |
+      +----------------------+-------+-------+---------+---------+-----+-------+
+      | Total                |  2787 |  2278 |      29 |     146 |   5 |    13 |
+      +----------------------+-------+-------+---------+---------+-----+-------+
+      Code LOC: 1697     Test LOC: 581     Code to Test Ratio: 1:0.3
