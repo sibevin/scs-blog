@@ -1,0 +1,75 @@
+.meta-data title 在window上安裝rails會遇到的坑
+.meta-data datetime 2015-10-16 08:44:55
+.meta-data tags rails
+.meta-data category coding
+.meta-data link some-traps-when-installing-rails-on-win
+.meta-data file 2015-10-16-084455-some-traps-when-installing-rails-on-win
+.meta-data template post
+.meta-data end
+
+p
+  | 最近跑去當rails體驗營的助教，用的是
+  a href="http://zh-tw.railsbridge.org/docs/" target="_blank"
+    | Rails Bridge
+  | 的教材。因為大部分來參加的人帶的筆電應該都是window的作業系統，所以在上課之前，先在我自己的surface上跑了一下rails的安裝流程。下面是遇到的坑：
+
+h1 bundle install
+h2 問題
+p
+  | 在第一次跑
+  code
+    | bundle install
+  | 時出現 
+  code
+    | SSL_connect returned=1 errno=0 state=SSLv3 read server certificate B: certificate verify failed 
+  | 的問題。
+h2 解法
+ul
+  li
+    | 到這
+    a href="https://github.com/rubygems/rubygems/releases/tag/v2.2.3" target="_blank"
+      | https://github.com/rubygems/rubygems/releases/tag/v2.2.3
+    | 下載 rubygems-update-2.2.3.gem
+  li
+    | 安裝下載的gem：
+pre
+  code
+    | gem install --local C:\rubygems-update-1.8.30.gem
+ul
+  li
+    | 執行 update_rubygems
+pre
+  code
+    | update_rubygems --no-ri --no-rdoc
+ul
+  li
+    | 移除 update_rubygems gem
+pre
+  code
+    | gem uninstall rubygems-update -x
+h2 參考
+a href="https://gist.github.com/luislavena/f064211759ee0f806c88" target="_blank"
+  | https://gist.github.com/luislavena/f064211759ee0f806c88
+
+h1 heroku
+h2 問題
+p
+  | 在第一次執行heroku指令時遇到
+  code
+    | Encoding::InvalidByteSequenceError
+  | 。 
+h2 解法
+p
+  | 修改 
+  code
+    | [heroku的安裝路徑]/bin/heroku.bat 
+  | 的最後一行啟動ruby的地方，將
+  code
+    | @ruby.exe "%~dpn0" %*
+  | 改成
+  code
+    | @ruby.exe -Eutf-8 "%~dpn0" %*
+  | 。
+h2 參考
+a href="http://stackoverflow.com/questions/33029991/heroku-comannd-always-fails" target="_blank"
+  | SO - Heroku comannd always fails
