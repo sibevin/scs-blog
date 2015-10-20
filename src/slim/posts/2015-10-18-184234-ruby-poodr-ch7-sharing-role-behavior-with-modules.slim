@@ -1,0 +1,195 @@
+.meta-data title rails 讀書會 - POODR - Ch7 使用module來分享角色的行為
+.meta-data datetime 2015-10-18 18:42:34
+.meta-data tags ruby,ooad,rails_study-group
+.meta-data category coding
+.meta-data link ruby-poodr-ch7-sharing-role-behavior-with-modules
+.meta-data file 2015-10-18-184234-ruby-poodr-ch7-sharing-role-behavior-with-modules
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+ul
+  li
+    | ruby的繼承無法處理多重繼承。
+  li
+    | 使用分享角色的方式取代繼承。
+
+h1 Understanding Roles
+p
+  | 角色的定義：多個不相關的class擁有相同的行為，我們把它定義成這些class在扮演分享同一個角色。這些class就會有一個扮演相同角色的相依性，這種相依性在設計的時候就要考慮進來。
+h2 Finding Roles
+p
+  | duck typing就是一種角色的概念。與第5章的duck typing不同的是我們想組織分享的行為，通常我們會將分享的行為定義在某個檔案中方便使用與參照，ruby的module就非常適合用來定義共用的method。
+p
+  | 一旦在class使用了module來共用method，class可以呼叫的method就會擴大，基本上包含了：
+ul
+  li
+    | 1. class自己實作的method。
+  li
+    | 2. class由繼承體系得知的method。
+  li
+    | 3. class由include module共用的method。
+  li
+    | 4. class由繼承體系中的class，這些class裡include module共用的method。
+        
+h2 Organizing Responsibilities
+ul
+  li
+    | 選擇哪一些method需要共用的方法，就如同之前規劃承繼架構中所提到的方法。
+h2 Removing Unnecessary Dependencies
+h2 Writing the Concrete Code
+p
+  | Bicycle中有一系列有關schedule的method用來處理排程的問題。
+pre
+  code
+    | class Bicycle
+        attr_reader :schedule, :size, :chain, :tire_size
+        # Inject the Schedule and provide a default
+        def initialize(args={})
+          <span class="mk-blue">@schedule = args[:schedule] || Schedule.new</span>
+          # ...
+        end
+        # Return true if this bicycle is available
+        # during this (now Bicycle specific) interval.
+        <span class="mk-blue">def schedulable?(start_date, end_date)</span>
+          !scheduled?(start_date - lead_days, end_date)
+        end
+        # Return the schedule's answer
+        <span class="mk-blue">def scheduled?(start_date, end_date)</span>
+          schedule.scheduled?(self, start_date, end_date)
+        end
+        # Return the number of lead_days before a bicycle
+        # can be scheduled.
+        <span class="mk-blue">def lead_days</span>
+          1
+        end
+        # ...
+      end
+      
+      require 'date'
+      starting = Date.parse("2015/09/04")
+      ending = Date.parse("2015/09/10")
+      b = Bicycle.new b.schedulable?(starting, ending)
+      # This Bicycle is not scheduled
+      # between 2015-09-03 and 2015-09-10
+      # => true
+p
+  | 但我們發現除了Bicycle外，還有Vehicle與Mechanic也有相同schedule的需求，除了
+  code
+    | lead_days
+  | 不同之外，
+  code
+    | schedulable?
+  | 與
+  code
+    | scheduled?
+  | 的method都一樣。
+h2 Extracting the Abstraction
+p
+  | 為了要共用method，我們將schedule相關的method從Bicycle抽出來放到schedulable這個module中。
+pre
+  code
+    | module Schedulable
+        attr_writer :schedule
+        def schedule
+          @schedule ||= ::Schedule.new
+        end
+        
+        def schedulable?(start_date, end_date)
+          !scheduled?(start_date - lead_days, end_date)
+        end
+        
+        def scheduled?(start_date, end_date)
+          schedule.scheduled?(self, start_date, end_date)
+        end
+        
+        # includers may override
+        def lead_days
+          0
+        end
+      end
+p
+  | 這時候Bicycle就可以改寫成：
+pre.ruby
+  code
+    | class Bicycle
+        <span class="mk-blue">include Schedulable</span>
+        <span class="mk-blue">def lead_days</span>
+          1
+        end
+        # ...
+      end
+      
+      require 'date'
+      starting = Date.parse("2015/09/04")
+      ending = Date.parse("2015/09/10")
+      ￼￼b = Bicycle.new b.schedulable?(starting, ending)
+      # This Bicycle is not scheduled
+      # between 2015-09-03 and 2015-09-10
+      # => true
+p
+  | 改成這樣的好處是Vehicle與Mechanic就採用同樣的方法就可以直接擁有schedule相關的method。
+pre.ruby
+  code
+    | class Vehicle
+        <span class="mk-blue">include Schedulable</span>
+        <span class="mk-blue">def lead_days</span>
+          3
+        end
+        # ...
+      end
+      
+      class Mechanic
+        <span class="mk-blue">include Schedulable</span>
+        <span class="mk-blue">def lead_days</span>
+          4
+        end
+        # ...
+      end
+      
+      v = Vehicle.new v.schedulable?(starting, ending)
+      # This Vehicle is not scheduled
+      # between 2015-09-01 and 2015-09-10
+      # => true
+      m = Mechanic.new m.schedulable?(starting, ending)
+      # This Mechanic is not scheduled
+      # between 2015-02-29 and 2015-09-10
+      # => true
+p
+  | 注意
+  code
+    | schedulable?
+  | 與
+  code
+    | scheduled?
+  | 這兩個method因為在Bicycle等class中並沒有實作，所以這些method會直接從schedulable module中delegate(委派)，也就是採用module中method的實作。但因為三個class都各自重新定義了
+  code
+    | lead_days
+  |，所以
+  code
+    | lead_days
+  | 會使用class自己定義的天數。
+ul
+  li
+    | 繼承與分享角色的差別，其實就是is-a(是一個xxx)與behaviors-like-a(行為像是一個xxx)的差別。
+h2 Looking Up Methods
+p
+  | 尋找method的順序：
+ul
+  li
+    | 1. 先找class中有沒有這個method的實作。
+  li
+    | 2. 如果上面找不到，找class include的module中有沒有這個method的實作。
+  li
+    | 3. 如果上面都找不到，呼叫method_missing並將method的名字當參數傳進去，如果沒有做什麼，最後往父類別繼續找method的實作。
+h2 Inheriting Role Behavior
+p
+  | module中還可以include其它的module，使得module變成有繼承體系的感覺，但同時也會增加系統的複雜度，也變的更難理解與維護，就看適不適合這樣子用了。
+h1 Writing Inheritable Code
+h2 Recognize the Antipatterns
+h2 Insist on the Abstraction
+h2 Honor the Contract
+h2 Use the Template Method Pattern
+h2 Preemptively Decouple Classes
+h2 Create Shallow Hierarchies
+h1 Summary

@@ -1,0 +1,86 @@
+.meta-data title 正方形是一個長方形嗎？
+.meta-data datetime 2015-10-20 09:13:40
+.meta-data tags ooad
+.meta-data category coding
+.meta-data link is-a-square-a-rectangle
+.meta-data file 2015-10-20-091340-is-a-square-a-rectangle
+.meta-data template post
+.meta-data end
+
+p
+  | 這是參加rails新手村讀書會時，大家熱列討論的一個話題。先看個程式碼的例子：
+pre.ruby
+  code
+    | class Rectangle
+        attr_accessor :width, :height
+
+        def initialize(width: 1, height: 1)
+          @width = width
+          @height = height
+        end
+
+        def area
+          @width * @height
+        end
+      end
+
+      rect = Rectangle.new(width: 2, height: 3)
+      puts rect.width  # 2
+      puts rect.height # 3
+      puts rect.area   # 6
+      rect.width = 4
+      puts rect.width  # 4
+      puts rect.height # 3
+      puts rect.area   # 12
+p
+  | 假如現在要實作一個正方形，那正方形到底能不能繼承長方形呢？我一開始覺得正方形同樣也有長、寬、面積，只是它的長寬必須一樣，正方形看起來是長方形的一個特例，就如同子類別是父類別的一個特例，不就剛好是適用於繼承嗎？所以正方形應該可以寫成下面這個樣子：
+pre.ruby
+  code
+    | class Square < Rectangle
+        def initialize(side: 1)
+          @width = side
+          @height = side
+        end
+
+        def width=(w)
+          @width = @height = w
+        end
+
+        def height=(h)
+          @width = @height = h
+        end
+      end
+
+      square = Square.new(side: 4)
+      puts square.width  # 4
+      puts square.height # 4
+      puts square.area   # 16
+      square.width = 5
+      puts square.width  # 5
+      puts square.height # 5
+      puts square.area   # 25
+p
+  | 看起來很合理，那問題是出現在哪裡呢？我覺得如果在使用Rectangle的時候只限制在設定/取得長寬、取得面積這些用途，基本上不會有問題。但要記得的是當你把這兩個class拿給別人用，你不能預期別人會怎麼看待或使用長方形，舉個例子：當長方形的寬變成兩倍的時候，面積也要變成兩倍。
+pre.ruby
+  code
+    | rect = Rectangle.new(width: 2, height: 3)
+      original_area = rect.area
+      rect.width = rect.width * 2
+      puts (rect.area == original_are * 2) # true
+p  
+  | 但在這種情況下，正方形是無法當作長方形來使用，因為正方形的面積會成4倍。
+pre.ruby
+  code
+    | rect = Square.new(side: 2)
+      original_area = rect.area
+      rect.width = rect.width * 2
+      puts (rect.area == original_area * 2) # false
+p
+  | 這違反了父類別可以使用的地方，子類別應該也要可以用的原則。也許你會爭論說這不是預期的使用方式，可是就如同上面提到的，你不能預期別人是怎麼看待一個長方形，這樣的認知差異造成了長方形與正方形本質上的不同，如果硬要說正方形是一個長方形，在某些使用的情境上(就如同上面的例子)就失去了合理性。
+
+h1
+  | Ref:
+ul
+  li
+    a href="http://programmers.stackexchange.com/questions/238176/why-would-square-inheriting-from-rectangle-be-problematic-if-we-override-the-set" target="_blank"
+      | SO - Why would Square inheriting from Rectangle be problematic if we override the SetWidth and SetHeight methods?
