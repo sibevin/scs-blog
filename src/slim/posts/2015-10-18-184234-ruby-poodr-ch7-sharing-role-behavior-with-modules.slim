@@ -187,9 +187,31 @@ p
   | module中還可以include其它的module，使得module變成有繼承體系的感覺，但同時也會增加系統的複雜度，也變的更難理解與維護，就看適不適合這樣子用了。
 h1 Writing Inheritable Code
 h2 Recognize the Antipatterns
+p
+  | 只要出現下面兩種程式碼，表示有可能已經違反了設計的原則：
+ul
+  li
+    | 一個物件必須根據自己是哪一種類別或資料型態來決定method要怎麼運作。
+  li
+    | 一個method必須檢查傳進來的物件是哪一種類別或資料型態來做不同的事情。
+p
+  | 基本上，在大多數的情況下，「檢查是哪一種類別或資料型態」都會是一個錯誤。
 h2 Insist on the Abstraction
+ul
+  li
+    | 任何可以使用在父類別的程式碼，繼承父類別的子類別也應該可以運作。父類別不應該包含任何一個只能讓某些子類別才能用的method。這個原則同樣用於module。
+  li
+    | 如果有一個子類別得到了來自於繼承或是include的method，卻將它實作成raise一個 "Dose not implement" 的exception。這就要重新思考這個子類別到底是不是真的符合繼承父類別的條件。
+  li
+    | 如果你沒辦法抽象化出一個父類別，這表示繼承並不適用於你目前的系統。
 h2 Honor the Contract
+p
+  | 簡言之就是Liskov Substitution Principle (LSP)，一個子類別應該可以在任何可以使用父類別的地方取待父類別。
 h2 Use the Template Method Pattern
+p
+  | 抽象的父類別定義method的界面，而繼承的子類別則複寫method的實作。
 h2 Preemptively Decouple Classes
+p
+  | 盡量避免在子類別中呼叫super，取而待之是使用hook之類的作法。
 h2 Create Shallow Hierarchies
 h1 Summary
