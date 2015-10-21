@@ -5,7 +5,6 @@
 .meta-data link ruby-poodr-ch7-sharing-role-behavior-with-modules
 .meta-data file 2015-10-18-184234-ruby-poodr-ch7-sharing-role-behavior-with-modules
 .meta-data template post
-.meta-data draft
 .meta-data end
 
 ul
@@ -212,6 +211,79 @@ p
   | 抽象的父類別定義method的界面，而繼承的子類別則複寫method的實作。
 h2 Preemptively Decouple Classes
 p
-  | 盡量避免在子類別中呼叫super，取而待之是使用hook之類的作法。
+  | 盡量避免在子類別中呼叫super，取而待之是使用hook之類的作法，因為呼叫super表示你在父類別與子類別之間增加了相依性。例如：
+p
+  i
+    | 不好的寫法：
+pre
+  code
+    | class Car
+        def initialize(move_action: nil, carry_action: nil)
+          @move_action = move_action || Run.new
+          @carry_action = carry_action || Carry.new
+        end
+      end
+      
+      class SportCar < Car
+        def initialize(move_action: nil, carry_action: nil)
+          super(move_action, carry_action)
+          @move_action = RunFaster.new
+        end
+      end
+p
+  i
+    | 比較好的寫法：
+pre
+  code
+    | class Car
+        def initialize(move_action: nil, carry_action: nil)
+          @move_action = move_action || Run.new
+          @carry_action = carry_action || Carry.new
+          init_action
+        end
+        
+        private
+        
+        def init_action
+        end
+      end
+      
+      class SportCar < Car
+        private
+        
+        def init_action
+          @move_action = RunFaster.new
+        end
+      end
+p
+  | 在上面的例子中，
+  code
+    | init_action
+  | 就是一個hook。不過使用hook的限制就是只能用在直接繼承的父子類別，在更多層的繼承關係反而會限制class的使用。例如：
+pre
+  code
+    | class SportCar < Car
+        private
+        
+        def init_action
+          @move_action = RunFaster.new
+        end
+      end
+      
+      class CoolSportCar < Car
+        private
+        
+        def init_action
+          super
+          @carry_action = CarryCool.new
+        end
+      end
+p
+  | 在上面的例子中，CoolSportCar為了要維持SportCar原本的行為，必須在
+  code
+    | init_action
+  | 呼叫super。
 h2 Create Shallow Hierarchies
+p
+  | 盡量避免過深的繼承階層關係，繼承階層越多，表示要找到對應的method定義或實作就越困難，同時在同一個階層體系下的class表示他們彼此之間都有相依性，這也會造成如果改了繼承階層中的class，會大大增加出包的機會。
 h1 Summary
