@@ -75,5 +75,12 @@ $tags = {
   "test" => {
     name: "測試",
     color: "#0748b3"
+  },
+  "gh" => {
+    name: "Growth Hacking",
+    color: "#993366"
+  },
+  "gh_dggh" => {
+    name: "DGGH",
   }
 }
