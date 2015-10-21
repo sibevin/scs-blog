@@ -169,7 +169,7 @@ p
 pre
   code.ruby
     | u = User.new
-      u.roles_bitwise = [:admin, :manager]
+      u.roles_bitwise = [:admin, :member]
       puts u.roles # 5
       u.roles = 1
       puts u.roles_bitwise # [:admin]
