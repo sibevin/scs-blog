@@ -82,5 +82,11 @@ $tags = {
   },
   "gh_dggh" => {
     name: "DGGH",
+  },
+  "bootstrap" => {
+    color: "#563d7c"
+  },
+  "sass" => {
+    color: "#b3738a"
   }
 }
