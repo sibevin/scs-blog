@@ -1,0 +1,187 @@
+.meta-data title 在rails中使用Bootstrap4
+.meta-data datetime 2015-10-23 09:28:12
+.meta-data tags rails,bootstrap
+.meta-data category coding
+.meta-data link use-bootstrap-4-on-rails
+.meta-data file 2015-10-23-092812-use-bootstrap-4-on-rails
+.meta-data template post
+.meta-data end
+
+h1 在rails中安裝Bootstrap4
+
+p
+  | Bootstrap4還是alpha的階段，不過因為bootstrap4用sass全面改寫，這表示我們可以開始用mixin做一些神奇的事，所以就忍不住想先試試看。目前Bootstrap4還沒正式release，支援bootstrap的gem似乎都還沒開始使用4的版本，所以要用只能自己裝啦。自己裝其實也很簡單，只要借助rails-assets，基本上設定一下就可以用了，步驟如下：
+
+h2 在Gemfile中用rails-assets安裝bootstrap 4.0.0.alpha
+p
+  i Gemfile
+pre.ruby
+  code
+    | source 'https://rails-assets.org' do
+        gem 'rails-assets-bootstrap', '4.0.0.alpha'
+      end
+
+h2 在applicaiton.css中加入bootstrap
+p
+  i
+    | app/assets/stylesheets/application.css
+pre.css
+  code
+    | *= require bootstrap
+p
+  | 這樣就完成了。
+  
+h1 在自己寫的sass中使用bootstrap的mixin
+
+p
+  | Bootstrap4最大的好處是用sass寫的，因此我們就可以使用bootstrap原生的mixin。用法也很簡單，只要在想用mixin的地方import bootstrap的mixin就可以了。要注意的是除了bootstrap/mixins外，有時候必須同時將boostrap/variables也import才可以正常運作。下面是一個例子：
+  
+p
+  i
+    | app/assets/stylesheets/sass/partials/_btn.sass
+pre.sass
+  code
+    | @import "sass/variables/colors"
+      @import "bootstrap/variables"
+      @import "bootstrap/mixins"
+
+      .btn-main
+        @include button-variant($c_white, $c_fg_d, $c_fg_d)
+      .btn-facebook
+        @include button-variant($c_white, $c_facebook, $c_facebook)
+
+p
+  | 另一個好用的mixin就是responsive utilities(可以參考文件：
+  a href="http://v4-alpha.getbootstrap.com/layout/responsive-utilities/" target="_blank"
+    | Layout - Responsive utilities
+  | )，有了這個就可以使用bootstrap原生的breakpoint做RWD的變化。
+p
+  i
+    | app/assets/stylesheets/sass/views/layouts/_single.sass
+pre.sass
+  code
+    | @import "sass/variables/sizes"
+      @import "bootstrap/variables"
+      @import "bootstrap/mixins"
+
+      .single
+        section.main
+          padding-bottom: $footer_h
+        footer
+          position: fixed
+          bottom: 0px
+          right: 0px
+          left: 0px
+          z-index: $zindex-navbar
+        @include media-breakpoint-up(md)
+          header
+            position: fixed
+            right: 0px
+            left: 0px
+            top: 0px
+            z-index: $zindex-navbar
+          section.main 
+            padding-top: $header_h
+            min-height: $desktop_min_h
+          footer
+            position: static
+
+h1 複寫bootstrap的變數
+p
+  | 好吧，使用bootstrap最大的壞處就是那<span style="color:rgba(102,175,233,1);">可怕的藍光</span>，想要改掉bootstrap原始的設定值，就需要複寫bootstrap的variables這個mixin。這意味著我們不能直接使用原本的bootstrap，而需要一些trick來做到客製化的boostrap。
+  
+h2 在application.css中改使用我們客製化的boostrap
+p
+  | 將原本的
+  code
+    | *= require bootstrap
+  | 改成我們自己的boostrap
+  code
+    | *= require sass/owb/bootstrap
+  | 。sass/owb/boostrap這個路徑可以自己定，就看你要把客製化的boostrap放哪裡。
+p
+  i
+    | app/assets/stylesheets/application.css
+pre.css
+  code
+    |  *= require sass/owb/bootstrap
+
+h2 建立客製化的bootstrap
+p
+  | 將
+  code
+    | rails-assets-bootstrap-4.0.0.alpha
+  | gem下的
+  code
+    | app/assets/stylesheets/bootstrap/_variables.scss
+  | 與
+  code
+    | app/assets/stylesheets/bootstrap/bootstrap.scss
+  | 複製到app/assets/stylesheets/sass/owb之下，修改boostrap.scss這個檔案，讓它去import我們自己的_variables，但其它的mixin仍然是用bootstrap原本的。
+p
+  i
+    | app/assets/stylesheets/sass/owb/bootstrap.css.sass
+pre.sass
+  code
+    | // Core variables and mixins
+      @import "variables"
+      @import "bootstrap/mixins"
+
+      // // Reset and dependencies
+      @import "bootstrap/normalize"
+      @import "bootstrap/print"
+
+      // Core CSS
+      @import "bootstrap/reboot"
+      @import "bootstrap/type"
+      @import "bootstrap/images"
+      @import "bootstrap/code"
+      @import "bootstrap/grid"
+      @import "bootstrap/tables"
+      @import "bootstrap/forms"
+      @import "bootstrap/buttons"
+
+      // // Components
+      @import "bootstrap/animation"
+      @import "bootstrap/dropdown"
+      @import "bootstrap/button-group"
+      @import "bootstrap/input-group"
+      @import "bootstrap/custom-forms"
+      @import "bootstrap/nav"
+      @import "bootstrap/navbar"
+      @import "bootstrap/card"
+      @import "bootstrap/breadcrumb"
+      @import "bootstrap/pagination"
+      @import "bootstrap/pager"
+      @import "bootstrap/labels"
+      @import "bootstrap/jumbotron"
+      @import "bootstrap/alert"
+      @import "bootstrap/progress"
+      @import "bootstrap/media"
+      @import "bootstrap/list-group"
+      @import "bootstrap/responsive-embed"
+      @import "bootstrap/close"
+
+      // Components w/ JavaScript
+      @import "bootstrap/modal"
+      @import "bootstrap/tooltip"
+      @import "bootstrap/popover"
+      @import "bootstrap/carousel"
+
+      // Utility classes
+      @import "bootstrap/utilities"
+      @import "bootstrap/utilities-spacing"
+      @import "bootstrap/utilities-responsive"
+p
+  | 這時候我們就可以改app/assets/stylesheets/sass/owb/_variables.scss改<span style="color:rgba(102,175,233,1);">可怕的藍光</span>改掉嘍。
+p
+  i
+    | app/assets/stylesheets/sass/owb/_variables.scss
+pre.sass
+  code
+    | $input-box-shadow-focus:         rgba(102,175,233,.6) !default;
+h1 Refs
+ul
+  li
+    a href="http://v4-alpha.getbootstrap.com/getting-started/introduction/" target="_blank"
+      | Bootstrap 4 官方文件
