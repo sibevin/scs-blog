@@ -21,13 +21,19 @@ pre.ruby
         gem 'rails-assets-bootstrap', '4.0.0.alpha'
       end
 
-h2 在applicaiton.css中加入bootstrap
+h2 在applicaiton.css與application.js中加入bootstrap
 p
   i
     | app/assets/stylesheets/application.css
 pre.css
   code
     | *= require bootstrap
+p
+  i
+    | app/assets/javascripts/application.js
+pre.js
+  code
+    | //= require bootstrap
 p
   | 這樣就完成了。
   

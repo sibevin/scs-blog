@@ -1,0 +1,57 @@
+.meta-data title 在rails中使用AngularJS
+.meta-data datetime 2015-10-27 08:26:21
+.meta-data tags angularjs,rails
+.meta-data category coding
+.meta-data link use-angularjs-on-rails
+.meta-data file 2015-10-27-082621-use-angularjs-on-rails
+.meta-data template post
+.meta-data end
+
+p
+  | 最近在自己的rails專案中用到了AngularJS，所以就順便做一個記錄。注意這裡並非使用一般常用的angularjs-rails的gem，而是使用rails-asset去安裝angular。使用rails-asset安裝angular的好處在於我們可以選擇要安裝的版本與其它angular的套件，不過缺點就是要自己做一些設定才能在rails中使用它。步驟如下：
+h2 使用rails-asset安裝AngularJS
+p
+  i Gemfile
+pre.ruby
+  code
+    | source 'https://rails-assets.org' do
+        gem 'rails-assets-angularjs'
+      end
+
+h2 在applicaiton.js中加入angularjs
+p
+  i
+    | app/assets/javascripts/application.js
+pre.js
+  code
+    | //= require angular
+
+h2 加入AngularJS的啟動點
+p
+  | 我們必須要選擇某個DOM來啟動我們自己寫的angular的module，最常選擇的地方就是body，但要注意的是因為turbolinks的關係，直接寫在body中會造成AngularJS在頁面重新讀取時無法運作。所以我們要自己寫個js在ready與page:load的時候啟動angular module。 
+p
+  i
+    | app/assets/javascripts/angular_app.js.coffee
+pre.coffee
+  code
+    | app = angular.module('MyApp')
+
+      on_ready = ->
+        angular.bootstrap("body", ['MyApp'])
+
+      $(document).ready(on_ready)
+      $(document).on('page:load', on_ready)
+p
+  | 接著把這個js也加入application.js中，注意要放在angularjs之後。
+p
+  i
+    | app/assets/javascripts/application.js
+pre.js
+  code
+    | //= require angular
+      //= require angular_app
+p
+  | 這樣就完成啦，可以開心的在rails中使用angular了。
+h1 P.S.
+p
+  | 不要再跟我戰為什麼不改用react(那我就會反問為什麼不用angular的directive？)，我就是喜歡angular…好吧，找個時間分享一下怎麼在rails中使用react。
