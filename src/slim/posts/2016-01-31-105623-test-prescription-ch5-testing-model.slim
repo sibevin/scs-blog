@@ -1,0 +1,511 @@
+.meta-data title rails讀書會 - Test Prescription - Ch.5 測試model
+.meta-data datetime 2016-01-31 10:56:23
+.meta-data tags rails,test,tp,rails_study-group
+.meta-data category coding
+.meta-data link test-prescription-ch5-testing-model
+.meta-data file 2016-01-31-105623-test-prescription-ch5-testing-model
+.meta-data template post
+.meta-data end
+
+ul
+  li
+    | Model不只是ActiveRecord，它還可以是service、value objects或是一些包含商業邏輯的純ruby的class。
+  li
+    | Model相較於controller、view，是與rails依賴程度比較低的部分，所以很適合從model開始寫測試。
+    
+h1 What Can We Do in a Model Test?
+
+i
+  | spec/models/post_spec.rb 
+pre
+  code.ruby
+    | require "rails_helper"
+    
+      RSpec.describe Post, :type => :model do
+        context "with 2 or more comments" do
+          it "orders them in reverse chronologically" do
+            post = Post.create!
+            comment1 = post.comments.create!(:body => "first comment")
+            comment2 = post.comments.create!(:body => "second comment")
+            expect(post.reload.comments).to eq([comment2, comment1])
+          end
+        end
+      end
+      
+h1 What Makes a Good Set of Model Tests?
+p 
+  | 測試的基本流程：write a simple test, make it pass, then refactor
+h2 A TDD Metaprocess
+p
+  | 商業邏輯是複雜的而且在一開始要怎麼實做都還沒完全定案。應該要著重在流程，並將功能切成更小的步驟。
+ol
+  li 
+    | 寫model test的一個好的開始就是從「描述初始化狀態」著手，尤其是使用TDD來建立一個新的class，因為初始化牽涉的商業邏輯最少。
+  li
+    | 接著針對商業邏輯先寫一個成功的案例或路徑，不建議同時寫失敗的案例，因為會造成混淆，但可以先將它們寫成註解或pending case。
+  li 
+    | 寫完成功案例，接著就是寫一些失敗的例子。失敗的案例會讓程式碼越來越複雜，這時refactor就會變的很重要。一旦你的程式通過了這些失敗的案例，而且也找不到其它的失敗案例，那就做完啦。
+p
+  | sliming：用簡單的方式先通過測試，例如：什麼都不做只回傳一個數值，等之後的階段在來改。這麼做的好處在於在一開始可以不用太著重在實做的細節。
+p
+  | 一個model spec的範例：
+i
+  | spec/models/project_spec.rb 
+pre
+  code.ruby
+    | require "rails_helper"
+      
+      RSpec.describe Project do
+        describe "initialize" do
+          it "should have a default name" do
+            expect(Project.new).to eq("New Project")
+          end
+        end
+        
+        describe ".total_size" do
+          let(:project) { create(:project) }
+          
+          it "should return the total task size" do
+            task_size = rand(10) + 1
+            create(:task, project: project, size: task_size)
+            expect(project.total_size).to eq(task_size)
+          end
+          
+          it "should return the total task size if multiple tasks are given" do
+            task_size1 = rand(10) + 1
+            task_size2 = rand(10) + 1
+            create(:task, project: project, size: task_size1)
+            create(:task, project: project, size: task_size2)
+            expect(project.total_size).to eq(task_size1 + task_size2)
+          end
+          
+          it "should return 0 if no task in the project" do
+            expect(project.total_size).to eq(0)
+          end
+          
+          it "should return nil if there is a nil size task in the project" do
+            create(:task, project: project, size: nil)
+            expect(project.total_size).to be_nil
+          end    
+        end
+      end
+      
+h1 Refactoring Models
+p 許多的設計會在refactor的時候發生，通常就是cleanup，也就是把寫的很糟或是架構不好的程式碼重新安排。請不要跳過refactor的步驟，它是一個用來思考與設計怎麼寫程式的方法，而且保留糟糕的程式碼只會讓之後refactor越來越痛苦。
+
+h2 Break Up Complexity
+p 將長的method或code切成多個小的method，好處是因為程式區塊放在小method中，而method命名可以為程式帶來可讀性。
+p 通常有幾個地方是可以考慮切成小method：
+ul
+  li 任何複雜的boolean運算式
+  li 區域變數，大量的區域變數會造成refactor難以執行。
+  li 出現一行註解的地方。
+h2 Combine Duplication
+p duplication有三種：
+ul
+  li duplication of fact
+  li duplication of logic
+  li duplication of structure
+  
+h2 Duplication of fact
+p 就是Magic number
+pre
+  code.ruby
+    | validates :size, numericality: {less_than_or_equal_to: 5}
+      def 
+        possible_sizes (1 .. 5)
+      end 
+
+      validates :size, numericality: {less_than_or_equal_to: MAX_POINT_COUNT}
+      def possible_sizes
+        (1 .. MAX_POINT_COUNT)
+      end
+      
+      VALID_POINT_RANGE = 1 .. 5
+      validates :size, inclusion: {in: VALID_POINT_RANGE}
+
+p 也可以選擇將數值放在一個method中，這樣做的好處是有時候instance的method會比class的variable來的方便使用，另一方面也保留未來需要變成變數的可能性。
+pre
+  code.ruby
+    | def max_point_count
+        5
+      end 
+
+h2 Duplication of logic
+p「複雜的boolean運算式」或是「散佈在很多地方簡單但相同的計算邏輯」。
+pre
+  code.ruby
+    | class User
+        def maximum_posts
+          if status == :trusted then 10 else 5 end
+        end
+        def urls_in_replies
+          if status == :trusted then 3 else 0 end
+        end
+      end 
+
+      class User
+        def maximum_posts
+          if trusted? then 10 else 5 end
+        end
+        def urls_in_replies
+          if trusted? then 3 else 0 end
+        end
+        
+        def trusted?
+          status == :trusted
+        end
+      end 
+p 要注意的是，不是所有看起來像的程式碼都要切出來放在一起。
+
+h2 Find Missing Abstractions
+p Duplication of structure表示有missing abstraction，這意味著需要把程式碼搬到另一個class。
+p 一個明顯的例子是「重複出現的一整組method」或是「一組method有相同的prefix或是suffix，例如：logger_init、logger_print、logger_read」。
+
+pre
+  code.ruby
+    | class User < ActiveRecord::Base
+        # ... 
+        def full_name
+    = "\n" + '    "#{first_name} #{last_name}"' + "\n"
+    |   end
+        
+        def sort_name
+    = "\n" + '    "#{first_name}, #{last_name}"' + "\n"
+    |   end
+        # ...
+      end 
+
+      class Name
+        attr_reader :first_name, :last_name
+        def initialize(first_name, last_name) 
+          @first_name, @last_name = first_name, last_name
+        end
+        
+        def full_name
+    = "\n" + '    "#{first_name} #{last_name}"' + "\n"
+    |   end
+        
+        def sort_name
+    = "\n" + '    "#{first_name}, #{last_name}"' + "\n"
+    |   end
+      end
+      
+      class User < ActiveRecord::Base
+        delegate :full_name, :sort_name, to: :name 
+        def name
+           Name.new(first_name, last_name)
+        end
+      end 
+p 切出Name class的好處：
+ul
+  li 與資料庫的邏輯切開，只需要測試單純的運算，測試比較好寫(減少測試時要做的設定，加快測試時間)。
+  li 容易擴充功能。
+
+p 問題：用concern可不可以？
+pre
+  code.ruby
+    | module Nameable
+        extend ActiveSupport::Concern
+        def full_name
+    = "\n" + '    "#{first_name} #{last_name}"' + "\n"
+    |   end
+        
+        def sort_name
+    = "\n" + '    "#{first_name}, #{last_name}"' + "\n"
+    |   end
+      end
+      
+      class User < ActiveRecord::Base
+        include Nameable 
+      end 
+
+p 在一般的情況下，在refactor程式時不應該去改測試，因為測試應該要針對「程式的功能行為」去寫而不是針對實作去寫。有一個例外就是如果程式碼被搬到另一個class，那就要改測試了。
+p 另一個可以抽象化的地方就是在流程上重複出現的判斷。
+
+pre
+  code.ruby
+    | def total_time
+        if status == :completed
+          calculate_completed_time
+        else
+          calculate_incompleted_time
+        end 
+      end
+      
+      def total_size
+        if status == :completed
+          calculate_completed_size
+        else
+          calculate_incompleted_size
+        end 
+      end
+
+      def calculator 
+        if complete?
+          CompleteTaskCalculator.new(self)
+        else
+          IncompleteTaskCalculator.new(self)
+        end
+      end
+      
+      def total_time
+        calculator.calculate_time
+      end 
+      
+      def total_size
+        calculator.calculate_size
+      end 
+
+h1 A Note on Assertions per Test
+p 「一個測試案例放一個判斷」v.s. 「一個測試案例放多個判斷」
+
+pre
+  code.ruby
+    | it "marks a task complete" do
+        task = tasks(:incomplete)
+        task.mark_complete
+        expect(task).to be_complete
+        expect(task).to be_blocked
+        expect(task.end_date).to eq(Date.today.to_s(:db)) expect(task.most_recent_log.end_state).to eq("completed")
+      end 
+
+      describe "task completion" do
+        let(:task) {tasks(:incomplete)}
+        before(:example) { task.mark_complete }
+        specify { expect(task).to be_complete }
+        specify { expect(task).to be_blocked }
+        specify { expect(task.end_date).to eq(Date.today.to_s(:db)) }
+        specify { expect(task.most_recent_log.end_state).to eq("completed") }
+      end 
+
+p 一個測試案例放一個判斷：
+ul
+  li 好處：每個判斷都是獨立的案例，即使前一個判斷失敗了，後面的判斷還可以繼續執行，方便在開發初期找出測試沒有通過的原因。
+  li 缺點：每個案例都會跑重複的setup與teardown的動作，造成測試緩慢。
+
+p 一個測試案例放多個判斷：
+ul
+  li 與上面的優缺剛好相反。
+
+p 作者的建議：
+ol
+  li 在開發初期採用「一個測試案例放一個判斷」，能快速找出問題。
+  li 等功能穩定後，合併成「一個測試案例放多個判斷」，加快測試時間。
+  li 如果針對某個功能要測試不同情況的運作，將判斷放在各別的案例會比較清楚明瞭。
+  
+h1 Testing What Rails Gives You
+ul
+  li rails提供了association與validation兩個很方便的功能，只是要怎麼測試這些功能呢？
+  li 原則：測試應該要針對「程式的功能行為」去寫而不是針對實作去寫。測試association：應該要測試會用到關聯性的功能，而不是去檢查有沒有設定association。測試validation：應該要測試如果給了不對的值會產生怎麼樣的行為(例如不會建立資料)，而不是去檢查有沒有設定validation。
+  li 馬上打臉shoulda-matchers，shoulda-matchers類的測試不能算是TDD的做法，TDD應該是要去思考在某個功能下是不是真的需要association或是validation，而不是一開始就要設想好model有哪些association與validation。
+
+h1 Testing ActiveRecord Finders
+ul
+  li ActiveRecord提供了強大的sql指令(finder)用來query資料，只是要怎麼測試這些功能呢？
+  li 強烈的建議將常用的finder獨立切成method，好處是增加可讀性與好測試。
+
+pre
+  code.ruby
+    | class Task < ActiveRecord::Base
+        def self.completed
+          where(status: :completed)
+        end
+        
+        def self.large
+          where("size > 3")
+        end
+        
+        def self.most_recent
+          order("completed_at DESC")
+        end
+        
+        def self.recent_done_and_large
+          completed.large.most_recent.limit(5)
+        end
+      end 
+
+p 問題：用scope可不可以？ 
+
+pre
+  code.ruby
+    | class Task < ActiveRecord::Base
+        scope :completed, -> { where(status: :completed) }
+        scope :large, -> { where("size > 3") }
+        scope :most_recent, -> { order("completed_at DESC") }
+        scope :recent_done_and_large, -> { completed.large.most_recent.limit(5) }
+      end 
+
+ul
+  li 如果切出來的finder method已經有測試cover了，就不用再寫多餘的測試來測試它，另外也不應該在寫程式的時候去改測試(其實就是follow之前refactor的原則)。
+  li 你必須準備足夠數量的資料來驗證功能是否正確，但另一方面因為測試finder的資料牽涉到存取資料庫，通常會造成測試變慢，所以要儘量減少測試需要用到的資料。
+  li 從建立兩個資料開始：
+
+pre
+  code.ruby
+    | it "finds completed tasks" do
+        complete = Task.create(completed_at: 1.day.ago, title: "Completed")
+        incomplete = Task.create(completed_at: nil, title: "Not Completed") 
+        expect(Task.complete.map(&:title)).to eq(["Completed"])
+      end 
+ul
+  li 小技巧：不是去檢查`Task.complete`，而是檢查`Task.complete.map(&:title)`。
+  li 如果要測複數的finder，就需要額外的資料，但原則還是一樣：一次加一對，不要加資料超過需要的量，一個案例一次不要測太多，切成小的測試案例。
+  li 測試排序：不要測已經排好的東西，例如id，應該要測可以比較大小的欄位，而且是依照「中」、「大」、「小」的值去塞測試資料。
+
+h1 Testing Shared Modules and ActiveSupport Concerns
+p 多個model可能有類似的功能或行為，我們可以用module或是concern的方式讓model共用程式碼，但測試這種共用的行為是一種挑戰。這時候就是shared example出場的時候啦：
+
+i spec/support/size_group.rb 
+pre
+  code.ruby
+    | RSpec.shared_examples "sizeable" do
+        let(:instance) { described_class.new }
+        
+        it "knows a one-point story is small" do 
+          allow(instance).to receive(:size).and_return(1)
+          expect(instance).to be_small
+        end
+        
+        it "knows a five-point story is epic" do
+          allow(instance).to receive(:size).and_return(5)
+          expect(instance).to be_epic
+        end 
+      end 
+
+i spec/models/task_spec.rb 
+pre
+  code.ruby
+    | RSpec.describe Task do
+        it_should_behave_like "sizeable" 
+        # ...
+      end
+
+i app/models/task.rb
+pre
+  code.ruby
+    | class Task
+        # ...
+        def epic?
+          size >= 5
+        end
+      
+        def small?
+          size <= 1
+        end 
+        # ...
+      end
+
+
+
+p RSpec還有其它方式可以使用shared example：`include_example`、`it_behaves_like`或是metadata等，請參考Ch15。
+p 可以用let當傳送門，將變數傳給shared example。
+
+pre
+  code.ruby
+    | require "set"
+      
+      RSpec.shared_examples "a collection object" do
+        describe "<<" do
+          it "adds objects to the end of the collection" do
+            collection << 1
+            collection << 2
+            expect(collection.to_a).to match_array([1, 2])
+          end
+        end
+      end
+      
+      RSpec.describe Array do
+        it_behaves_like "a collection object" do
+          let(:collection) { Array.new }
+        end
+      end
+      
+      RSpec.describe Set do
+        it_behaves_like "a collection object" do
+          let(:collection) { Set.new }
+        end
+      end
+
+p 
+  | 更多有關shared example的運用請參考： 
+  a href="https://www.relishapp.com/rspec/rspec-core/docs/example-groups/shared-examples" target="_blank"
+    | https://www.relishapp.com/rspec/rspec-core/docs/example-groups/shared-examples
+
+h1 Write Your Own RSpec Matcher
+p 在RSpec中可以客製化自己的matcher。範例：將`expect(project.size).to eq(5)`變成`expect(project).to be_of_size(5)`。
+
+i spec/support/size_matcher.rb
+pre
+  code.ruby
+    | RSpec::Matchers.define :be_of_size do |expected| 
+        match do |actual|
+          actual.total_size == expected 
+        end
+      end 
+
+p 客製化matcher的使用方式與一般的matcher一樣
+
+i spec/models/project_spec.rb
+pre
+  code.ruby
+    | # ...
+      it "can calculate total size" do 
+        expect(project).to be_of_size(10) 
+        expect(project).not_to be_of_size(5)
+      end 
+      # ...
+
+p 更多matcher的客製功能
+
+i spec/support/size_matcher.rb
+pre
+  code.ruby
+    | RSpec::Matchers.define :be_of_size do |expected|
+        match do |actual|
+          actual.total_size == expected
+        end
+      
+        description do
+    = "\n" + '    "have tasks totaling #{expected} points"' + "\n"
+    |   end
+      
+        failure_message do |actual|
+    = "\n" + '    "expected project #{actual.name} to have size #{expected}"' + "\n"
+    |   end
+      
+        failure_message_when_negated do |actual|
+    = "\n" + '    "expected project #{actual.name} not to have size #{expected}"' + "\n"
+    |   end
+      end 
+
+p chain：讓你的matcher有option可以使用
+
+i spec/support/size_matcher.rb
+pre
+  code.ruby
+    | RSpec::Matchers.define :be_of_size do |expected|
+        match do |actual|
+          size_to_check = @incomplete ? actual.remaining_size : actual.total_size
+          size_to_check == expected
+        end
+        # ...
+        chain :for_incomplete_tasks_only do
+          @incomplete = true
+        end
+      end
+      
+i spec/models/project_spec.rb
+pre
+  code.ruby
+    | # ...
+      it "can calculate total size" do
+        expect(project).to be_of_size(10)
+        expect(project).to be_of_size(5).for_incomplete_tasks_only 
+      end 
+      # ...
+
+p 
+  | 更多有關custom matcher的資料請參考： 
+  a href="http://www.relishapp.com/rspec/rspec-expectations/v/3-4/docs/custom-matchers" target="_blank"
+    | http://www.relishapp.com/rspec/rspec-expectations/v/3-4/docs/custom-matchers

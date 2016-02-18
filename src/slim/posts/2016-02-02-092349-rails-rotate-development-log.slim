@@ -1,0 +1,33 @@
+.meta-data title 將rails的development log做rotate
+.meta-data datetime 2016-02-02 09:23:49
+.meta-data tags rails
+.meta-data category coding
+.meta-data link rails-rotate-development-log
+.meta-data file 2016-02-02-092349-rails-rotate-development-log
+.meta-data template post
+.meta-data end
+
+p 我無意間發現一直沒在注意的development log竟然長到了100M，著時讓我嚇了一跳(尤其是不小心用Atom將它打開的時候…)。其實在production都會做的log rotation，在development也可以做，只要在environment中改掉預設的logger就可以嘍。
+
+i config/environments/development.rb
+pre
+  code.ruby
+    | Rails.application.configure do
+        # ...
+        # Setup logger for development
+    = "\n" + '  config.logger = Logger.new(Rails.root.join("log","#{Rails.env}.log"), 10, 1048576)' + "\n"
+    |   # ...
+      end
+      
+h1 心得
+
+p 為了這個問題，我trace了一下rails的source code，這邊做個記錄：
+ul
+  li rails預設是用ruby原生的logger，所以我們可以利用上面的方式改掉內建的log。
+  li 現在才知道ruby的logger內建就有rotation的功能，是我lag太久了嗎？
+
+h1 Refs
+ul
+  li 
+    a href="http://stackoverflow.com/questions/9581332/log-rotation-in-rails-development-mode" target="_blank"
+      | SO - Log rotation in Rails DEVELOPMENT mode?

@@ -1,0 +1,72 @@
+.meta-data title 在Atom中設定rails的自動補齊
+.meta-data datetime 2015-11-24 09:12:00
+.meta-data tags rails,atom
+.meta-data category tools
+.meta-data link setup-autocomplete-for-rails-in-atom-with-ctags
+.meta-data file 2015-11-24-091200-setup-autocomplete-for-rails-in-atom-with-ctags
+.meta-data template post
+.meta-data end
+
+h1 確認系統裡有安裝ctags
+
+pre
+  code
+    | $ brew install ctags
+
+h1 試著跑一下ctags
+
+p 
+  | 在rails專案中執行下面這個指令：
+pre
+  code
+    | $ ctags -R --languages=ruby --exclude=.git --exclude=log .
+p 
+  | 如果要連bundle的gem也要做tag的話，可以加上bundle list --path：
+pre
+  code
+    | $ ctags -R --languages=ruby --exclude=.git --exclude=log . $(bundle list --paths)
+p 
+  | 這時候有一個tags的file就會被建立。
+
+h1 使用guard讓tag可以在檔案儲存時自動產生
+
+p 
+  | 如果每次改檔案都要手動重新建立tag也實在太麻煩啦，這時候guard就非常好用了。首先在Gemfile中加入guard-ctags-bundler：
+pre
+  code
+    | group :development do
+        gem 'guard-ctags-bundler'
+      end
+p 
+  | bundle install完之後，執行guard init加入Guardfile的設定。
+pre
+  code
+    | $ guard init ctags-bundler
+p 
+  | 這時候你會發現產生的Guardfile會長的像下面這個樣子：
+pre
+  code
+    | guard 'ctags-bundler', :src_path => ["app", "lib", "spec/support"] do
+        watch(/^(app|lib|spec\/support)\/.*\.rb$/)
+        watch('Gemfile.lock')
+      end
+p 
+  | guard-ctags-bundler還有提供很多選項可以做調整，請參考它的文件
+  a href="https://github.com/ivalkeen/guard-ctags-bundler" target="_blank"
+    | ivalkeen/guard-ctags-bundler
+  |。
+p 
+  | 之後，在寫程式前執行guard，就可以自動產生tags了。
+pre
+  code
+    | $ guard
+
+h1 讓Atom可以吃ctags來做到自動補齊
+
+p 
+  | 確認有安裝下列的package，就ok了。
+ul
+  li autocomplete-plus
+  li atom-ctags
+p 
+  | 記得將fuzzy的設定打開：在autocomplete-plus中的DefaultProvider設定選Fuzzy。

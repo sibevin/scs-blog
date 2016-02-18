@@ -1,0 +1,54 @@
+.meta-data title 使用url_for來建立route路徑
+.meta-data datetime 2015-11-29 15:56:30
+.meta-data tags rails
+.meta-data category coding
+.meta-data link use-url-for-to-build-route-path
+.meta-data file 2015-11-29-155630-use-url-for-to-build-route-path
+.meta-data template post
+.meta-data end
+
+p 
+  | 如果要用controller與action來建立path，可以用Rails.application.routes.url_helpers.url_for，範例如下：
+pre
+  code
+    | Rails.application.routes.url_helpers.url_for {
+        controller: 'admin/accounts',
+        action: 'edit',
+        id: '8x5jg5sevpl0d4bo2raa1',
+        num: '123',
+        only_path: true
+      }
+p 
+  | 上面範例會生出path如下：
+pre
+  code
+    | /admin/accounts/8x5jg5sevpl0d4bo2raa1/edit?num=123
+p 
+  | 如果沒有加上
+  code
+    | only_path: true
+  | ，則必須要加上
+  code
+    | host
+  | 這個參數來指定host的位址。
+pre
+  code
+    | Rails.application.routes.url_helpers.url_for {
+        controller: 'admin/accounts',
+        action: 'edit',
+        id: '8x5jg5sevpl0d4bo2raa1',
+        num: '123',
+        host: 'www.example.com'
+      }
+h1 備註
+p 
+  | 當初在找解法的時候花了很多時間，最主要的原因是在rails中有太多叫
+  code
+    | url_for
+  | 的method了，搞的我很亂啊。原本我要用
+  code
+    | ActionView::RoutingUrlFor#url_for
+  | ，這個method也是view中呼叫url_for預設的method，結果發現它會自動將目前的網址參數也幫你加進去，這樣反而會在某些情況造成No route的error。後來trace了url_for的source
+  code
+    | (ActionView::RoutingUrlFor#url_for -> ActionDispatch::Routing::UrlFor -> ActionDispatch::Routing::RouteSet)
+  | 才找到有Rails.application.routes.url_helpers.url_for可以用。

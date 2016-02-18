@@ -1,0 +1,62 @@
+.meta-data title 在rails中使用resque
+.meta-data datetime 2015-11-06 14:55:54
+.meta-data tags rails,resque
+.meta-data category coding
+.meta-data link setup-resque-on-rails
+.meta-data file 2015-11-06-145554-setup-resque-on-rails
+.meta-data template post
+.meta-data end
+
+h1
+  | 開始之前
+p
+  | 先確定redis已經安裝好了。如果沒有請參考之前的文章。redis如果裝好，請先下
+  code
+    | redis-server
+  | 啟動它。
+  
+h1
+  | 設定resque
+ul
+  li
+    | 加入resque與resque-web gem
+p 
+  i
+    | Gemfile
+pre
+  code
+    | gem 'resque'
+      # ...
+      group :development do
+        # ...
+        gem 'resque-web'
+        # ...
+      end
+ul
+  li
+    | 設定radis相關的rake，讓啟動worker時可以根據environment載入資料。建立lib/tasks/redis.rake。
+p 
+  i
+    | lib/tasks/resque.rake
+pre
+  code
+    | require 'resque/tasks'
+
+      task 'resque:setup' => :environment
+ul
+  li 
+    | 在initializer中設定要連線的radis
+p 
+  i
+    | config/initializers/resque.rb
+pre
+  code
+    | Resque.redis = "localhost:6379"
+ul
+  li 
+    | 啟動worker
+p 
+  | 可以直接下
+  code
+    | rake resque:work QUEUE='*'
+  | 啟動worker。這時候只有要任何的task，就會開始執行。 

@@ -1,0 +1,120 @@
+.meta-data title 我的Atom Package列表
+.meta-data datetime 2015-11-18 08:28:04
+.meta-data tags atom
+.meta-data category tools
+.meta-data link my-atom-package-list
+.meta-data file 2015-11-18-082804-my-atom-package-list
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+h1 Vim
+
+h2 vim-mode-plus
+ul
+  li What - 在Atom中開啟vim模式，它是官方vim-mode的加強版。
+  li Why - 它比官方版的vim-mode多了很多騷包的功能，例如數字與flash提示，另外它也內建vim-mode-visual-block，超實用。
+  li How - 請參考它的快捷鍵文件。
+  li How - 官方預設把一些設定關掉了，可是打開它會很好用，例如：Incremental Search、Show Hover Search Count。
+  li How - gsc瞬改surround的字元。vii瞬選同一層indent的程式碼。選取模式+cmdD模式 = 無敵分身模式。
+ul
+  li 另外它的flash預設是藍色實在有點太閃了，所以我也改了它的顏色。
+p 
+  i
+    | ~/.atom/styles.less
+pre
+  code
+    | atom-text-editor::shadow {
+        .vim-mode-plus-flash .region {
+          background-color: #555;
+        }
+      }
+
+h2 ex-mode
+ul
+  li What - 讓vim-mode有command mode
+  li Why - 沒辦法，存檔已經習慣按:w了
+  li How - 目前只支援官方vim-mode，如果要支援vim-mode-plus，要自己加快捷鍵。
+p 
+  i 
+    | ~/.atom/keymap.cson
+pre
+  code
+    | 'atom-text-editor.vim-mode-plus:not(.insert-mode)':
+        ':': 'ex-mode:open'
+
+h1 顯示
+
+h2 pigments
+ul
+  li What - 在程式碼裡顯示顏色，而且還幫你做css的顏色管理。
+  li Why - 你的Atom突然從黑白變成彩色。
+  
+h2 minimap
+ul
+  li What - 顯示小地圖。
+  li Why - 讓你在程式碼裡不會迷路。
+
+h2 file-icons
+ul
+  li What - 讓你擁有酷炫的file tree。
+  li Why - 你可以跟其它人炫耀。
+
+h1 工具
+
+h2 project-manager
+ul
+  li What - 專案管理
+  li Why - 可以針對專案做客製化的設定，還可以將不同的路徑放在同一個專案下重新定義搜尋路徑。
+  li How - ctrl+cmd+p開啟專案列表，ctrl+p模糊搜尋專案中的路徑與檔案。
+  li How - 編輯你的projects.cson來新增或管理專案，下面是一個範例。
+p 
+  i
+    | ~/.atom/projects.cson
+pre
+  code
+    | scs:
+        title: "scs-blog"
+        paths: [
+          "/Users/sibevin/workspace/scs/dev/scs-blog",
+          "/Users/sibevin/workspace/scs/dev/scs-blog-post"
+        ]
+        settings:
+          editor:
+            preferredLineLength: 120
+            softWrap: true
+            softWrapAtPreferredLineLength: true
+  
+h2 merge-conflicts
+ul
+  li What - 當發生merge conflict的時候，幫你找出所有的conflict並協助編輯取代程式。
+  li Why - 幫你省時的工具。
+
+h2 jumpy
+ul
+  li What - 在Atom中開啟傳送門，讓你在程式碼裡瞬間移動。
+  li Why - 你可以跟其它人炫耀。
+  li How - 按一下 shift+Enter 之後，再按顯示的兩個字，就會跳過去啦。
+  
+h2 clipboard-plus
+ul
+  li What - 用來儲存你的clipboard歷史資訊。
+  li How - 同樣的如果要支援vim-mode-plus，快捷鍵要自己加。
+p 
+  i 
+    | ~/.atom/keymap.cson
+pre
+  code
+    | '.platform-darwin atom-text-editor.vim-mode-plus':
+        'ctrl-;': 'clipboard-plus:toggle'
+
+h2 run-command2
+ul
+  li What - 在Atom中執行shell指令。
+  li Why - 就是懶嘛。
+  li How - 記得要設定.bashrc，不然不會動，例如rvm的設定要設好。
+
+h1 Snippet
+
+h2 css-snippets
+h2 rails-snippets

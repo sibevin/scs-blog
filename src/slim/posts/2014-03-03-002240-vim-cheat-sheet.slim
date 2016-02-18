@@ -284,6 +284,12 @@ table.pt-table
           | [d]+[$]或[D]
       td
         | 刪除游標所在位置字元到本行最後面
+    tr
+      td
+        code
+          | [d][i]["] [d][i]['] [d][i][(]
+      td
+        | 在游標所在位置刪除位在"/'/(的字串
 h2 複製與貼上(copy & paste)
 table.pt-table
   tbody
@@ -502,6 +508,12 @@ table.pt-table
           | [c]+[$]或[C]
       td
         | 刪除游標所在位置字元到本行最後面後插入
+    tr
+      td
+        code
+          | [c][i]["] [c][i]['] [c][i][(]
+      td
+        | 在游標所在位置刪除位在"/'/(的字串後插入
 h2 進入選取模式(virtual mode)
 table.pt-table
   tbody
@@ -523,6 +535,12 @@ table.pt-table
           | [Ctrl][v]
       td
         | 在游標所在位置字元開始以區塊的方式進行選取
+    tr
+      td
+        code
+          | [v][i]["] [v][i]['] [v][i][(]
+      td
+        | 在游標所在位置選取位在"/'/(的字串
 h1 選取模式
 h2 移動
 table.pt-table

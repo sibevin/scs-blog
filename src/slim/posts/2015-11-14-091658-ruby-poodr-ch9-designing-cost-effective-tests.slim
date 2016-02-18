@@ -1,0 +1,715 @@
+.meta-data title rails 讀書會 - POODR - Ch9 設計有效率的測試
+.meta-data datetime 2015-11-14 09:16:58
+.meta-data tags ruby,ooad,test,rails_study-group
+.meta-data category coding
+.meta-data link ruby-poodr-ch9-designing-cost-effective-tests
+.meta-data file 2015-11-14-091658-ruby-poodr-ch9-designing-cost-effective-tests
+.meta-data template post
+.meta-data end
+
+p
+  | 寫一個可變動的程式需要三個技巧：
+ul
+  li
+    | 了解物件導向的程式設計：設計不良的程式通常很難改變，就某些情況下，可變動性是寫程式最需要考慮的事情。
+  li
+    | 重構：重構就是在不影響外部行為的條件下，改善內部結構。新功能應該要等重構完之後才能被加進來。
+  li
+    | 寫出高質量的測試：測試讓你可以有信心的做重構。好的測試在重構完的程式下不用做太多的修改就能測試新程式。
+h1 Intentional Testing
+p
+  | 測試最重要的功能是減少錯誤與提供文件，而在寫程式之前先寫測試則可以用來改善設計。但更重要的是要有效率，沒有效率的測試會花更多的時間而降低寫測試的意願。
+h2 Knowing Your Intentions
+p
+  | 寫測試的好處：
+ul
+  li
+    | 找出錯誤：不只是在開發的初期就可以用簡單的方式找出並修正錯誤，同時也可以修正設計。另一方面，如果在太晚的時機點修正錯誤，可能會因為程式的相依性而必須修改大量的程式。
+  li
+    | 提供文件：你一定會忘記你之前寫的程式碼，而測試可以幫助你回憶。
+  li
+    | 延後設計決策的時間點：在開發的初期通常很難做設計，因為知道的資訊太少。例如你預期未來有可能會新增一些需求，因此需要設計一個抽象化的界面，但你不知道具體會需要加什麼東西到界面中做抽象化。當你針對界面做測試，你可以確保在寫底層的程式可以符合界面的行為，另一方面你也可以放心的修改底層的程式而不用重寫你的測試。
+  li
+    | 支援抽象化：在開發時，當獲得更多的需求資訊在做設計的決策時，最終會達到抽象化的階段。抽象化會降低程式之間的相依性，一個良好設計的程式會是在抽象化的界面下進行互動，但抽象化的一個缺點就在於無法縱觀整體的行為。當有越來越多的抽象化界面，測試就會顯得越來越重要。
+  li
+    | 揭漏設計上的缺失：如果在進行測試時，需要大量的事前設置，表示程式碼包含太多的內容。如果測試需要加入很多其它的物件，則表示程式的相依性太高。如果測試很難寫，則表示程式不容易重複使用。當設計不好，測試就難寫。但反過來不一定正確，有好的設計不保證測試是有效率的。所以要有效率，程式與測試本身都要有良好的設計。
+p
+  | 我們的目標是獲得測試所有的好處，但同時要盡可能的降低寫測試的成本，而寫出一個低耦合的測試是一個最好達到的目標。
+ul
+  li Fast
+  li Thorough
+  li Stable
+  li Few
+p 
+  | The Magic Tricks of Testing by Sandi Metz
+p 
+  | Testing Rails - Thoughtbot
+  
+h2 Knowing What to Test
+p
+  | 大部分的人都寫太多的測試，除了造成太多的本成在撰寫不必要的測試，但時也會造成太多過時的測試而最終放棄測試。一個最容易改善測試的方式就是減少測試，而最安全的做法就是同一段程式只需要測試一次，而且是在適合的地方做測試。
+p 
+  | 刪除重複的測試可以降低當程式變動時測試也要跟著變動的成本，而將測試放在正確的地方可以確保測試只有在必要的時候才需要更改。而要寫出好的測試需要知道你要測的是什麼，我們可以用一些之前提到的設計原則來幫助我們寫測試。
+p 
+  | 好的物件具有高度的封裝性，我們可以專注於它提供的外部界面而不用去了解物件內部是怎麼做的。而測試可以視做另一個物件，這個物件會使用我們所要測試的目標物件。所以當測試與程式耦合程度越高，測試就越容易因為程式變動而改變。
+p 
+  | 測試應該針對外部界面而寫，大多數沒有效率的測試都是因為涉及太多的內部實作細節。測試應該要專注在物件接收與送出的訊息，接收的訊息即是這個物件的外部界面，而送出的訊息會成為其它物件所要接收的訊息。
+p 
+  | 我們根據物件的外部界面傳入對應的訊息，而物件會回傳一個處理過的值，我們用這個回傳值與我們預期的值做比對，我們把這樣比對的結果稱做測試的「狀態」。一個測試的原則就是我們應該只針對物件本身提供的外部界面(接收的訊息)測試它回傳的結果，如果是送出的訊息我們應該只需要測試訊息確實有送出，而不要測試非目標物件的回傳的結果。
+
+h2 Knowing When to Test
+p 
+  | 你應該要先寫測試。先寫測試強迫我們在設計物件的初期就要思考怎麼做到重複使用這個物件，不然測試會很難寫。但要注意的是，先寫測試不能保證可以得到良好設計的程式碼，改善程式的可重複使用性與真正好的設計仍是有一段差距。好的程式是容易改變的，而好的測試不會隨著程式改變而改變。
+  
+h2 Knowing How to Test
+p 
+  | 當然你可以寫一個自己的測試框架，不過使用主流框架的好處是有很好的支援，能隨時保持更新，而且還可以看到很多有經驗的人如何使用它。測試的框架目前你可以選擇使用MiniTest或是Rspec。除了框架之外，我們還需要選擇測試的型式，TDD(Test Driven Development)或BDD(Behavoir Driven Development)。這兩種型式都是先寫測試，BDD是由外而內的方式，根據需求先建立所需的物件，使用mocking的方式來補足尚未實作的物件。TDD則是由內而外，從domain物件開始測試。
+p 
+  | 在寫測試的時候，應該要把物件分成兩類，一類是你正在測試的目標物件，另一類是其它的物件。你的測試應該會知道有關目標物件的一些資訊，但要盡量忽略其它的物件，甚至假裝它們都不明確。
+
+h1 Testing Incoming Messages
+p 
+  | 接收的訊息即是物件的外部界面。
+h2 Deleting Unused Interfaces
+p 
+  | 刪掉沒有用到的外部界面，它不會帶來任何價值但反而增加測試的成本，你不應該實作一個完全不會用到的method。
+h2 Proving the Public Interface
+pre
+  code
+    | class Wheel
+        attr_reader :rim, :tire
+        def initialize(rim, tire)
+          @rim = rim
+          @tire = tire
+        end
+        
+        def diameter
+          rim + (tire * 2)
+        end
+        # ...
+      end
+
+      class Gear
+        attr_reader :chainring, :cog, :rim, :tire
+        def initialize(args)
+          @chainring = args[:chainring]
+          @cog       = args[:cog]
+          @rim       = args[:rim]
+          @tire      = args[:tire]
+        end
+        
+        def gear_inches
+          ratio * Wheel.new(rim, tire).diameter
+        end
+        
+        def ratio
+          chainring / cog.to_f
+        end
+        # ...
+      end
+p 
+  | 上面的gear_iches，我們可以寫測試如下：
+pre
+  code
+    | class GearTest < MiniTest::Unit::TestCase
+        def test_calculates_gear_inches
+          gear = Gear.new(chainring: 52, cog: 11, rim: 26, tire: 1.5)
+        ￼  assert_in_delta(137.1, gear.gear_inches, 0.01)
+        end
+      end
+p 
+  | 你會發現在測試gear_inches時，實際上在Gear中會去初始化一個wheel。這裡就會出現相依性帶來的問題：
+ul
+  li
+    | 想像如果wheel是一個很大的物件，需要花時間初始化，那在測試Gear時就必須花費wheel初始化的時間，即使在測試Gear其它的與wheel無關的method也一樣。更糕的是如果wheel還有相依於其它的物件，則初始化的成本就會擴散。
+  li 
+    | 當wheel出問題時，Gear的測試也會出問題，會誤導尋找問題的方向。
+p 
+  | 這時候我們可以發現測試會揭漏設計上的問題，如果物件之間有太多相依性，則在跑測試時就會用到越多的物件，也意味著會花更多的時間。
+
+h2 Isolating the Object Under Test
+p 
+  | 當我們沒辦法只單獨測試某個物件，就表示有可能有相依性的問題存在。下面是一個用injection改良後的Gear
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, :wheel
+        def initialize(args)
+          @chainring = args[:chainring]
+          @cog       = args[:cog]
+          @wheel     = args[:wheel]
+        end
+        
+        def gear_inches
+          # The object in the'wheel' variable # plays the 'Diameterizable' role.
+          ratio * wheel.diameter
+        end
+        
+        def ratio
+          chainring / cog.to_f
+        end
+        # ...
+      end
+p 
+  | 同樣的，我們可以建立wheel去測試它：
+pre
+  code
+    | class GearTest < MiniTest::Unit::TestCase
+        def test_calculates_gear_inches
+          gear = Gear.new( chainring: 52, cog: 11, wheel: Wheel.new(26, 1.5))
+          assert_in_delta(137.1, gear.gear_inches, 0.01)
+        end
+      end
+p 
+  | 上面的做法，一樣有wheel初始化的成本，不過因為Gear將wheel抽離出來，而gear_inches實際上只需要一個包含diameter這個method的物件。
+
+h2 Injecting Dependencies Using Classes
+p 
+  | 使用wheel來測試也有它的好處，想像如果wheel的diameter這個method改了，但Gear的gear_inches中的wheel.diameter卻沒有改。
+pre
+  code
+    | class Wheel
+        attr_reader :rim, :tire
+        def initialize(rim, tire)
+          @rim = rim
+          @tire = tire
+        end
+        
+        def width # <—— used to be 'diameter'
+          rim + (tire * 2)
+        end
+        # ...
+      end
+p 
+  | 這時候上面的測試就會出錯：
+pre
+  code
+    | Gear
+        ERROR test_calculates_gear_inches
+        undefined method 'diameter'
+p 
+  | 目前就只有一個wheel的物件有包含diameter這個method，所以用wheel來測試也算合理，但如果以後有很多有diameter的物件出現，只用wheel測試便不合理。另一方面，在測試中需要建立wheel也造成了測試與wheel之間的相依性。
+  
+h2 Injecting Dependencies as Roles
+p 
+  | 既然用wheel測試會花額外成本，又有相依性的問題。我們可以建一個所謂的diameterizable，也就是一個只有diameter method的物件如下：
+pre
+  code
+    | # Create a player of the ‘Diameterizable’ role
+      class DiameterDouble
+        def diameter
+          10
+        end
+      end
+      
+      class GearTest < MiniTest::Unit::TestCase
+        def test_calculates_gear_inches
+          gear = Gear.new( chainring: 52, cog: 11, wheel: DiameterDouble.new)
+          assert_in_delta(47.27, gear.gear_inches, 0.01)
+        end
+      end
+p 
+  | diameterizable我們稱做double，它代表某一個角色做為測試之用。用double取代wheel可以避免初始化真實的物件，進而降低測試的成本與時間。但這裡存在一個問題，在剛剛wheel的更改diameter的名稱，但Gear的gear_inches卻沒有改，在這個測試反而通過了。
+pre
+  code
+    | GearTest
+        PASS test_calculates_gear_inches
+p 
+  | 這個問題我們稱做living in dream，因為double沒辦法真實反應wheel的現況。不過這並不是測試的問題，而是人的問題，如果你改了wheel的diameter，理論上你已經改了diamterizable這個角色，所以你應該同時更改DiameterDouble的實作。
+p 
+  | 測試的另一個功能是提供文件，以wheel而言它其實是在扮演diameterizable這個角色，如果我們要將角色的資訊記錄起來 ，那麼應該要加了一個diameter有沒有存在的測試到wheel中如下：
+pre
+  code
+    | class WheelTest < MiniTest::Unit::TestCase
+        def setup
+          @wheel = Wheel.new(26, 1.5)
+        end
+        
+        def test_implements_the_diameterizable_interface
+          assert_respond_to(@wheel, :diameter)
+        end
+        
+        def test_calculates_diameter
+          wheel = Wheel.new(26, 1.5)
+          assert_in_delta(29, wheel.diameter, 0.01)
+        end
+      end
+p 
+  | 不過這樣做實際上沒有什麼好處，反而還會帶來問題：
+ul
+  li
+    | 如果之後有其它的diameterizable的物件，則會造成其它的diameterizable的測試也要加入這個測試而造成測試重複。
+  li 
+    | 沒有解決living in dream的問題。
+p 
+  | 使用真實物件或是double來測試者是一種選擇，用真實物件會花費始使化的成本，但可以反應真實行為，使用double可以加快測試速度，但有可能會遇到living in dream的問題。在後面的內容會提出另一種解決living in dream的方法。
+
+h1 Testing Private Methods
+p 
+  | 因為private method不會被物件本身以外的地方被存取，所以最理想的做法是不要去測試它。不過現實上還是有可能需要彈性的做法。
+h2 Ignoring Private Methods During Tests
+p 
+  | 有很多理由說明應該不要測試private method：
+ul
+  li
+    | 測試private method是多餘的，因為它已經在其它public method中被測試過了，如果private method發生問題，在其它的測試就會出錯。
+  li
+    | private method是不穩定的，因為它經常被修改，這會導致對應的測試也要跟著被修改，造成額外的成本。
+  li
+    | 因為測試本身就提供文件，所以測試private method會讓人誤會，同時也會揭漏物件實作的細節而破壞封裝性。
+h2 Removing Private Methods from the Class Under Test
+p 
+  | 避免針對private method寫測試，一個方式就是減少private method。如果一個物件包含了太多的private method，表示它可能包含太多的責任，這時候你應該要考量將它們提出到另一個物件中。但前提是提出之後產生的外部界面必須是穩定的，所以還是根據現實狀況要做選擇。
+h2 Choosing to Test a Private Method
+p 
+  | 如果在設計的初期還不明瞭需求資訊時，可以將比較混亂的程式碼包在private，並用isolate的方式隔離外部界面，這會方便日後有多的資訊時可以修改。這樣的做法會造成private method極度不穩定，如果針對這些method寫測試，則測試也會時常更改。不過寫private method的測試也有一些好處，它會直接指出發生問題的地方，另外它會助於之後程式的refactor，重點在於這些private有機會在之後被refactor或是被提出到另一個物件，寫這樣的測試才有意義。
+
+h1 Testing Outgoing Messages
+p 
+  | 送出的訊息即是呼叫其它物件的method。
+  
+h2 Ignoring Query Messages
+p 
+  | 回到Gear的gear_inches的例子：
+pre
+  code
+    | class Gear
+        # ...
+        def gear_inches
+          ratio * wheel.diameter
+        end
+      end
+p 
+  | 我們發現wheel.diameter只在這個method中用到，與其它的method並沒有關聯，所以應該要將Gear測試的重點放在gear_inches回傳的值是否如預期，而不是去注意wheel.diameter是否回傳正確的值，因為那是在wheel的測試中去測它。
+h2 Proving Command Messages
+p 
+  | 但有時候送出的訊息會影響其它在物件中的method，這時候我們必須要測試它的正確性。下面是一個修改過的Gear範例：
+pre
+  code
+    | class Gear
+        attr_reader :chainring, :cog, :wheel, :observer
+        def initialize(args)
+          # ...
+          @observer = args[:observer]
+        end
+        
+        # ...
+        
+        def set_cog(new_cog)
+          @cog = new_cog
+          changed
+        end
+        
+        def set_chainring(new_chainring)
+          @chainring = new_chainring
+          changed
+        end
+        
+        def changed
+          observer.changed(chainring, cog)
+        end
+        # ...
+      end
+p 
+  | 當set_cog與set_chainring被呼叫時，它們必須在最後呼叫changed這個method去更改observer。我們的測試必須包含確定observer確實有被呼叫changed，這時候我們就需要使用mock，mock是用來測試訊息是否真的有送出。下面是測試的範例：
+pre
+  code
+    | class GearTest < MiniTest::Unit::TestCase
+        def setup
+          @observer = MiniTest::Mock.new
+          @gear = Gear.new(chainring: 52, cog: 11, observer: @observer)
+        end
+
+        def test_notifies_observers_when_cogs_change
+          @observer.expect(:changed, true, [52, 27])
+          @gear.set_cog(27)
+          @observer.verify
+        end
+
+        def test_notifies_observers_when_chainrings_change
+          @observer.expect(:changed, true, [42, 11])
+          @gear.set_chainring(42)
+          @observer.verify
+        end
+      end
+p 
+  | 原則上我們不care observer.changed是否回傳正確的值，我們注重我們傳了什麼給observer.changed。 
+  
+h1 Testing Duck Types
+h2 Testing Roles
+p 
+  | 下面是一個使用duck typing的例子：
+pre
+  code
+    | class Mechanic
+        def prepare_trip(trip)
+          trip.bicycles.each {|bicycle|
+            prepare_bicycle(bicycle)}
+        end
+        # ...
+      end
+      
+      class TripCoordinator
+        def prepare_trip(trip)
+          buy_food(trip.customers)
+        end
+        # ...
+      end
+      
+      class Driver
+        def prepare_trip(trip)
+          vehicle = trip.vehicle
+          gas_up(vehicle)
+          fill_water_tank(vehicle)
+        end
+        # ...
+      end
+      
+      class Trip
+        attr_reader :bicycles, :customers, :vehicle
+        def prepare(preparers) preparers.each {|preparer|
+          preparer.prepare_trip(self)}
+        end
+      end
+p 
+  | 第一個要測試的是確保擁有preparable角色的class，必須實作prepare_trip，如果在每一個preparable的class中都要寫一次這種測試就顯得不太明智，還好ruby有個利用module共享測試的方法。我們先定義一個PreparerInterfaceTest：
+pre
+  code
+    | module PreparerInterfaceTest
+        def test_implements_the_preparer_interface
+          assert_respond_to(@object, :prepare_trip)
+        end
+      end
+p 
+  | 這時候只要在preparable的class測試中include這個module就可以了：
+pre
+  code
+    | class MechanicTest < MiniTest::Unit::TestCase
+        include PreparerInterfaceTest
+        def setup
+          @mechanic = @object = Mechanic.new
+        end
+        # other tests which rely on @mechanic
+      end
+      
+      class TripCoordinatorTest < MiniTest::Unit::TestCase
+        include PreparerInterfaceTest
+        def setup
+          @trip_coordinator = @object = TripCoordinator.new
+        end
+      end
+      
+      class DriverTest < MiniTest::Unit::TestCase
+        include PreparerInterfaceTest
+        def setup
+          @driver = @object = Driver.new
+        end
+      end
+p 
+  | 另一個要測試的東西就是要確保Trip可以正確的呼叫preparable的prepare_trip，這裡就會用到之前提到mock的技巧：
+pre
+  code
+    | class TripTest < MiniTest::Unit::TestCase
+        def test_requests_trip_preparation
+          @preparer = MiniTest::Mock.new
+          @trip = Trip.new
+          @preparer.expect(:prepare_trip, nil, [@trip])
+          @trip.prepare([@preparer])
+          @preparer.verify
+        end
+      end
+
+h2 Using Role Tests to Validate Doubles
+p 
+  | 上面共享測試的方法可以用來解決之前遇到的living in dream的問題。首先我們要在wheel中確保它有實作width這個method：
+pre
+  code
+    | module DiameterizableInterfaceTest
+        def test_implements_the_diameterizable_interface
+          assert_respond_to(@object, :width)
+        end
+      end
+      
+      class WheelTest < MiniTest::Unit::TestCase
+        include DiameterizableInterfaceTest
+        
+        def setup
+          @wheel = @object = Wheel.new(26, 1.5)
+        end
+        
+        def test_calculates_diameter
+          # ...
+        end
+      end
+p 
+  | 接著在Gear的測試中，將diameterizable的double也做一樣的測試：
+pre
+  code
+    | class DiameterDouble
+        def diameter
+          10
+        end
+      end
+      
+      # Prove the test double honors the interface this # test expects.
+      class DiameterDoubleTest < MiniTest::Unit::TestCase
+        include DiameterizableInterfaceTest
+        def setup
+          @object = DiameterDouble.new
+        end
+      end
+      
+      class GearTest < MiniTest::Unit::TestCase
+        def test_calculates_gear_inches
+          gear = Gear.new( chainring: 52, cog: 11, wheel: DiameterDouble.new)
+          assert_in_delta(47.27, gear.gear_inches, 0.01)
+        end
+      end
+p 
+  | 這時候，DiameterDoubleTest會出錯，因為DiameterDouble並沒有實作width。
+pre
+  code
+    | DiameterDoubleTest
+        FAIL test_implements_the_diameterizable_interface
+        Expected #<DiameterDouble:...> (DiameterDouble) to respond to #width.
+      GearTest
+        PASS test_calculates_gear_inches
+p 
+  | 如果我們將DiameterDouble做了修正：
+pre
+  code
+    | class DiameterDouble
+        def width
+          10
+        end
+      end
+p 
+  | 則會換GearTest出錯，因為gear_inches裡呼叫的還是wheel.diameter。
+pre
+  code
+    | DiameterDoubleTest
+        PASS test_implements_the_diameterizable_interface
+      GearTest
+        ERROR test_calculates_gear_inches undefined method 'diameter'
+    = "  \n" + 'for #<DiameterDouble:0x0000010090a7f8>' + "\n"
+    |     gear_test.rb:35:in 'gear_inches'
+          gear_test.rb:86:in 'test_calculates_gear_inches'
+p 
+  | 這樣的測試不但解決了living in dream的問題，同時可以明確的指出錯誤的地方。
+
+h1 Testing Inherited Code
+h2 Specifying the Inherited Interface
+p 
+  | 下面是一個使用繼承的例子：
+pre
+  code
+    | class Bicycle
+        attr_reader :size, :chain, :tire_size
+        
+        def initialize(args={})
+          @size = args[:size]
+          @chain = args[:chain] || default_chain
+          @tire_size = args[:tire_size] || default_tire_size
+          post_initialize(args)
+        end
+        
+        def spares
+          { tire_size: tire_size,
+            chain: chain }.merge(local_spares)
+        end
+        
+        def default_tire_size
+          raise NotImplementedError
+        end
+        
+        # subclasses may override
+        
+        def post_initialize(args)
+          nil
+        end
+        
+        def local_spares
+          {}
+        end
+        
+        def default_chain
+          '10-speed'
+        end
+      end
+      
+      class RoadBike < Bicycle
+        attr_reader :tape_color
+        
+        def post_initialize(args)
+          @tape_color = args[:tape_color]
+        end
+        
+        def local_spares
+          {tape_color: tape_color}
+        end
+        
+        def default_tire_size
+          '23'
+        end
+      end
+p 
+  | 首先我們要確保任何有繼承Bicycle的class都擁有對應的method，所以我們建立了一個BicycleInterfaceTest：
+pre
+  code
+    | module BicycleInterfaceTest
+        def test_responds_to_default_tire_size
+          assert_respond_to(@object, :default_tire_size)
+        end
+        
+        def test_responds_to_default_chain
+          assert_respond_to(@object, :default_chain)
+        end
+        
+        def test_responds_to_chain
+          assert_respond_to(@object, :chain)
+        end
+        
+        def test_responds_to_size
+          assert_respond_to(@object, :size)
+        end
+        
+        def test_responds_to_tire_size
+          assert_respond_to(@object, :tire_size)
+        end
+        
+        def test_responds_to_spares
+          assert_respond_to(@object, :spares)
+        end
+      end
+p 
+  | 在BicycleTest與RoadBicycle中就可以include這個module：
+pre
+  code
+    | class BicycleTest < MiniTest::Unit::TestCase
+        include BicycleInterfaceTest
+        def setup
+          @bike = @object = Bicycle.new({tire_size: 0})
+        end
+      end
+      
+      class RoadBikeTest < MiniTest::Unit::TestCase
+        include BicycleInterfaceTest
+        def setup
+          @bike = @object = RoadBike.new
+        end
+      end
+h2 Specifying Subclass Responsibilities
+p 
+  | 同樣的，我們要確保RoadBicycle擁有Bicycle可以被覆寫的method，所以加了BicycleSubclassTest：
+pre
+  code
+    | module BicycleSubclassTest
+        def test_responds_to_post_initialize
+          assert_respond_to(@object, :post_initialize)
+        end
+        
+        def test_responds_to_local_spares
+          assert_respond_to(@object, :local_spares)
+        end
+        
+        def test_responds_to_default_tire_size
+          assert_respond_to(@object, :default_tire_size)
+        end
+      end
+      
+      class BicycleTest < MiniTest::Unit::TestCase
+        include BicycleInterfaceTest
+        def setup
+          @bike = @object = Bicycle.new({tire_size: 0})
+        end
+      end
+      
+      class RoadBikeTest < MiniTest::Unit::TestCase
+        include BicycleInterfaceTest
+        include BicycleSubclassTest
+        def setup
+          @bike = @object = RoadBike.new
+        end
+      end
+p 
+  | 注意在BicycleTest中並沒有放BicycleSubclassTest，這是因為BicycleSubclassTest裡的method對父類別來說是沒有意義的。
+p 
+  | 接著我們要確保Bicycle本身的method必須有預設的行為，例如繼承Bicycle後的class如果沒有實作default_tire_size，就會出現NotImplementedError：
+pre
+  code
+    | class BicycleTest < MiniTest::Unit::TestCase
+        include BicycleInterfaceTest
+        
+        def setup
+          @bike = @object = Bicycle.new({tire_size: 0})
+        end
+        
+        def test_forces_subclasses_to_implement_default_tire_size
+          assert_raises(NotImplementedError) {@bike.default_tire_size}
+        end
+      end
+h2 Testing Unique Behavior
+h3 Testing Concrete Subclass Behavior
+p 
+  | 接著我們要測的是子類別自己實作的method，要注意的是這裡的測試不應該跟父類別有任何關係。
+pre
+  code
+    | class RoadBikeTest < MiniTest::Unit::TestCase
+        include BicycleInterfaceTest
+        include BicycleSubclassTest
+        
+        def setup
+          @bike = @object = RoadBike.new(tape_color: ‘red’)
+        end
+        
+        def test_puts_tape_color_in_local_spares
+          assert_equal ‘red’, @bike.local_spares[:tape_color]
+        end
+      end
+h3 Testing Abstract Superclass Behavior
+p 
+  | 子類別的method測試完了，最後就是要測父類別中會被覆寫的行為，這時候我們需要建一個假的子類別StubbedBike繼承父類別並且用它來測試覆寫的行為：
+pre
+  code
+    | class StubbedBike < Bicycle
+        def default_tire_size
+          0
+        end
+        
+        def local_spares
+          { saddle: 'painful' }
+        end
+      end
+      
+      class BicycleTest < MiniTest::Unit::TestCase include BicycleInterfaceTest
+        def setup
+          @bike = @object = Bicycle.new({tire_size: 0})
+          @stubbed_bike = StubbedBike.new
+        end
+        
+        def test_forces_subclasses_to_implement_default_tire_size
+          assert_raises(NotImplementedError) {
+            @bike.default_tire_size
+          }
+        end
+        
+        def test_includes_local_spares_in_spares
+          assert_equal @stubbed_bike.spares,
+            { tire_size: 0, chain: '10-speed', saddle: 'painful'}
+        end
+      end
+p 
+  | 同樣的，我們要確保StubbedBike符合Bicycle子類別應該要有的界面，所以可以在StubbedBikeTest中include BicycleSubclassTest。
+pre
+  code
+    | class StubbedBikeTest < MiniTest::Unit::TestCase
+        include BicycleSubclassTest
+        
+        def setup
+          @object = StubbedBike.new
+        end
+      end
+
+h1 Summary
+p 
+  | 好的測試必須與程式能有低的耦合，同時一段程式碼應該放在適當的地方而且只需要測一次就好。

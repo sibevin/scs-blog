@@ -1,0 +1,22 @@
+.meta-data title 設定partial內變數的預設值
+.meta-data datetime 2016-02-02 09:47:18
+.meta-data tags rails_view
+.meta-data category coding
+.meta-data link rails-partial-default-locals
+.meta-data file 2016-02-02-094718-rails-partial-default-locals
+.meta-data template post
+.meta-data end
+
+p 因為很常用到，但每次又忘記語法，所以乾脆寫下來做個記錄…
+
+pre
+  code.ruby
+    = '<% if local_assigns.fetch(:show_offset_day, false) %>' + "\n"
+    |   do something...
+    = "\n" + '<% end %>'
+
+h1 Refs  
+ul
+  li 
+    a href="http://stackoverflow.com/questions/2060561/optional-local-variables-in-rails-partial-templates-how-do-i-get-out-of-the-de" target="_blank"
+      | SO - optional local variables in rails partial templates: how do I get out of the (defined? foo) mess?
