@@ -16,6 +16,7 @@ $tags = {
   },
   "ooad" => {
     name: "OOAD",
+    color: "#008040",
   },
   "rails_study-group" => {
     name: "讀書會",
@@ -62,6 +63,37 @@ $tags = {
     color: "#2b830a",
   },
   "work" => {
-    name: "作品"
+    name: "作品",
+    color: "#66ccff"
   },
+  "devise" => {
+    color: "#0f4361"
+  },
+  "grape" => {
+    color: "#501f77"
+  },
+  "test" => {
+    name: "測試",
+    color: "#0748b3"
+  },
+  "gh" => {
+    name: "Growth Hacking",
+    color: "#993366"
+  },
+  "gh_dggh" => {
+    name: "DGGH",
+  },
+  "bootstrap" => {
+    color: "#563d7c"
+  },
+  "sass" => {
+    color: "#b3738a"
+  },
+  "atom" => {
+    color: "#40a977"
+  },
+  "tp" => {
+    name: "Test Prescription",
+    color: "#cc342d",
+  }
 }
