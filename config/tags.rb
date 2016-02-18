@@ -88,5 +88,12 @@ $tags = {
   },
   "sass" => {
     color: "#b3738a"
+  },
+  "atom" => {
+    color: "#40a977"
+  },
+  "tp" => {
+    name: "Test Prescription",
+    color: "#cc342d",
   }
 }
