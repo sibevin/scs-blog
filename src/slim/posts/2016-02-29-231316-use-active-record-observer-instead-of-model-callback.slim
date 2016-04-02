@@ -1,0 +1,65 @@
+.meta-data title 用ActiveRecord::Observer取代model的callback
+.meta-data datetime 2016-02-29 23:13:16
+.meta-data tags rails,rails_model,test
+.meta-data category coding
+.meta-data link use-active-record-observer-instead-of-model-callback
+.meta-data file 2016-02-29-231316-use-active-record-observer-instead-of-model-callback
+.meta-data template post
+.meta-data end
+
+h1 model的callback有什麼不好嗎？
+
+p 使用model callback最大的缺點就是在測試model時，callback沒辦法關掉。每次做model的save或是destroy時，callback都會被trigger。為了避免callback內的程式被執行，勢必要用stub的方式去處理callback內的程式，這顯然是個糟糕的做法。另一個缺點就是callback有種違反單一責任設計的味道。
+
+h1 ActiveRecord::Observer
+
+p 
+  | ActiveRecord::Observer是將model callback從model切出來放到叫做observer的class中。使用的方式與callback極度類似，官方文件( 
+  a href="https://github.com/rails/rails-observers" target="_blank"
+    | https://github.com/rails/rails-observers
+  | )有詳細的說明，這裡就不再重述。使用上要注意幾點：
+ul
+  li 如果是rails3，oberver是內建在rails裡，但rails4之後被切出來放在rails-observers的gem中，所以在使用時記得要加到Gemfile中。
+  li 記得要在config/application.rb中加入observer的設定，不然它不會動作。
+  
+h1 在測試中使用observer
+
+p 
+  | ActiveRecord::Observer與callback極度類似，那它的好處在哪裡呢？其實最大的好處就是可以在測試中關掉它。作法是這樣的，在spec/rails_helper.rb中加入下面的設定，將observer先全部關掉。
+
+pre
+  code.ruby
+    | RSpec.configure do |config|
+      # ...
+        config.before(:example) do
+          # Disable all active record observers by default
+          ActiveRecord::Base.observers.disable :all
+        end
+      # ...
+      end
+      
+p 
+  | 等需要測試observer時，再打開它。
+
+pre
+  code.ruby
+    | require 'rails_helper'
+
+      RSpec.describe CourseObserver, type: :model do
+        describe "after_save" do
+          it "should do something after save" do
+            ActiveRecord::Base.observers.enable :course_observer do
+              # ... the course observer is working here ...
+            end
+          end
+        end
+      end
+
+h1 Refs
+ul
+  li 
+    a href="http://samuelmullen.com/2013/05/the-problem-with-rails-callbacks/" target="_blank"
+      | The Problem with Rails Callbacks
+  li 
+    a href="http://blog.crowdint.com/2013/04/23/fun-with-activerecord-observer.html" target="_blank"
+      | Fun with ActiveRecord::Observer

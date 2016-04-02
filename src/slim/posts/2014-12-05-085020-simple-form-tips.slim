@@ -8,10 +8,34 @@
 .meta-data template post
 .meta-data end
 
-h2 如何使用min, max等限制input的範圍
+h1 使用min, max等限制input的範圍
 pre
-  code.hljs
+  code.ruby
+    | <%= f.input :age, input_html: { min: '1' } %>
+      
+h1 設定預設值
+pre
+  code.ruby
+    | <%= f.input :age, input_html: { value: f.object.age || '1' } %>
+
+h1 加入非model attribute的欄位
+p simple form中可以使用一般的field_tag，這樣就可以使用params在一次submit中同時傳送model與非model的input值。
+pre
+  code.ruby
     | <%= simple_form_for @pet do |f| %>
-        <%= f.input :age, input_html: { min: '1' } %>
+        <%= f.input :age %>
+        <%= text_field_tag 'owner_name' %>
+        <%= hidden_field_tag 'pet_type', 'dog' %>
         <%= f.button :submit %>
       <% end %>
+      
+p 上面的例子在controller接收到的params會是：
+pre
+  code.ruby
+    | {
+        pet: {
+          age: "..."
+        },
+        owner_name: "...",
+        pet_type: "dog"
+      }

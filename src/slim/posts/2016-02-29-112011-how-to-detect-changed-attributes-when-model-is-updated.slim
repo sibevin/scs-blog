@@ -1,0 +1,60 @@
+.meta-data title 怎麼判斷model在update的時候哪些欄位被改變了？
+.meta-data datetime 2016-02-29 11:20:11
+.meta-data tags rails,rails_model,test
+.meta-data category coding
+.meta-data link how-to-detect-changed-attributes-when-model-is-updated
+.meta-data file 2016-02-29-112011-how-to-detect-changed-attributes-when-model-is-updated
+.meta-data template post
+.meta-data end
+
+h1 How
+
+h2 privous_changes
+
+p 
+  | 首先要知道model本身提供了一個很好用的method
+  code
+    | previous_changes
+  | ，當model被save時，previous_changes會列出哪些欄位被改了，而且新舊值都會被記錄下來。
+pre
+  code.ruby
+    | product = Product.create(name: "aaa")
+      product.update_attributes(name: "bbb")
+      product.previous_changes # {"name"=>["aaa", "bbb"], "updated_at"=>[Mon, 29 Feb 2016 03:25:36 UTC +00:00, Mon, 29 Feb 2016 03:25:54 UTC +00:00]}
+
+p 不過我們現在有個需求是當某個欄位的值改變時，要去同時更新其它model的資料。如果每次save時都要記得去呼叫previous_changes，然後判斷欄位是否有更新，再去做對應的事情。這本身就很麻煩。有沒有可以在save時就自動去做更新呢？
+
+h2 after_commit
+
+p 
+  | 上面的需求很明顯就要用到model的callback。儲存相關的callback有 
+  code
+    | after_update 
+  | 、
+  code
+    | after_save 
+  | 與
+  code
+    | after_commit
+  | ，結果發現只有在after_commit時previous_changes才能得到正確的結果，所以只要把判斷欄位是否有更新的程式放在after_commit就可以了。
+  
+h2 after_commit在測試上的坑
+
+p 
+  | 當然要寫個測試來測試能不能正常執行，結果發現竟然不行。原來是測試的時候是不做commit的，詳情可以參考這個篇SO 
+  a href="http://stackoverflow.com/q/22988968/232710" target="_blank"
+    | Testing after_commit with RSpec and mocking
+  | 。解法是在測試中save完之後還要記得呼叫 
+  code
+    | run_callbacks(:commit)
+  | 。這個問題聽說會在rails5被修掉。  
+
+h1 UPDATE
+
+p 建議使用ActiveRecord::Observer取代model的callback，請看下一篇。
+    
+h1 Refs 
+ul
+  li 
+    a href="http://www.justinweiss.com/articles/a-couple-callback-gotchas-and-a-rails-5-fix/" target="_blank"
+      | A Couple of Callback Gotchas (and a Rails 5 Fix) - Justin Weiss

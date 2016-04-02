@@ -1,0 +1,109 @@
+.meta-data title 在測試中使用Double來達到Mock與Stub的效果
+.meta-data datetime 2016-02-23 09:22:08
+.meta-data tags rails,test,tp,rails_study-group
+.meta-data category coding
+.meta-data link test-prescription-ch7-using-test-doubles-as-mockks-and-stubs
+.meta-data file 2016-02-23-092208-test-prescription-ch7-using-test-doubles-as-mockks-and-stubs
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+h1 Using Test Doubles as Mocks and Stubs
+
+h2 使用真正的object來做測試會有什麼問題？
+
+p 假如要測試第三方服務，例如信用卡，如果使用真正的服務來測試通常會遇到幾個問題：
+ul
+  li 我們不能在測試的時候真的去刷卡。
+  li 呼叫網路服務通常很慢。
+  li 即使有測試用的主機，如果第三方測試主機出了問題，那測試結果會失敗。
+
+p 另一種需求是我們會想切割測試的相依性，例如在測controller時，不想動到model的部分。
+
+h2 什麼是double？
+
+p 
+  strong test double
+  | 或是
+  strong mock object
+  | 指的就是在測試中替代真的object所使用的假object，通常用在測試中難以呈現的環境，或是模擬一些很難在真實環境中產生的情況(例如資料庫或是網路出了問題)。Double的測試方式是盡可能的減少object與method的執行，也就是它是傾向測試系統的行為而非它實際的狀態。
+
+h1 Mock Objects Defined
+
+h2 名詞定義
+
+ul
+  li test double(stunt double)：泛指在測試中替代真的object所使用的假object。
+  li stub：指的是一個假的object用來模擬method的呼叫，並回傳一個事先定義好的值，這個時候method並不會真正被呼叫。例如下面的例子：
+  
+pre
+  code.ruby
+    | it "test stub" do
+        thing = double(name: "a")
+        allow(thing).to receive(:name).and_return("b")
+        expect(thing.name).to eq("b")
+      end
+    
+p 當上面的語法使用在測試中，這時在執行測試thing.name被呼叫時，它不會執行thing中name定義的程式，而是直接回傳"Fred"這個字串，我們稱做「stub thing的name method」。
+
+ul
+  li mock：與stub做同樣的事，也是用來模擬method的呼叫，method並不會真正被呼叫，但會檢查指定的method是否真的有被呼叫。範例如下：
+  
+pre
+  code.ruby
+    | it "test mock" do
+        thing = double(name: "a")
+        expect(thing).to receive(:name).and_return("b")
+        expect(thing.name).to eq("b")
+      end
+      
+p 如果換成下面的測試就會出錯，因為name沒有被呼叫到。
+
+pre
+  code.ruby
+    | it "test mock" do
+        thing = double(name: "a", age: "18")
+        expect(thing).to receive(:name).and_return("b")
+        expect(thing.age).to eq("18")
+      end
+
+ul
+  li spy：基本上與mock做同樣的事情，但差別在於「模擬method的行為」與「檢查method是否有被呼叫」可以分開執行。範例如下：
+  
+pre
+  code.ruby
+    | it "test spy" do
+        thing = double(name: "a")
+        allow(thing).to receive(:name).and_return("b")
+        expect(thing.name).to eq("b")
+        expect(thing).to have_received(:name)
+      end
+
+p 使用spy的好處在於把測試條件(在執行測試前要準備什麼)與測試項目(這個測試要測的是什麼)分開。要注意的是使用expect have_received一定要搭配allow receive使用，另外如果你用了expect receive(也就是mock)時，就不能在後面使用expect have_received的語法。
+
+h1 Creating Stubs
+
+p 使用stub時，可以有兩種做法：
+ul
+  li full stubs：建立一個完全假的object只用來做為stub之用，full stub是用在當測試環境很難建立object(建立object的成本太高)，或是測試的對象並非特定的object，而是只針對某些method才會用到的object(也就是只看object的行為，而不需要一定是某個特定的object)來做測試。
+  li partial stubs：使用真正的object，只stub需要的method，通常是object在求測試中必須要保有原本object大部分的特性才可以進行測試的情況。
+  
+h2 Full Stubs
+
+p
+  | 可以使用
+  code double
+  | 來建立full stub，建立時可以加上一個hash來指定object的屬性與對應的預設值。
+
+pre
+  code.ruby
+    | it "test stub" do
+        twin = double(first_name: "Paul", weight: 100)
+        expect(twin.first_name).to eq("Paul")
+      end
+
+h1 Mock Expectations
+h1 Using Mocks to Simulate Rails Save
+h1 Using Mocks to Specify Behavior
+h1 More Expectation Annotations
+h1 Mock Tips
