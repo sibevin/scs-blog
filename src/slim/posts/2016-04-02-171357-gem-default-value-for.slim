@@ -1,0 +1,50 @@
+.meta-data title 使用default_value_for來設定AR attribute的初始值
+.meta-data datetime 2016-04-02 17:13:57
+.meta-data tags rails,ruby_gem
+.meta-data category coding
+.meta-data link gem-default-value-for
+.meta-data file 2016-04-02-171357-gem-default-value-for
+.meta-data template gem
+.meta-data end
+
+ul
+  li
+    a href="https://github.com/FooBarWidget/default_value_for" target="_blank" Homepage
+  li
+    a href="https://github.com/FooBarWidget/default_value_for" target="_blank" Github
+  li
+    a href="https://rubygems.org/gems/default_value_for/versions/3.0.1" target="_blank" RubyGem
+    code
+      | (default_value_for)
+h1 What
+p
+  | 幫你設定ActiveRecord attribute的初始值。
+h1 Why
+p
+  | 我通常都直接在migration就設好初始值，不過這樣的做法有幾個問題：
+ul
+  li 初始值一旦設定了，就很難在更改。
+  li model被new但還沒save時，對應的attribute並不會有初始值。
+h1 How
+p
+  | 在model中設定 default_value_for 即可。
+pre
+  code.ruby
+    | class User < ActiveRecord::Base
+        default_value_for :name, "(no name)"
+        default_value_for :last_seen do
+          Time.now
+        end
+      end
+
+      u = User.new
+      u.name       # => "(no name)"
+      u.last_seen  # => Mon Sep 22 17:28:38 +0200 2008
+p 
+  | default_value_for 還提供了多種使用的方式，請參考官網。
+  
+h1 Refs
+ul
+  li
+    a href="http://stackoverflow.com/questions/328525/how-can-i-set-default-values-in-activerecord" target="_blank"
+      | SO - How can I set default values in ActiveRecord?

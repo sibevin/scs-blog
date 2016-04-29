@@ -1,6 +1,6 @@
 .meta-data title 在測試中使用Double來達到Mock與Stub的效果
 .meta-data datetime 2016-02-23 09:22:08
-.meta-data tags rails,test,tp,rails_study-group
+.meta-data tags rails,rspec,test,tp,rails_study-group
 .meta-data category coding
 .meta-data link test-prescription-ch7-using-test-doubles-as-mockks-and-stubs
 .meta-data file 2016-02-23-092208-test-prescription-ch7-using-test-doubles-as-mockks-and-stubs
@@ -26,7 +26,7 @@ p
   strong test double
   | 或是
   strong mock object
-  | 指的就是在測試中替代真的object所使用的假object，通常用在測試中難以呈現的環境，或是模擬一些很難在真實環境中產生的情況(例如資料庫或是網路出了問題)。Double的測試方式是盡可能的減少object與method的執行，也就是它是傾向測試系統的行為而非它實際的狀態。
+  | 指的就是在測試中替代真的object所使用的假object，通常用在測試中難以呈現的環境，或是模擬一些在真實環境中很難產生的情況(例如資料庫或是網路出了問題)。Double的測試方式是盡可能的減少object與method的執行，也就是它是傾向測試系統的行為而非它實際的狀態。
 
 h1 Mock Objects Defined
 
@@ -44,7 +44,7 @@ pre
         expect(thing.name).to eq("b")
       end
     
-p 當上面的語法使用在測試中，這時在執行測試thing.name被呼叫時，它不會執行thing中name定義的程式，而是直接回傳"Fred"這個字串，我們稱做「stub thing的name method」。
+p 當上面的語法使用在測試中，這時在執行測試thing.name被呼叫時，它不會執行thing中name定義的程式，而是直接回傳"b"這個字串，我們稱做「stub thing的name method」。
 
 ul
   li mock：與stub做同樣的事，也是用來模擬method的呼叫，method並不會真正被呼叫，但會檢查指定的method是否真的有被呼叫。範例如下：
@@ -97,12 +97,168 @@ p
 
 pre
   code.ruby
-    | it "test stub" do
+    | it "test full stub" do
         twin = double(first_name: "Paul", weight: 100)
         expect(twin.first_name).to eq("Paul")
       end
+p 
+  | rspec預設是使用strict的方式建立double，也就是說如果使用了未經設定的method，則會出錯。
+pre
+  code.ruby
+    | it "test full stub" do
+        twin = double(first_name: "Paul", weight: 100)
+        expect(twin.last_name).to eq("Wang")
+      end
+pre
+  code.nohighlight
+    | Failures:
+
+      1) Buyer test stub
+         Failure/Error: expect(twin.last_name).to eq("Wang")
+           #<Double (anonymous)> received unexpected message :last_name with (no args)
+         # ./spec/models/buyer_spec.rb:30:in `block (2 levels) in <top (required)>'
+p 
+  | 可以加上 
+  code
+    | .as_null_object
+  | 讓未定義的method被呼叫時回傳double本身
+pre
+  code.ruby
+    | it "test full stub" do
+        twin = double(first_name: "Paul", weight: 100).as_null_object
+        expect(twin.last_name).to eq(twin)
+      end
+p 
+  | 在rpsec 3.1之後提供了一個method 
+  code
+    | spy
+  | 可以用來建立null object的double，也就是 
+  code
+    | spy(name)
+  | 相當於 
+  code
+    | double(name).as_null_object
+  | 。
+
+h2 Verifying Double
+
+p 
+  | 我們可以用真實的class或object建立double，語法如下：
+pre
+  code.nohighlight
+    | instance_twin = instance_double(User)
+      class_twin = class_double(User)
+      object_twin = object_double(User.new)
+p 
+  | 這時候如果double有method被呼叫，它會去檢查method是不是真的存在於class或object，另外它也會檢查傳入的參數或是method的可見度(public/protected/private)。要注意的是instance_double無法辨別使用 
+  code
+    | method_missing
+  | 動態產生的method，因為instance_double是使用method_defined?來判斷method有沒有存在(class_double則是使用respond_to?)。如果真的要測試動態產生的method，則可以使用object_double來建立double，它會實際呼叫真正instance的respond_to?來判斷method有沒有存在。
+ul
+  li 
+    | 可以在rspec的設定檔中加上 
+    code
+      | mocks.verify_doubled_constant_names = true
+    | 來避免使用未定義的class來建立verifying double。
+p 
+  | 同樣的，spy也有對應的三個method可以建立verifying double：
+pre
+  code.nohighlight
+    | instance_twin = instance_spy(User)
+      class_twin = class_spy(User)
+      object_twin = object_spy(User.new)
+    
+h2 Partial Stubs    
+
+p 
+  | 我們可以使用 
+  code
+    | allow
+  | 來取代真實object部分的method：
+pre
+  code.ruby
+    | it "test partial stub" do
+        project = Project.new(name: "a")
+        allow(project).to receive(:name)
+        expect(project.name).to be_nil
+      end
+ul
+  li 
+    | 可以在rspec的設定檔中加上 
+    code
+      | mocks.verify_partial_doubles = true
+    | 來避免stub到不存在的method。
+p 
+  | 另外，也可以使用 
+  code
+    | and_return
+  | 來設定stub method的回傳值：
+pre
+  code.ruby
+    | it "test partial stub" do
+        project = Project.new(name: "a")
+        allow(project).to receive(:name).and_return("b")
+        expect(project.name).to eq("b")
+      end
+p 
+  | 在ruby中，class本身也是物件，所以可以做到下面這樣的事情：
+  
+pre
+  code.ruby
+    | it "test partial stub" do
+        allow(Project).to receive(:find).and_return(Project.new(name: "a"))
+        project = Project.find(1)
+        expect(project.name).to eq("a")
+      end
+p 
+  | 這個例子我們stub find來避免資料庫的存取，不過這裡建議不要stub外部library的method，取而待之是建立一個有意義的method來做stub。
+p 
+  | Rspec還有提供一個地圖炮 
+  code
+    | allow_any_instance_of
+  | 可以一次stub所有相同class建立的instance：
+pre
+  code.ruby
+    | allow_any_instance_of(Project).to receive(:save).and_return(false)
+p 不過這裡建議不要使用這個method，因為會使用到它表示你的程式可能需要做refactor。
+p 
+  | 另外我們也可以使用 
+  code
+    | .and_raise
+  | 來模擬產生exception的情況：
+pre
+  code.ruby
+    | allow(project).to receive(:save).and_raise("Something gets wrong...")
 
 h1 Mock Expectations
+p 
+  | mock(expect)與stub(allow)最大的差別在於mock會去檢查method是否真的被呼叫，另外allow中可以用的 
+  code
+    | .and_return .and_raise .with
+  | 也都可以用在expect。
+p 
+  | expect除了檢查method是否被呼叫之外，它還可以做更多的方式進行呼叫的檢查：
+pre
+  code.ruby
+    | expect(project).to receive(:name).once
+      expect(project).to receive(:name).twice
+      expect(project).to receive(:name).at_least(:once)
+      expect(project).to receive(:name).at_least(:twice)
+      expect(project).to receive(:name).at_least(n).times
+      expect(project).to receive(:name).at_most(:once)
+      expect(project).to receive(:name).at_most(:twice)
+      expect(project).to receive(:name).at_most(n).times
+      expect(project).not_to receive(:name)
+p 
+  | 我們可以理解 
+  code
+    | allow(project).to receive(:name)
+  | 相當於 
+  code
+    | expect(project).to receive(:name).at_least(0).times
+  | 。
+  
+
 h1 Using Mocks to Simulate Rails Save
 h1 Using Mocks to Specify Behavior
 h1 More Expectation Annotations

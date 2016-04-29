@@ -95,5 +95,16 @@ $tags = {
   "tp" => {
     name: "Test Prescription",
     color: "#cc342d",
+  },
+  "mp" => {
+    name: "Metaprogramming",
+  },
+  "mr2" => {
+    name: "Metaprogramming Ruby 2",
+    color: "#cc342d",
+  },
+  "regex" => {
+    name: "Regular Expression",
+    color: "#93bedf",
   }
 }

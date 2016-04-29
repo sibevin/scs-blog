@@ -1,0 +1,102 @@
+.meta-data title 關於scope的二三事
+.meta-data datetime 2016-04-05 12:33:50
+.meta-data tags rails_model,note
+.meta-data category coding
+.meta-data link about-scope
+.meta-data file 2016-04-05-123350-about-scope
+.meta-data template post
+
+.meta-data end
+
+h1 前言
+p 
+  | 這是一篇閱讀筆記，更詳細的內容請參考原文章：
+  a href="http://blog.plataformatec.com.br/2013/02/active-record-scopes-vs-class-methods/" target="_blank"
+    | Active Record scopes vs class methods
+
+h1 關於scope的語法
+pre
+  code.ruby
+    | class Post < ActiveRecord::Base
+        scope :published, where(status: 'published')
+        scope :draft, -> { where(status: 'draft') } 
+      end
+p 
+  | 上面的例子中，第一種寫法在rails4中已經被deprecated，因為它的判斷式會在class第一次被載入的時候就會建立，在某些情況下會造成會錯誤的判斷，例如：
+pre
+  code.ruby
+    | class Post < ActiveRecord::Base
+        scope :published_last_week, where('published_at >= ?', 1.week.ago)
+      end
+p 
+  | 上面的例子1.week.ago是以class載入的時間為計算點，而非每次呼叫scope的時候去計算一週前的時間。
+  
+h1 scope與class method的差別
+
+p 
+  | scope其實就是class method，但它多了一些功能，第一個是它一定可以chainable，簡單來說就是可以與其它的scope串連使用。class method也可以做的到，但有些情況要自己去加，例如下面的例子：
+pre
+  code.ruby
+    | class Post < ActiveRecord::Base
+        scope :by_status, -> status { where(status: status) if status.present? }
+      end
+      
+      class Post < ActiveRecord::Base
+        def self.by_status(status)
+          if status.present?
+            where(status: status)
+          else
+            <span class="mk-red">all</span>
+          end
+        end
+      end
+  
+p 
+  | 第二點是scope可以extensible，也就是可以定義某些scope必須要接在特定的scope之後才能用。class method也可以做到類似的事，但也要自己加，例子如下：
+pre
+  code.ruby
+    | class Post < ActiveRecord::Base
+        scope :page, -> num { # some limit + offset logic here for pagination } do
+          def per(num)
+          # more logic here
+          end
+
+          def total_pages
+          # some more here
+          end
+
+          def first_page?
+          # and a bit more
+          end
+
+          def last_page?
+          # and so on
+          end
+        end
+      end
+      
+      class Post < ActiveRecord::Base
+        def self.page(num)
+          scope = # some limit + offset logic here for pagination
+          scope.extend PaginationExtensions
+          scope
+          end
+
+          module PaginationExtensions
+          def per(num)
+            # more logic here
+          end
+
+          def total_pages
+            # some more here
+          end
+
+          def first_page?
+            # and a bit more
+          end
+
+          def last_page?
+            # and so on
+          end
+        end
+      end
