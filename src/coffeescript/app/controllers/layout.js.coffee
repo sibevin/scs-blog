@@ -50,7 +50,7 @@ angular.module("scsBlogApp").controller "LayoutCtrl", [
             $window.location.href = "/posts"
           when 84 # t
             $window.location.href = "/tags"
-          when 67 # c
+          when 71 # g
             $window.location.href = "/categories"
           when 87 # w
             $window.location.href = "/works"
