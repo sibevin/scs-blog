@@ -1,0 +1,102 @@
+.meta-data title ruby的load與require是差在什麼地方？
+.meta-data datetime 2016-05-02 14:58:30
+.meta-data tags ruby
+.meta-data category coding
+.meta-data link load-vs-require-in-ruby
+.meta-data file 2016-05-02-145830-load-vs-require-in-ruby
+.meta-data template post
+.meta-data end
+
+h1 Load
+
+p 
+  | 首先我們先建立三個檔案a.rb, b.rb, c.rb如下：
+i
+  | a.rb
+pre
+  code.ruby
+    | A = "A constant in a.rb"
+
+    = "\n" + 'p "Print A = \'#{A}\' in a.rb"'
+      
+i
+  | b.rb
+pre
+  code.ruby
+    | A = "A constant in b.rb"
+
+    = "\n" + 'p "Print A = \'#{A}\' in b.rb"'
+
+p 如果在c.rb裡同時load a.rb與b.rb兩個檔案：
+
+i
+  | c.rb
+pre
+  code.ruby
+    | <span class="mk-blue">load("a.rb")</span>
+      <span class="mk-red">load("b.rb")</span>
+
+    = "\n" + 'p "Print A = \'#{A}\' in c.rb"' + "\n"
+      
+    | <span class="mk-green">load("b.rb")</span>
+      
+p 則會出現下面的結果：
+
+pre
+  code.nohighlight
+    | <span class="mk-blue">"Print A = 'A constant in file a.rb' in a.rb"</span>
+      <span class="mk-red">b.rb:1: warning: already initialized constant A</span>
+      <span class="mk-red">a.rb:1: warning: previous definition of A was here</span>
+      <span class="mk-red">"Print A = 'A constant in file b.rb' in b.rb"</span>
+      "Print A = '<span class="mk-red">A constant in file b.rb</span>' in c.rb"
+      <span class="mk-green">b.rb:1: warning: already initialized constant A</span>
+      <span class="mk-green">b.rb:1: warning: previous definition of A was here</span>
+      <span class="mk-green">"Print A = 'A constant in file b.rb' in b.rb"</span>
+      
+p 由此可知，使用load有下面特性：
+ul
+  li 被load的檔案會被執行(print有被執行)。
+  li 如果load的兩個檔案裡有相同的constant，則會出現警告，而且會以最後載入的constant為主。
+  li 如果重複load相同的檔案，則檔案會被重複執行。
+
+p 如果不想將b.rb裡的constant載入到c.rb中，則可以在load後面加上true：
+i
+  | c.rb
+pre
+  code.ruby
+    | <span class="mk-blue">load("a.rb")</span>
+      <span class="mk-red">load("b.rb", true)</span>
+
+    = "\n" + 'p "Print A = \'#{A}\' in c.rb"'
+pre
+  code.nohighlight
+    | <span class="mk-blue">"Print A = 'A constant in file a.rb' in a.rb"</span>
+      <span class="mk-red">"Print A = 'A constant in file b.rb' in b.rb"</span>
+      "Print A = '<span class="mk-blue">A constant in file a.rb</span>' in c.rb"
+p 上面執行的結果就只會讀到a.rb的A，但b.rb的程式碼仍會執行。
+
+h1 Require
+
+p 如果將c.rb改成require如下：
+pre
+  code.ruby
+    | <span class="mk-blue">require("./a")</span>
+      <span class="mk-red">require("./b")</span>
+
+    = "\n" + 'p "Print A = \'#{A}\' in c.rb"' + "\n"
+
+    | <span class="mk-green">require("./b")</span>
+p 則結果會變成：
+pre
+  code.nohighlight
+    | <span class="mk-blue">"Print A = 'A constant in file a.rb' in a.rb"</span>
+      <span class="mk-red">/Users/kait/temp/b.rb:1: warning: already initialized constant A</span>
+      <span class="mk-red">/Users/kait/temp/a.rb:1: warning: previous definition of A was here</span>
+      <span class="mk-red">"Print A = 'A constant in file b.rb' in b.rb"</span>
+      "Print A = '<span class="mk-blue">A constant in file b.rb</span>' in c.rb"
+p 由此可知，require與load的差別在於
+ul
+  li require需要指定絕對路徑(更精確來說，如果不指定絕對路徑，則預設會去找$LOAD_PATH目錄裡有沒有指定的檔案，範例是將a.rb, b.rb, c.rb放在同一個目錄下，而./並不在預設的$LOAD_PATH，所以不加./會找不到)
+  li require可以省略檔案的副檔名.rb，但load則是一定要加.rb，不然會找不到檔案。
+  li 如果require兩次相同的檔案，則檔案只會載入並執行第一次，之後的不會重複載入執行，load則每次都會載入執行。
+    

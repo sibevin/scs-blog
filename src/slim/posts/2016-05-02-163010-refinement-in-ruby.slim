@@ -1,0 +1,268 @@
+.meta-data title ruby的refinement
+.meta-data datetime 2016-05-02 16:30:10
+.meta-data tags ruby
+.meta-data category coding
+.meta-data link refinement-in-ruby
+.meta-data file 2016-05-02-163010-refinement-in-ruby
+.meta-data template post
+.meta-data end
+
+h1 What
+p 
+  | Refinement是ruby 2.0的新功能，它想解決monkey-patching會覆寫原本class的method造成的問題，簡言之，它是一個有限度的monkey-patching。
+
+h1 Why
+p 
+  | 先看一個monkey-patching的例子：
+pre
+  code.ruby
+    | class A
+        def say_hi
+          "Hi~"
+        end
+      end
+
+      a_outside = A.new
+      p a_outside.say_hi # Hi~
+
+      class A # Open class A to redefine say_hi
+        def say_hi
+          "Hello!!"
+        end
+      end
+
+      p a_outside.say_hi # Hello!!
+
+      module B
+        a_in_b = A.new
+        p a_in_b.say_hi # Hello!!
+      end
+
+      module C
+        a_in_c = A.new
+        p a_in_c.say_hi # Hello!!
+      end
+p 
+  | 上面的class A原本定義了say_hi會回傳 "Hi~"，之後我們reopen A重新定義say_hi回傳 "Hello!!"，結果發現之後的程式只要是a的instance，它們的say_hi都被覆寫掉了，也就是會強迫後面程式一定要用改寫過後的定義。這就是monkey-patching的一個缺點，我們沒有辦法只讓在module B中的a_in_b使用改過的say_hi，而外層的a_outside與在module C裡的a_in_c仍保持原始定義的say_hi。不過這個問題有了refinement之後就可以解決了，範例如下：
+
+pre
+  code.ruby
+    | class A
+        def say_hi
+          "Hi~"
+        end
+      end
+
+      a_outside = A.new
+      p a_outside.say_hi # Hi~
+      
+      module SayHiRefinement
+        refine A do
+          def say_hi
+            "Hello!!"
+          end
+        end
+      end
+
+      p a_outside.say_hi # Hi~
+
+      module B
+        using SayHiRefinement
+        a_in_b = A.new
+        p a_in_b.say_hi # Hello!!
+      end
+
+      module C
+        a_in_c = A.new
+        p a_in_c.say_hi # Hi~
+      end
+
+p 
+  | 使用的方式就是我們在module SayHiRefinement中refine A的say_hi，如果在B中想要使用改寫過的定義，那只要在B中 
+  code
+    | using SayHiRefinement
+  | ，這個時候在B的scope中，say_hi就會被改寫，一旦出了B的scope，則say_hi就會變成原本的定義。
+
+h1 How
+
+p 
+  | Refinement有幾個特性：
+  
+h2 只有using之後的scope才會有refine的效果
+
+p 
+  | 這個特性與reopen是一樣的。
+
+pre
+  code.ruby
+    | class A
+        def say_hi
+          "Hi~"
+        end
+      end
+      
+      module SayHiRefinement
+        refine A do
+          def say_hi
+            "Hello!!"
+          end
+        end
+      end
+      
+      a = A.new
+      p a.say_hi # Hi~
+
+      using SayHiRefinement
+
+      p a.say_hi # Hello!!
+
+p 
+  | 這個特性有時候會搞死人，例如下面的範例：
+
+pre
+  code.ruby
+    | class A
+        def say_hi
+          "Hi~"
+        end
+
+        def call_say_hi
+          say_hi
+        end
+      end
+
+      module SayHiRefinement
+        refine A do
+          def say_hi
+            "Hello!!"
+          end
+        end
+      end
+
+      using SayHiRefinement
+
+      a = A.new
+      p a.say_hi # Hello!!
+      p a.call_say_hi # Hi~
+p  
+  | say_hi會被改寫，但call_say_hi中的say_hi不會，原因是雖然呼叫call_say_hi的時間點在using之後，可是定義call_say_hi的時間點卻是在using之前，所以call_say_hi仍會使用原本say_hi的定義。結論是如果使用refinement，要特別小心method的呼叫。
+
+h2 如果一個class被refine，則reopened class也會被refine
+
+p
+  | 簡言之，refine的效力比reopen還大。
+
+pre
+  code.ruby
+    | class A
+        def say_hi
+          "Hi~"
+        end
+      end
+      
+      module SayHiRefinement
+        refine A do
+          def say_hi
+            "Hello!!"
+          end
+        end
+      end
+      
+      class A # reopen class A
+        def say_hi
+          "Heeeee"
+        end
+      end
+
+      module B
+        using SayHiRefinement
+        a = A.new
+        p a.say_hi # Hello!!
+      end
+      
+h2 refine的效果只限using所在的scope，一旦離開scope效果就會消失，即使之後reopen也一樣
+
+pre
+  code.ruby
+    | class A
+        def say_hi
+          "Hi~"
+        end
+      end
+      
+      module SayHiRefinement
+        refine A do
+          def say_hi
+            "Hello!!"
+          end
+        end
+      end
+      
+      module B
+        using SayHiRefinement
+        a = A.new
+        p a.say_hi # Hello!!
+      end
+
+      module B # reopen B without using SayHiRefinement
+        a = A.new
+        p a.say_hi # Hi~
+      end
+      
+h2 refine的效果只限using所在的class，subclass不會有refine的效果
+
+pre
+  code.ruby
+    | class A
+        def say_hi
+          "Hi~"
+        end
+      end
+      
+      module SayHiRefinement
+        refine A do
+          def say_hi
+            "Hello!!"
+          end
+        end
+      end
+      
+      class B
+        using SayHiRefinement
+        a = A.new
+        p a.say_hi # Hello!!
+      end
+
+      class C < B # inherit from B without using SayHiRefinement
+        a = A.new
+        p a.say_hi # Hi~
+      end
+
+h2 Method lookup會優先找refine裡prepend與include的module
+p 
+  | 如果refinement被使用，則method lookup的順序為：
+ul
+  li refine內prepend的module
+  li refine定義的method
+  li refine內include的module
+  li class內prepend的module
+  li class定義的method
+  li class內include的module
+  
+h1 關於refinement的八掛
+
+p 
+  | refinement是ruby 2.0的時候被提出來的新功能，ruby社群原本提出的refinement的版本其實功能很強，只是在release 2.0的時候，refinement在某些極端的使用情況仍有未定義的行為出現，matz最後決定只上部分功能的refinement。雖然網路上有幾篇文章提到了許多refinement的其它功能，但目前ruby有支援的功能還是依照官方提出來的文件為主。下面是一些相關的連結，有興趣的話可以去看看：
+ul
+  li
+    a href="http://ruby-doc.org/core-2.3.0/doc/syntax/refinements_rdoc.html" target="_blank"
+      | Ruby Doc - Refinements
+    | - ruby refinement的官方文件
+  li 
+    a href="https://bugs.ruby-lang.org/issues/4085" target="_blank"
+      | Ruby issue - refinement的討論串
+    | - 這裡有很詳細的討論有關refinement的功能細節，以及最後決定要release的版本
+  li
+    a href="http://timelessrepo.com/refinements-in-ruby" target="_blank"
+      | Refinements in Ruby
+    | - 這篇提到了原本社群提出的refinement會有的功能，但實際上裡面有很多功能不會在ruby中出現。
