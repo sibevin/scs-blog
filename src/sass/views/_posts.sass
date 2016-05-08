@@ -2,6 +2,8 @@
 @import "modules/globals"
 @import "modules/header_style"
 
+$weblink_icon_size: 20px
+
 .posts
   .post-list
     padding: 0px 8px 8px 8px
@@ -24,6 +26,10 @@
       width: 240px
     .pl-tcs
       text-align: right
+    .pl-weblink
+      width: $weblink_icon_size
+      height: $weblink_icon_size
+      vertical-align: middle
 
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px)
   @mixin sub-info

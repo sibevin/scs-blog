@@ -39,6 +39,10 @@ opt_parser = OptionParser.new do |opts|
                 "Assign the post permlink. If no permlink is given, it would use <post title>.to_url by default.") do |link|
     options.link = link
   end
+  opts.on("-w", "--website website",
+                "Assign the website link. It would be shown on the list with a external link button.") do |website|
+    options.website = website
+  end
   opts.on("-T", "--template template1,template2,template3", Array,
                 "Assign the templates to support. The default value is \"post\".") do |template|
     options.template = template
@@ -108,6 +112,7 @@ file_header = <<eos
 .meta-data link #{post.link}
 .meta-data file #{post.name}
 .meta-data template #{post.template}
+.meta-data website #{post.website}
 #{options.draft ? ".meta-data draft" : ""}
 .meta-data end
 
@@ -143,7 +148,7 @@ if options.template.include?("link")
   file_header = file_header + <<eos
 ul
   li
-    a href="" target="_blank" Homepage
+    a href="#{options.website}" target="_blank" Homepage
 h1 What
 p
   |

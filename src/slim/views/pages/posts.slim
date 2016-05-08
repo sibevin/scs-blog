@@ -22,6 +22,8 @@
             div class="ca-icon-{{getPostCategory(post).code}}"
         a href="/posts/{{post.file}}"
           | {{post.title}}
+        a href="{{post.website}}" target="_blank" ng-show="post.website"
+          img.pl-weblink src="/images/list/weblink_25x.svg"
       .pl-cell.pl-tcs
         .tag ng-repeat="tag in getPostTags(post)" ng-style="{'background-color':tag.color}"
           a.tag-link ng-href="/tags?t={{tag.code}}"
