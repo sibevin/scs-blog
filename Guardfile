@@ -258,6 +258,8 @@ module ::Guard
         f.puts page_html
       end
       $logger.info("#{name}/#{__method__}: output_path =\n  #{output_path}".light_cyan)
+    rescue
+      $logger.error("Exception: #{$!} \n #{$!.backtrace.join("\n")}".red)
     end
 
     def render_slim_file(paths = [])
