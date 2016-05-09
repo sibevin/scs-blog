@@ -112,9 +112,7 @@ file_header = <<eos
 .meta-data link #{post.link}
 .meta-data file #{post.name}
 .meta-data template #{post.template}
-.meta-data website #{post.website}
-#{options.draft ? ".meta-data draft" : ""}
-.meta-data end
+#{options.website ? ".meta-data #{post.website}\n" : ""}#{options.draft ? ".meta-data draft\n" : ""}.meta-data end
 
 eos
 
