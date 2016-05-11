@@ -111,3 +111,9 @@ h1 將已經commit到repo的檔案從repo中移出，但不刪除檔案
 pre
   code
     | git rm --cached [被刪除的檔案]
+
+h1 清除在本地端的對應遠端已被刪除的branch
+pre
+  code
+    | git fetch origin --prune
+    

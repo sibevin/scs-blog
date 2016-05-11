@@ -22,22 +22,22 @@ pre
   code.ruby
     | class A
         def say
-          puts "Hi"
+          "Hi"
         end
       end
 
       a = A.new
-      a.say # Hi
-      # a.say_hello # NoMethodError
+      p a.say # Hi
+      # p a.say_hello # NoMethodError
 
       class A
         def say_hello
-          puts "Hello"
+          "Hello"
         end
       end
 
-      a.say # Hi
-      a.say_hello # Hello
+      p a.say # Hi
+      p a.say_hello # Hello
 
 p 上面的例子，第二個class A並不是重新定義class A，而是reopen class A，並加一個新的method在class A之中。有趣的是即使是在reopen之前宣告的instance a，在reopen加上method之後就會有新的method可以用。
 
@@ -47,20 +47,20 @@ pre
   code.ruby
     | class A
         def say
-          puts "Hi"
+          "Hi"
         end
       end
 
       a = A.new
-      a.say # Hi
+      p a.say # Hi
 
       class A
         def say
-          puts "Hello"
+          "Hello"
         end
       end
 
-      a.say # Hello
+      p a.say # Hello
 
 p 
   | 由上面的例子可以發現reopen之後我們可以將原本存在在class的method履寫掉，這樣的特性會在使用open class時很容易不小心改掉class原本的method而造成非預期的bug，所以這個技巧又被稱做
@@ -74,7 +74,7 @@ pre
     | class A
         def say
           @var = 1
-          puts "Hi"
+          "Hi"
         end
       end
       
@@ -84,7 +84,7 @@ pre
       p a.methods # [:say, ... ]
       p a.instance_variable # []
       
-      a.say # Hi
+      p a.say # Hi
       
       p a.instance_variable # [:@var]
 
@@ -222,6 +222,79 @@ p
   | 請參考： 
   a href="/posts/2014-05-04-081714-ruby-module" target="_blank"
     | ruby module的用法
+
+pre
+  code.ruby
+    | class A
+        def say
+          "A say Hi"
+        end
+      end
+
+      module M1
+        def say
+          "M1 say Hi"
+        end
+      end
+
+      module M2
+        def say
+          "M2 say Hi"
+        end
+      end
+
+      class B < A
+        include M1
+        prepend M2
+        def say
+          "B say Hi"
+        end
+      end
+
+      class B
+        def say
+          "Reopen B say Hi"
+        end
+      end
+
+      module M3
+        def say
+          "M3 say Hi"
+        end
+      end
+
+      module M4
+        def say
+          "M4 say Hi"
+        end
+      end
+
+      module SayRefinement
+        refine B do
+          include M3
+          prepend M4
+          def say
+            "Refinement B say Hi"
+          end
+        end
+      end
+
+      b = B.new
+      p b.say # "M2 say Hi"
+      p B.ancestors # [M2, B, M1, A, Object, Kernel, BasicObject]
+
+      using SayRefinement
+
+      p b.say # "M4 say Hi"
+      p B.ancestors # [M2, B, M1, A, Object, Kernel, BasicObject]
+
+    
+.image-center
+  a href="/images/post/20160511181400-mr2-ch2-method-lookup.png"
+    img src="/images/post/20160511181400-mr2-ch2-method-lookup.png" alt="Method Lookup的順序"
+  .image-text
+    | Method Lookup的順序
+    
 
 h2 The Kernel
 
