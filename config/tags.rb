@@ -98,6 +98,7 @@ $tags = {
   },
   "mp" => {
     name: "Metaprogramming",
+    color: "#28784d"
   },
   "mr2" => {
     name: "Metaprogramming Ruby 2",
@@ -106,5 +107,16 @@ $tags = {
   "regex" => {
     name: "Regular Expression",
     color: "#93bedf",
+  },
+  "nosql" => {
+    name: "NoSQL",
+    color: "#375000"
+  },
+  "nsd" => {
+    name: "NoSQL Distilled",
+    color: "#f5c531"
+  },
+  "english" => {
+    color: "805315"
   }
 }

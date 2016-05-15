@@ -1,0 +1,212 @@
+.meta-data title 一些用來檢驗rails程式碼的工具
+.meta-data datetime 2016-05-14 12:27:43
+.meta-data tags rails,ruby_gem
+.meta-data category coding
+.meta-data link tools-for-cleanup-rails-code
+.meta-data file 2016-05-14-122743-tools-for-cleanup-rails-code
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 這篇文章部分內容擷錄於 
+  a href="https://infinum.co/the-capsized-eight/articles/top-8-tools-for-ruby-on-rails-code-optimization-and-cleanup" target="_blank"
+    | Top 8 tools for Ruby on Rails code optimization and cleanup - by Damir Svrtan
+  | ，它對於每個工具都有簡短的描述與說明，有興趣可以過去看看。
+
+h1 Traceroute
+
+p
+  a href="https://github.com/amatsuda/traceroute" target="_blank" Github
+
+h2 What
+
+p 幫你列出無用的routes。
+
+h2 How
+
+ul
+  li gem 'traceroute'
+  li rake traceroute
+pre
+  code.nohighlight
+    | Unused routes (3):
+        users/omniauth_callbacks#(?-mix:facebook)
+        courses#show
+        my/student/courses#index
+      Unreachable action methods (3):
+        grape_swagger_rails/application#index
+        emergency#show
+        devise#_prefixes
+
+h1 rack-mini-profiler
+
+p
+  a href="https://github.com/MiniProfiler/rack-mini-profiler" target="_blank" Github
+
+h2 What
+
+p profiling每一頁花的時間。
+
+h2 How
+ul
+  li gem 'rack-mini-profiler', require: false
+  li 建立config/initializers/rack_profiler.rb
+pre
+  code.ruby
+    | if Rails.env == 'development'
+        require 'rack-mini-profiler'
+
+        # initialization is skipped so trigger it
+        Rack::MiniProfilerRails.initialize!(Rails.application)
+      end
+ul
+  li gem 'flamegraph' (如果要顯示圖)
+  li gem 'stackprof' (如果要顯示圖)
+  li 裝了之後在每一頁的左上角會出現時間，按下去會顯示更多的資訊。
+
+.image-center
+  a href="/images/post/20160514124725508-rack-mini-profile-screenshot.png"
+    img src="/images/post/20160514124725508-rack-mini-profile-screenshot.png" alt="rack-mini-profiler"
+    
+h1 bullet
+
+p
+  a href="https://github.com/flyerhzm/bullet" target="_blank" Github
+
+h2 What
+
+p 找出 N+1 query。
+
+h2 How
+ul
+  li gem 'bullet'
+  li 在config/environments/development.rb中設定bullet。
+pre
+  code.ruby
+    | config.after_initialize do
+        Bullet.enable = true
+        Bullet.alert = true
+        Bullet.bullet_logger = true
+        Bullet.rails_logger = true
+      end
+ul
+  li 裝了之後，如果有出現 N+1 query ，就會跳出警告視窗。
+
+.image-center
+  a href="/images/post/20160514131612801-bullet-screenshot.png"
+    img src="/images/post/20160514131612801-bullet-screenshot.png" alt="bullet"
+    
+h1 brakeman
+
+.image-center
+  a href="/images/post/20160515100713843-brakeman-logo.png"
+    img src="/images/post/20160515100713843-brakeman-logo.png" alt="brakeman"
+
+p
+  a href="https://github.com/presidentbeef/brakeman" target="_blank" Github
+
+h2 What
+
+p 檢查rails是否有安全性漏洞。
+
+h2 How
+ul
+  li gem 'brakeman', require: false
+  li brakeman -o result.html
+  li 
+    | 執行brakeman之後，它會開始掃描rails專案，並列出可能的問題。 
+    code
+      | -o 檔名
+    | 可以將結果輸出至檔案。
+    
+.image-center
+  a href="/images/post/20160515100713843-brakeman-screenshot.png"
+    img src="/images/post/20160515100713843-brakeman-screenshot.png" alt="brakeman"
+    
+h1 rails_best_practices
+
+p
+  a href="https://github.com/railsbp/rails_best_practices" target="_blank" Github
+
+h2 What
+
+p 檢查rails專案中是否有違反best practices。
+
+h2 How
+ul
+  li gem 'rails_best_practices', require: false
+  li rails_best_practices -f html .
+  
+.image-center
+  a href="/images/post/20160515100713843-rails-best-practices-screenshot.png"
+    img src="/images/post/20160515100713843-rails-best-practices-screenshot.png" alt="rails_best_practices"
+  
+h1 rubocop
+
+.image-center
+  a href="/images/post/20160514151253034-rubocop-logo.png"
+    img src="/images/post/20160514151253034-rubocop-logo.png" alt="rubocop"
+
+p
+  a href="https://github.com/bbatsov/rubocop" target="_blank" Github
+
+h2 What
+
+p 檢查rails專案中是否有違反ruby style guide。
+
+h2 How
+ul
+  li gem 'rubocop', require: false
+  li rubocop --format html -o rubocop.html
+
+.image-center
+  a href="/images/post/20160515100713843-rubocop-screenshot.png"
+    img src="/images/post/20160515100713843-rubocop-screenshot.png" alt="rubocop"
+
+h1 RubyCritic
+
+p
+  a href="https://github.com/whitesmith/rubycritic" target="_blank" Github
+
+h2 What
+
+p 使用reek, flay, flog檢查rails專案中是否有違反ruby style guide，重點是報表還蠻好看的。
+
+h2 How
+ul
+  li gem 'rubycritic', require: false
+  li rubycritic
+  li 執行完之後，會將報表放在tmp/rubycritic/overview.html
+  
+.image-center
+  a href="/images/post/20160515100713843-rubycritic-screenshot.png"
+    img src="/images/post/20160515100713843-rubycritic-screenshot.png" alt="RubyCritic"
+
+h1 RailsPanel
+
+p
+  a href="https://github.com/dejan/rails_panel" target="_blank" Github
+p
+  a href="https://chrome.google.com/webstore/detail/railspanel/gjpfobpafnhjhbajcjgccbbdofdckggg" target="_blank" Chrome WebStore
+  
+h2 What
+
+p 在chrome的developer tool加上rails的分析工具。
+
+h2 How
+ul
+  li 到上面的Chrome WebStore安裝RailsPanel這個plugin。
+  li gem 'meta_request'
+  li 安裝完啟動rails server，在瀏覽網頁時，開啟developer tool就會發現有多一個Rails的分頁可以觀察rails相關的資訊。
+  
+.image-center
+  a href="/images/post/20160515095916125-rails-panel-screenshot.png"
+    img src="/images/post/20160515095916125-rails-panel-screenshot.png" alt="RailsPanel"
+
+h1 Refs
+ul
+  li
+    a href="https://infinum.co/the-capsized-eight/articles/top-8-tools-for-ruby-on-rails-code-optimization-and-cleanup" target="_blank"
+      | Top 8 tools for Ruby on Rails code optimization and cleanup - by Damir Svrtan
