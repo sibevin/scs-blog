@@ -1,0 +1,200 @@
+.meta-data title rails讀書會 - Test Prescription - Ch.15 讓你的測試跑的更快 / 跑更快的測試
+.meta-data datetime 2016-05-15 18:53:34
+.meta-data tags test,tp,rails_study-group
+.meta-data category coding
+.meta-data link test-prescription-ch15-running-tests-faster-and-running-faster-tests
+.meta-data file 2016-05-15-185334-test-prescription-ch15-running-tests-faster-and-running-faster-tests
+.meta-data template post
+.meta-data end
+
+p 
+  | 讓測試跑的更快，才能讓TDD的流程比較順暢。
+
+h1 Running Smaller Groups of Tests
+
+p 在debug時只跑某一部分與程式相關的測試的好處：
+ul
+  li 通常debug的程式碼只與幾個測試有關。
+  li 可以避免不必要的訊息輸出。
+
+h2 Running Groups of Examples in RSpec
+
+p RSpec本身就有支援跑單一測試的檔案，例如：
+
+pre
+  code.nohighlight
+    | rspec spec/models/project_spec.rb spec/models/task_spec.rb
+
+p 
+  | 也可以使用 
+  code
+    | :
+  | 後接行數來指定要跑測試檔的哪一個測試。
+  
+pre
+  code.nohighlight
+    | rspec spec/models/task_spec.rb:5
+
+p
+  | 你也可以在it的語法後接一個tag，當跑rspec時可以指定要跑的tag。
+pre
+  code.ruby
+    | it "should run when I ask for focused tests", :focus do
+      end
+      
+      it "should not run when I ask for focused tests" do
+      end
+p 
+  | 下面只會跑有下focus tag的測試。
+pre
+  code.nohighlight
+    | rspec --tag focus
+  
+p 
+  | 下面只會跑沒有下focus tag的測試。
+pre
+  code.nohighlight
+    | rspec --tag ~focus
+
+h2 Minitest
+
+p Minitest也有支援跑單一測試的檔案。
+
+pre
+  code.nohighlight
+    | rake test test/models/task_test.rb
+
+p 可以指定跑單一test case。
+  
+pre
+  code.nohighlight
+    | ruby -Ilib:test test/models/task_test.rb -n test_a_completed_task_is_complete
+
+p
+  | 如果嫌字打太多，也可以安裝一個 minitest-line 的gem，就可以用行數來指定test case。
+pre
+  code.nohighlight
+    | ruby -Ilib:test test/models/task_test.rb -l 5
+
+h2 Cucumber    
+
+p 沒在用，跳過。
+
+h1 Guard
+
+p 
+  | 一個加快測試的方法就是當程式變動時，可以自動去跑對應的測試檔，而guard是一個工具用來偵測檔案是否有變動而觸發做相對應指定要做的事情。其中要怎麼設定與執行請參考guard, guard-rspec, guard-minitest的說明。
+
+h1 Running Rails in the Background
+
+p 
+  | 一個加快測試的方法就是讓rails在背景執行，當在跑每一次的測試時，不用再重新啟動rails而可以縮短測試跑的時間。
+  
+h2 Installing Spring
+
+p 
+  | Spring是rails 4預設就有的rails preloader，基本上不用怎麼設定就可以使用。Gemfile預設就有加上spring，但如果要讓RSpec也可以使用spring的話，就要加上 spring-commands-rspec 這個gem。
+
+p 
+  | 你可以下指令查看目前spring的狀態。
+pre
+  code.nohighlight
+    | bundle exec spring status
+
+h2 Using Spring
+p 
+  | 如果要使用spring跑任何指令，可以使用 
+  code
+    | bundle exec spring [指令]
+  | 來啟動sping，例如：
+pre
+  code.nohighlight
+    | bundle exec spring rspec
+p 
+  | 這時候如果使用 
+  code
+    | bundle exec spring status
+  | 就會發現rails已經在背景運作了，這時候再跑測試時，rails就不會重新啟動，而是直接使用背景的rails來跑測試。如果你用spring跑其它的指令，spring會另外啟動一個rails在背景執行。不同的指令不會彼此干擾。
+p 
+  | 另外你可以下指令停止spring。
+pre
+  code.nohighlight
+    | bundle exec spring stop
+p 
+  | 使用Spring時有幾點要注意：
+ul
+  li 你會發現RSpec跑測試的時間幾乎沒有變動，這是因為spring省的是啟動的測試的時間，而啟動的時間並不會算在RSpec跑測試的時間。
+  li Spring會在檔案變動時自動重新啟動，但如果是加新的檔案或是更新gem的時候不會，所以如果使用Spring發生奇怪的事情，重啟它就對了。
+
+p 
+  code
+    | bundle exec spring binstub --all
+  | 的指令會在bin/下建立一些執行檔，並將spring load進去。這時候就可以做到下面的事情：
+ul
+  li
+    | 可以使用 
+    code
+      | bin/spring
+    | 來啟動spring。
+  li 
+    | 會在 bin/rails, bin/rspec, bin/rake中加入spring的設定(其實就是load bin/string)，這時候使用這些執行檔啟動rails, rspec, rake就會採用spring的方式執行。(註：試了bin/rails s不會啟動spring，但bin/rails c就可以，很怪…)
+
+h2 It Don’t Mean a Thing If It Ain’t Got That Spring
+
+p Spring在下面的情況下會特別有用：
+ul
+  li 當測試的啟動時間大於測試執行的時間。
+  li 在TDD時當只想跑一部分的測試。
+  li 反正用就對了。
+
+h1 Writing Faster Tests by Bypassing Rails
+
+p 另一個加速測試的方法就是避免載入rails。 (Bear with me：請耐心容我把話說完)
+
+p rails專案的測試通常分成下面幾種：
+ul
+  li End-to-end的測試：基本上它需要載入整個rails才可以跑的測試。
+  li ActiveRecord與資料庫相關的測試：需要載入ActiveRecord與一個測試用的資料庫，基本上會包含一些scope與資料庫存取的動作相關的程式。
+  li Controller相關的測試：需要載入ActivePack，視情況可能會需要ActiveRecord與資料庫。
+  li 會使用到ActiveRecord但不觸及到資料庫的存取的測試。
+  li 與rails完全無關的測試。
+
+p 理論上越下面的測試應該要跑越快。
+
+h2 Why Speed Is Important
+
+p 生命寶貴，不解譯，跳過。
+
+h2 Why Separation from Rails Is Important
+
+p 將測試從rails抽離的好處會迫使你採用相依性較低的程式碼，例如當你將很多運算邏輯放在controller時，你就很難做切割。
+
+h2 Rails Test Prescriptions, Hold the Rails
+
+p 
+  | 基本上作者用了很多方式避免在測試檔案中使用 
+  code
+    | require rails_helper
+  | ，也就是手動選擇需要的檔案require，而不是require整個rails。
+
+p 
+  | 其中的技巧太過高超，先跳過。
+
+h2 Running Rails-Free Tests
+
+p 
+  | 如果要測試「與rails完全無關的測試」，那這些測試檔要與其它的測試放在不同的地方，或是可以分開跑測試。基本上如果照rspec的規則放檔案，應該就可以針對不同的目錄各別去跑測試。
+  
+h1 Recommendations for Faster Tests
+
+ul
+  li 將複雜的程式邏輯做切割，從controller搬到action object，甚至是與rails無關的一般ruby object。
+  li 新建物件來處理資料庫的存取。
+  li 使用value object來處理model的共通行為。
+  li 測試時，建立的物件越少越好，存取資料庫的次數越少越好。使用mock來減化測試的流程。
+  li 
+    | rpsec可以使用 
+    code
+      | --profile
+    | 這個option來查看哪些測試跑的慢。
+  li 不要奢想所有的東西都可以馬上運作。作者提到他最常遇到的問題不是怎麼跑一個單獨的測試或是處理程式之間的相依性，而是讓切割後的測試可以在整個開發環境中可以運作，這之中包含了怎麼跑整個測試流程、其它開發人員要怎麼跑測試、還有怎麼設定CI等。

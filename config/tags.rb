@@ -117,6 +117,6 @@ $tags = {
     color: "#f5c531"
   },
   "english" => {
-    color: "805315"
+    color: "#805315"
   }
 }
