@@ -1,0 +1,295 @@
+.meta-data title NoSQL Distilled - 閱讀筆記1
+.meta-data datetime 2016-05-14 10:08:17
+.meta-data tags note,nsd,nosql
+.meta-data category tools
+.meta-data link nsd-note1
+.meta-data file 2016-05-14-100817-nsd-note1
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+h1 前言
+p 
+  | 這是 NoSQL Distilled 的閱讀筆記，只記錄我覺得重要的地方，如果你對裡面的內容有興趣，建議你閱讀書本更完整的內容。
+
+h1 Chapter 1: Why NoSQL?
+
+h2 1.1 The Value of Relational Databases
+
+p 關聯式資料庫的好處：
+ul
+  li 永久資料：關聯式資料庫是將資料儲存在硬碟上而非記憶體，所以即使是斷電資料也不會消失，在儲存容量上也不會有太大的限制。
+  li 同步：有transcation的機制防止資料不一致。
+  li 整合：多個應用程式可以連到同一個資料庫分享資料。
+  li 標準：目前仍是業界常用的標準。
+
+h2 1.2 Impedance Mismatch
+
+p Impedance(阻抗) Mismatch：關聯式資料庫的欄位都是簡單的資料型態，無法儲存一個物件或是複雜的資料結構。所以要儲存複雜的資料就必須切割成多個table。
+
+h2 1.3 Application and Integration Databases
+
+p Integration Database：多個應用程式可以連到同一個資料庫分享資料。
+ul
+  li 好處：資料一致。
+  li 壞處：隨時間架構會越來越複雜。不同的應用程式必須要訂好開發的規則。
+
+p Application Database：一個應用程式使用一個資料庫。
+ul
+  li 好處：開發相對容易。
+  li 壞處：溝通上的問題可以用網路服務克服。
+
+h2 1.4 Attack of the Clusters
+
+p 對關聯式資料庫通常是設計在單一主機上執行，但單一主機有成本高與資料損壞的風險。
+
+h2 1.5 The Emergence of NoSQL
+
+p 
+  | NoSQL資料庫的共通特性：
+ul
+  li 不是不使用SQL，有些NoSQL的資料庫有支援類SQL的查詢語法。
+  li 通常都是open source的專案。
+  li 大部分是支援叢集。
+  li 不需要schema就可以運作。
+  li 21世紀後的才發明的資料庫。
+  
+p polyglot presistence(多語言的存在性)：根據不同的使用情境，選用適合的solution。
+
+h1 Chapter 2: Aggregate Data Models
+
+p metamodel：資料庫儲存資料的方式，例如：關聯式資料庫會用table與column。
+
+p NoSQL的metamodel分成四類：
+ul
+  li Key-Value
+  li Document
+  li Column-Family Stores
+  li Graph
+
+h2 2.1 Aggregates
+
+p aggregate(聚集)：NoSQL與關聯式資料庫最大的不同在於它可以儲存複雜的資料結構，而一個複雜的資料結構我們稱做aggregate。資料採用aggregate的方式儲存有一個很大的好處是很容易支援叢集的操作，而這也是Key-Value, Document與Column-Family Stores資料庫的運作方式。
+
+p 一個aggregate的範例：
+
+i customers
+pre
+  code.json
+    | {
+        "id": 1,
+        "name": "Martin",
+        "billingAddress": [{"city":"Chicago"}]
+      } 
+
+i orders
+pre
+  code.json
+    | {
+        "id": 99,
+        "customerId": 1,
+        "orderItems": [
+          {
+            "productId": 27,
+            "price": 32.45,
+            "productName": "NoSQL Distilled",
+          }
+        ],
+        "shippingAddress": [{"city":"Chicago"}],
+        "orderPayment": {
+          "txnId": "abelif879rft",
+          "billingAddress": [{"city":"Chicago"}]
+        }
+      } 
+p 
+  | 從範例可以得知：
+ul
+  li 地址在資料裡重複出現，通常如果這個資料不太會變動，可以這樣做。這樣的好處是讀取order一次就可以把所有相關的資料都讀出來。
+  li 上面的例子是以order為主的aggregate，不過這不是一定，而是看需求來決定，例如你甚至可以把對應某個customer的order都包在customer下。重點不是要怎麼區分aggregate，而是要怎麼存取資料。
+  
+p 使用aggregate的好處：
+ul
+  li 可以更容易了解資料彼此之間的關聯性。
+  li 思考的方式會更偏向怎麼使用資料，而不是資料怎麼儲存。
+  li 支援叢集。
+  
+p 使用aggregate的壞處：
+ul
+  li 設計aggregate通常是困難的，尤其是相同資料可能會用在不同的地方。例如上面的範例，要取得一個訂單下有哪些產品是容易的，但要看某個產品包含在哪些訂單中是困難的。
+  li 在跨aggregate的存取是沒有支援ACID，必須由程式來控制。但同一個aggregate的取存是支援Atomic的，所以在設計aggregate，也必須要考慮這樣的特性。
+ 
+h2 2.2 Key-Value and Document Data Models
+
+h2 2.3 Column-Family Stores
+
+h2 2.4 Summarizing Aggregate-Oriented Databases
+
+h2 2.5 Further Reading
+
+h2 2.6 Key Points
+
+h2 Chapter 3: More Details on Data Models
+
+h2 3.1 Relationships
+
+h2 3.2 Graph Databases
+
+h2 3.3 Schemaless Databases
+
+h2 3.4 Materialized Views
+
+h2 3.5 Modeling for Data Access
+
+h2 3.6 Key Points
+
+h2 Chapter 4: Distribution Models
+
+h2 4.1 Single Server
+
+h2 4.2 Sharding
+
+h2 4.3 Master-Slave Replication
+
+h2 4.4 Peer-to-Peer Replication
+
+h2 4.5 Combining Sharding and Replication
+
+h2 4.6 Key Points
+
+h2 Chapter 5: Consistency
+
+h2 5.1 Update Consistency
+
+h2 5.2 Read Consistency
+
+h2 5.3 Relaxing Consistency
+
+h2 5.4 Relaxing Durability
+
+h2 5.5 Quorums
+
+h2 5.6 Further Reading
+
+h2 5.7 Key Points
+
+h2 Chapter 6: Version Stamps
+
+h2 6.1 Business and System Transactions
+
+h2 6.2 Version Stamps on Multiple Nodes
+
+h2 6.3 Key Points
+
+h2 Chapter 7: Map-Reduce
+
+h2 7.1 Basic Map-Reduce
+
+h2 7.2 Partitioning and Combining
+
+h2 7.3 Composing Map-Reduce Calculations
+
+h2 7.4 Further Reading
+
+h2 7.5 Key Points
+
+h2 Part II: Implement
+
+h2 Chapter 8: Key-Value Databases
+
+h2 8.1 What Is a Key-Value Store
+
+h2 8.2 Key-Value Store Features
+
+h2 8.3 Suitable Use Cases
+
+h2 8.4 When Not to Use
+
+h2 Chapter 9: Document Databases
+
+h2 9.1 What Is a Document Database?
+
+h2 9.2 Features
+
+h2 9.3 Suitable Use Cases
+
+h2 9.4 When Not to Use
+
+h2 Chapter 10: Column-Family Stores
+
+h2 10.1 What Is a Column-Family Data Store?
+
+h2 10.2 Features
+
+h2 10.3 Suitable Use Cases
+
+h2 10.4 When Not to Use
+
+h2 Chapter 11: Graph Databases
+
+h2 11.1 What Is a Graph Database?
+
+h2 11.2 Features
+
+h2 11.3 Suitable Use Cases
+
+h2 11.4 When Not to Use
+
+h2 Chapter 12: Schema Migrations
+
+h2 12.1 Schema Changes 
+
+h2 12.2 Schema Changes in RDBMS
+
+h2 12.3 Schema Changes in a NoSQL Data Store
+
+h2 12.4 Further Reading
+
+h2 12.5 Key Points
+
+h2 Chapter 13: Polyglot Persistence
+
+h2 13.1 Disparate Data Storage Needs
+
+h2 13.2 Polyglot Data Store Usage
+
+h2 13.3 Service Usage over Direct Data Store Usage
+
+h2 13.4 Expanding for Better Functionality
+
+h2 13.5 Choosing the Right Technology
+
+h2 13.6 Enterprise Concerns with Polyglot Persistence
+
+h2 13.7 Deployment Complexity
+
+h2 13.8 Key Points
+
+h2 Chapter 14: Beyond NoSQL
+
+h2 14.1 File Systems
+
+h2 14.2 Event Sourcing
+
+h2 14.3 Memory Image
+
+h2 14.4 Version Control
+
+h2 14.5 XML Databases
+
+h2 14.6 Object Databases
+
+h2 14.7 Key Points
+
+h2 Chapter 15: Choosing Your Database
+
+h2 15.1 Programmer Productivity
+
+h2 15.2 Data-Access Performance
+
+h2 15.3 Sticking with the Default
+
+h2 15.4 Hedging Your Bets
+
+h2 15.5 Key Points
+
+h2 15.6 Final Thoughts

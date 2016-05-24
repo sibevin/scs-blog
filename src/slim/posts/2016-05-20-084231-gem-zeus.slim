@@ -1,0 +1,103 @@
+.meta-data title Zeus - 讓開發環境的rails跑的更快
+.meta-data datetime 2016-05-20 08:42:31
+.meta-data tags rails,ruby_gem
+.meta-data category coding
+.meta-data link gem-zeus
+.meta-data file 2016-05-20-084231-gem-zeus
+.meta-data template gem
+.meta-data website https://github.com/burke/zeus
+.meta-data end
+
+ul
+  li
+    a href="https://github.com/burke/zeus" target="_blank" Homepage
+  li
+    a href="https://github.com/burke/zeus" target="_blank" Github
+  li
+    a href="https://rubygems.org/gems/zeus" target="_blank" RubyGem
+    code
+      |  (zeus)
+h1 What
+p
+  | zeus是rails的preloader，它可以讓rails指令跑的更快。
+h1 Why
+p
+  | 時間寶貴，不解釋。
+h1 How
+
+h2 安裝
+p
+  | 不建議使用bundle來裝它，因為透過
+  code
+    | bundle exec
+  | 反而讓zeus啟動變慢。另外zeus本身就是設計不相依於rails專案，可以讓不同的專案用同一套zeus，所以可以直接下 
+  code
+    | gem install zeus
+  | 來安裝它。
+
+h2 使用
+ul
+  li 
+    | 1. 在rails專案中下指令 
+    code
+      | zeus start
+    | ，這時候會顯示zeus啟動的狀態與可以使用的指令。
+  li 
+    | 2. 開另一個console，就可以用zeus執行各種rails的指令。基本上就是在原本的rails指令前加上zeus，例如： 
+    code
+      | zeus rails s
+    | 。
+  li 3. 如果要關閉zeus，只要 ctrl + c 就可以了。
+.image-center
+  img src="/images/post/20160520092232290-zeus-screenshot.png" alt="Zeus啟動的畫面"
+  .image-text
+    | Zeus啟動的畫面
+
+h2 同場加映
+ul
+  li 在 oh-my-zsh 中加入zeus的外掛，就可以使用縮寫下zeus的指令嘍。
+
+h2 會遇到的坑
+p 
+  | 首先第一個遇到的問題是無法使用 `zeus test` ，它會出現 `undefined method `configure' for RSpec:Module (NoMethodError)`
+.image-center
+  img src="/images/post/20160520092320358-zeus-test-failed.png" alt="zeus test 無法使用"
+  .image-text
+    | zeus test 無法使用
+pre
+  code.nohighlight
+    | /Users/wangkaito/workspace/rails/dev/ukik-gamma2/spec/spec_helper.rb:19:in `<top (required)>': undefined method `configure' for RSpec:Module (NoMethodError)
+    	from /Users/wangkaito/.rvm/gems/ruby-2.2.3/gems/activesupport-4.2.4/lib/active_support/dependencies.rb:274:in `require'
+    	from /Users/wangkaito/.rvm/gems/ruby-2.2.3/gems/activesupport-4.2.4/lib/active_support/dependencies.rb:274:in `block in require'
+    	from /Users/wangkaito/.rvm/gems/ruby-2.2.3/gems/activesupport-4.2.4/lib/active_support/dependencies.rb:240:in `load_dependency'
+    	from /Users/wangkaito/.rvm/gems/ruby-2.2.3/gems/activesupport-4.2.4/lib/active_support/dependencies.rb:274:in `require'
+    	from /Users/wangkaito/workspace/rails/dev/ukik-gamma2/spec/rails_helper.rb:6:in `<top (required)>'
+    	from /Users/wangkaito/.rvm/gems/ruby-2.2.3/gems/activesupport-4.2.4/lib/active_support/dependencies.rb:274:in `require'
+    	from /Users/wangkaito/.rvm/gems/ruby-2.2.3/gems/activesupport-4.2.4/lib/active_support/dependencies.rb:274:in `block in require'
+    	from /Users/wangkaito/.rvm/gems/ruby-2.2.3/gems/activesupport-4.2.4/lib/active_support/dependencies.rb:240:in `load_dependency'
+    	from /Users/wangkaito/.rvm/gems/ruby-2.2.3/gems/activesupport-4.2.4/lib/active_support/dependencies.rb:274:in `require'
+    	from /Users/wangkaito/.rvm/gems/ruby-2.2.3/gems/zeus-0.15.4/lib/zeus/rails.rb:196:in `test_helper'
+      ...
+
+p 
+  | 查了一下網路的資料發現因為zeus在啟動時，不會像rails一樣一次把所有用到的gem或是library都載入，所以如果有任何沒有require就使用的library的class或module就會出錯。上面的問題是出在 spec/rails_helper.rb 中的第6行：
+pre
+  code.ruby
+    | require 'spec_helper'
+      require 'rspec/rails'
+p 
+  | spec_helper裡有用到RSpec的module，但正真載入rspec的地方是在 
+  code
+    | require 'rspec/rails'
+  | ，因此就出問題了。解法也很簡單，只要將上面兩行對掉就可以了。
+pre
+  code.ruby
+    | require 'rspec/rails'
+      require 'spec_helper'
+
+h1 Spring?
+
+p 
+  | 其實rails預設有一個preloader叫做Spring，也是做類似的事。如果有興趣的話，可以看這篇的比較： 
+  a href=" https://hackhands.com/fast-tests-comparing-zeus-spring-rails-4-1-rspec-3/" target="_blank"
+    | Fast Tests: Comparing Zeus With Spring on Rails 4.1 and RSpec 3

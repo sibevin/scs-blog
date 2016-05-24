@@ -1,0 +1,64 @@
+.meta-data title Teamocil - 一鍵自動分割視窗
+.meta-data datetime 2016-05-24 09:09:30
+.meta-data tags ruby_gem
+.meta-data category tools
+.meta-data link gem-teamocil
+.meta-data file 2016-05-24-090930-gem-teamocil
+.meta-data template gem
+.meta-data website https://github.com/remiprev/teamocil
+.meta-data end
+
+ul
+  li
+    a href="http://www.teamocil.com/" target="_blank" Homepage
+  li
+    a href="https://github.com/remiprev/teamocil" target="_blank" Github
+  li
+    a href="https://rubygems.org/gems/teamocil/" target="_blank" RubyGem
+    code
+      |  (teamocil)
+h1 What
+p
+  | 一個使用YAML當做設定可以自動讓tmux產生視窗與分割面版的工具。
+h1 Why
+p
+  | 當你需要一次開多個視窗來做事情時，這個工具真的省事很多。
+h1 How
+p
+  | 首先我本身是用iTerm2當做目前工作環境的console，而iTerm剛好也支援tmux的指令，所以teamocil就可以用嘍。基本上安裝完teamocil之後，可以在你的home目錄下建立teamocil的設定檔，範例如下：
+i
+  | .teamocil/my_workspace.yml
+pre
+  code.yaml
+    | windows:
+      - name: workspace-01
+        root: /Users/kait/workspace/rails/dev/my_project/
+        layout: main-vertical
+        panes:
+          - rs -p 1234
+          - guard
+          - zs
+      - name: workspace-02
+        root: /Users/kait/workspace/rails/dev/my_project/
+        layout: even-horizontal
+        panes:
+          - zc
+          - focus: true
+p 
+  | 有了上面的設定檔，當開啟iTerm時，下指令 
+  code
+    | teamocil my_workspace
+  | ，這時候iTrem就會做下面的事情：
+ul
+  li 
+    | 開一個新的視窗，將工作目錄切到 /Users/kait/workspace/rails/dev/my_project/ ，分割成左邊一個，右邊上下兩個，共三個面版分別跑 
+    code
+      | rs -p 1234, guard, zs
+    | 這三個指令。
+  li 
+    | 開另一個新的視窗，同樣將工作目錄切到 /Users/kait/workspace/rails/dev/my_project/ ，分割成上下兩個面版，上面跑 
+    code
+      | zc
+    | 下面則維持terminal的畫面。
+p 
+  | 更多的layout與設定方式可以參考Teamocil的官網。

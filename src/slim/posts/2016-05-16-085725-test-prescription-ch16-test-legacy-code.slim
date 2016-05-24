@@ -1,0 +1,40 @@
+.meta-data title rails讀書會 - Test Prescription - Ch.16 測試前人留下來的程式碼
+.meta-data datetime 2016-05-16 08:57:25
+.meta-data tags test,tp,rails_study-group
+.meta-data category coding
+.meta-data link test-prescription-ch16-test-legacy-code
+.meta-data file 2016-05-16-085725-test-prescription-ch16-test-legacy-code
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+h1 What’s a Legacy?
+
+p 請尊重前人的程式，他們有可能是在開發的當下環境或是條件才寫出這樣的程式碼。另一方面，我們可能需要花很多時間去了解這些程式背後的設計。
+
+p 針對前人的程式寫測試有幾件好處：
+ul
+  li 用來描述目前程式的功用。
+  li 確保修改目前的程式不會產生問題。
+  li 能讓新功能與舊程式做適當的切割。
+  
+h1 Set Expectations
+
+p 不要奢想要將所有的舊程式加上測試，最主要有兩個理由：
+ul
+  li 通常接到舊程式碼都是為了要立即加新的功能，而沒有時間等你把所有的測試都補完。
+  li 舊程式都常都是有許多不好的設計與相依性，這會造成測試難以撰寫，但是沒有測試就做重構會帶來新的bug，尤其對程式碼還不是很熟悉的時候。
+  
+p 如果目前的程式可以運作又沒有更動的需求，那請不要隨便亂動它。盡可能每一次處理一小部分的程式碼，邊改邊確認沒有問題。對於新寫的程式則是盡可能採用比較好的設計並做好測試。
+
+h1 Getting Started with Legacy Code
+
+p 當你接手舊程式，有三件事應該要立刻做：
+ul
+  li 用source control來管理程式碼。 
+  li 讓它可以跑：尤其是它需要特別的步驟才可以跑起來。
+  li 讓它的測試可以跑：舊程式碼的測試與fixture可能已經過時。如果有測試出錯，則必須假設程式是對的，去改錯的測試。如果花了5分鐘還是看不懂某個測試在做啥，就刪掉它吧。在這個時間點，你不應該更動程式。
+
+h1 Test-Driven Exploration
+
+p 通常處理舊程式的情境就是要修改之前的bug，而又要避免改壞原本的程式
