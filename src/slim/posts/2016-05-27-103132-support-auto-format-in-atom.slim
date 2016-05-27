@@ -1,0 +1,41 @@
+.meta-data title 讓Atom支援自動排版
+.meta-data datetime 2016-05-27 10:31:32
+.meta-data tags atom,ruby
+.meta-data category tools
+.meta-data link support-auto-format-in-atom
+.meta-data file 2016-05-27-103132-support-auto-format-in-atom
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 我一直自認為在寫程式的時候都會注意一下格式這種東西，不過當跑過rubocop出現了4千多個的警告的時候，就瞬間被打臉了(且而還打了4千多下)。昨天參加新手村聚會的時候，被人問到Atom有沒有自動排版的功能，於是我就花點時間試了一下，結果還蠻不錯的，就留給大家做參考嘍。
+  
+h1 安裝atom-beautify
+
+p 
+  | 首先安裝 
+  a href="https://atom.io/packages/atom-beautify" target="_blank"
+    | atom-beautify
+  | 這個package，安裝完可以打開這個package的設定：
+
+.image-center
+  a href="/images/post/20160527105628715-atom-beautify-ruby-options.png"
+    img src="/images/post/20160527105628715-atom-beautify-ruby-options.png" alt="Atom Beautify - Ruby"
+  
+p 
+  | Default Beautifier是Rubocop，如果想要在存檔的時候自動作beautify，就把Beautify On Save打鉤。Indent size記得設成2。
+  
+h1 使用
+
+p 
+  | 如果有鉤Beautify On Save，那存檔時就會自動做，你也可以下快捷鍵ctrl+alt+b直接跑。
+  
+h1 設定
+
+p 
+  | 如果Beautifier是Rubocop，那可以在專案下建立一個.rubocop.yml的檔案，針對格式的部分做更詳細的調整，調整的方式可以參考 
+  a href="https://github.com/bbatsov/rubocop/blob/master/config/default.yml" target="_blank"
+    | Rubocop的文件
+  |。

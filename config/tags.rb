@@ -92,17 +92,9 @@ $tags = {
   "atom" => {
     color: "#40a977"
   },
-  "tp" => {
-    name: "Test Prescription",
-    color: "#cc342d",
-  },
   "mp" => {
     name: "Metaprogramming",
     color: "#28784d"
-  },
-  "mr2" => {
-    name: "Metaprogramming Ruby 2",
-    color: "#cc342d",
   },
   "regex" => {
     name: "Regular Expression",
@@ -118,5 +110,24 @@ $tags = {
   },
   "english" => {
     color: "#805315"
+  },
+  "alg" => {
+    name: "演算法",
+    color: "#ff7400"
+  },
+  "book" => {
+    name: "書"
+  },
+  "book_poodr" => {
+    name: "POODR",
+    color: "#cc342d",
+  },
+  "book_mr2" => {
+    name: "MR2",
+    color: "#cc342d",
+  },
+  "book_tp" => {
+    name: "Test Prescription",
+    color: "#cc342d",
   }
 }

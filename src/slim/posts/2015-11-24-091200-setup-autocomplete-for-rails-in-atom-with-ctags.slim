@@ -1,6 +1,6 @@
 .meta-data title 在Atom中設定rails的自動補齊
 .meta-data datetime 2015-11-24 09:12:00
-.meta-data tags rails,atom
+.meta-data tags atom,ruby
 .meta-data category tools
 .meta-data link setup-autocomplete-for-rails-in-atom-with-ctags
 .meta-data file 2015-11-24-091200-setup-autocomplete-for-rails-in-atom-with-ctags
@@ -32,6 +32,8 @@ h1 使用guard讓tag可以在檔案儲存時自動產生
 
 p 
   | 如果每次改檔案都要手動重新建立tag也實在太麻煩啦，這時候guard就非常好用了。首先在Gemfile中加入guard-ctags-bundler：
+i
+  | Gemfile
 pre
   code
     | group :development do
@@ -44,6 +46,8 @@ pre
     | $ guard init ctags-bundler
 p 
   | 這時候你會發現產生的Guardfile會長的像下面這個樣子：
+i
+  | Guardfile
 pre
   code
     | guard 'ctags-bundler', :src_path => ["app", "lib", "spec/support"] do
@@ -70,3 +74,34 @@ ul
   li atom-ctags
 p 
   | 記得將fuzzy的設定打開：在autocomplete-plus中的DefaultProvider設定選Fuzzy。
+  
+h1 UPDATE 2016-05-27
+
+p 
+  | 官方的ctags對於ruby的支援 
+  a href="http://stackoverflow.com/questions/17338779/do-you-know-an-alternative-ctags-generator-for-ruby" target="_blank"
+    | 不是很好
+  | ，所以可以改用 
+  a href="https://github.com/tmm1/ripper-tags" target="_blank"
+    | ripper-tags
+  | 來建立ctag的tag檔，這時候Guardfile也要做一下調整：
+  
+i
+  | Gemfile
+pre
+  code
+    | group :development do
+        gem 'ripper-tags'
+      end
+  
+i
+  | Guardfile
+pre
+  code.ruby
+    | guard 'ctags-bundler',
+        src_path: ["app", "lib", "spec/support"],
+        binary: 'ripper-tags',
+        arguments: '-R --exclude=vendor' do
+        watch(/^(app|lib|spec\/support)\/.*\.rb$/)
+        watch('Gemfile.lock')
+      end
