@@ -25,7 +25,7 @@ $tags = {
     color: "#007f00",
   },
   "js" => {
-    color: "#f5f500",
+    color: "#efc100",
   },
   "angularjs" => {
     name: "AngularJS",
@@ -129,5 +129,9 @@ $tags = {
   "book_tp" => {
     name: "Test Prescription",
     color: "#cc342d",
+  },
+  "doc" => {
+    name: "文件",
+    color: "#56ab00",
   }
 }
