@@ -45,6 +45,21 @@ code
 pre
   code
     display: block
+    &::selection
+      background: $c_selected
+    &::-moz-selection
+      background: $c_selected
+
+.hljs
+  &::selection
+    background: $c_selected
+  &::-moz-selection
+    background: $c_selected
+  span
+    &::selection
+      background: $c_selected
+    &::-moz-selection
+      background: $c_selected
 
 a
   color: $c_d
