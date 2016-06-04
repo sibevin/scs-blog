@@ -1,0 +1,296 @@
+.meta-data title Metaprogramming Ruby 2 - ch3 - Methods
+.meta-data datetime 2016-06-03 08:49:07
+.meta-data tags mp,book_mr2,note,ruby
+.meta-data category coding
+.meta-data link mr2-ch3-methods
+.meta-data file 2016-06-03-084907-mr2-ch3-methods
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 這是 Metaprogramming Ruby 2 的閱讀筆記，只會記錄我覺得重要的地方。如果你想要了解完整的內容或是想讓Ruby程式做一些神奇的事，強烈推薦去讀讀這本書。
+
+h1 A Duplication Problem
+
+h1 Dynamic Methods
+
+ul
+  li 
+    | 當你呼叫一個object的method時，相當於對這個object送一個message。
+
+h2 Calling Methods Dynamically
+
+p 
+  span.mk-blue Dynamic Dispatch
+  | ：我們可以使用send來呼叫method。
+
+pre
+  code.ruby
+    | class A
+        def say_hi
+          "Hi"
+        end
+        
+        def say_hello
+          "Hello"
+        end
+      end
+
+      a = A.new
+      
+      p a.say_hi # Hi
+      p a.say_hello # Hello
+      
+      ['hi', 'hello'].each do |what|
+    = "\n" + '  p a.send("say_#{what}")' + "\n"
+    | end
+p 
+  | 使用send呼叫method的好處在於可以延遲「決定呼叫哪個method」的時間點，因為method的名稱變成了send參數，我們可以在使用send時才決定要呼叫哪個method。
+  
+h3 The Pry Example
+
+p 書上舉了pry使用dynamic dispatch的例子。
+
+h3 Privacy Matters
+
+p 
+  | send可以用來呼叫private method，不過能大越大，責任越重，你可以呼叫不代表你能呼叫。
+pre
+  code.ruby
+    | class A
+        private
+        def think
+          "Hmmmm..."
+        end
+      end
+
+      a = A.new
+
+      p a.think # private method `think' called for #<A:0x007fdd20982588> (NoMethodError)
+      p a.send(:think) # Hmmmm...
+
+h2 Defining Methods Dynamically
+
+p 
+  span.mk-blue Dynamic Method
+  | ：使用define_method動態建立method。
+  
+pre
+  code.ruby
+    | class A
+        ['hi', 'hello'].each do |what|
+    = "\n" + '    define_method "say_#{what}" do |is_loud|'
+    = "\n" + '      "#{what.capitalize}#{is_loud ? "~~~" : ""}"' + "\n"
+    |     end
+        end
+      end
+
+      a = A.new
+
+      p a.say_hi(false) # Hi
+      p a.say_hello(true) # Hello~~~
+
+
+h1 method_missing
+
+p 
+  | 當method lookup沒找到呼叫的method，就會去呼叫
+  code method_missing
+  | 這個private method，這個method是在BasicObject中，所以所有的物件都有這個method。
+
+h2 Overriding method_missing
+
+p 
+  | 我們可以override method_missing，來處理找不到method時要做的動作。
+
+h2 Ghost Methods
+
+p 
+  span.mk-blue Ghost Method
+  | ：覆寫method_missing來處理method的呼叫，從外部來看與一般的method呼叫沒有什麼不同，但內部實際上卻是找不到method而使用method_missing來處理。
+  
+pre
+  code.ruby
+    | class A
+        def method_missing(method, *arg)
+          if method =~ /say_(.*)/
+            $1.capitalize
+          else
+            super
+          end
+        end
+      end
+
+      a = A.new
+
+      p a.say_hi
+      p a.say_hello
+      p a.walk # undefined method `walk' for #<A:0x007f85b9112a10> (NoMethodError)
+
+h3 The Hashie Example
+
+h2 Dynamic Proxies
+
+p 
+  span.mk-blue Dynamic Proxy
+  | ：Ghost method很常用來串接第三方服務，因為當API變動時，ghost method會自動生成對應的method。
+
+h3 The Ghee Example
+
+h2 Refactoring the Computer Class (Again)
+
+h3 respond_to_missing?
+
+p 
+  | 使用ghost method建立的method，對 
+  code
+    | respond_to?
+  | 是沒有反應的。
+  
+pre
+  code.ruby
+    | class A
+        def method_missing(method, *arg)
+          if method =~ /say_(.*)/
+            $1.capitalize
+          else
+            super
+          end
+        end
+      end
+
+      a = A.new
+
+      p a.say_hi # Hi
+      p a.respond_to?(:say_hi) # false
+
+p 
+  code
+    | respond_to?
+  | 會去呼叫 
+  code
+    | respond_to_missing?
+  | ，而 
+  code
+    | respond_to_missing?
+  | 預設就是用來處理ghost method，理論上如果你建立了ghost method，要記得一並覆寫 
+  code
+    | respond_to_missing?
+  | ，讓它對ghost method可以回傳true。
+  
+pre
+  code.ruby
+    | class A
+        def method_missing(method, *arg)
+          if method =~ /say_(.*)/
+            $1.capitalize
+          else
+            super
+          end
+        end
+
+        def respond_to_missing?(method, include_private = false)
+          if method =~ /say_(.*)/
+            return true
+          else
+            super
+          end
+        end
+      end
+
+      a = A.new
+
+      p a.say_hi # Hi
+      p a.respond_to?(:say_hi) # true
+
+h3 const_missing  
+
+p 
+  | Module#const_missing的功能就像method_missing，只不過它是用來偵測給的const有沒有存在。書上舉了一個Rake的例子。
+
+h1 Quiz: Bug Hunt
+
+h2 Quiz Solution
+
+p 
+  | 書上舉了一個例子說明濫用ghost method造成的問題，因為method_missing會接所有沒找到method的狀況，在使用method_missing時一定要限制使用的條件，而不是所有的情況都採用覆寫的定義。
+
+h1 Blank Slates
+
+p 
+  | Ghost method有一個缺點就是如果有一個實際存在相同名稱的method，則實體的method會優先使用，因為method_missing是在找不到method的情況下才會去呼叫。修正這個問題的方法有兩種，一是移除實體的method，二是使用blank slates(空白石板)。
+  
+p 
+  span.mk-blue Blank Slate
+  | ：一個包含最少method的object，在ruby裡，就是BasicObject。
+
+h2 BasicObject
+p 
+  | 直接繼承BasicObject就可以減少經有繼承體係獲得的method。不過因為respond_to?這個method是來自Object，BasicObject並沒有這個method，所以這意味如果使用BasicObject，就沒有respond_to?可以使用，剛才的respond_to_missing?的修改也可以刪掉了。
+  
+h2 Removing Methods
+
+p 
+  | 有兩種方式可以移除method：
+ul
+  li Module#undef_method：將method除物件中移除，包含繼承而來的method。
+  li Module#remove_method：將method除物件中移除，但保留繼承而來的method。
+  
+pre
+  code.ruby
+    | class A
+        def say_hi
+          "A say hi"
+        end
+      end
+
+      class B < A
+        def say_hi
+          "B say hi"
+        end
+      end
+
+      b = B.new
+      p b.say_hi # B say hi
+
+      class B
+        remove_method(:say_hi)
+      end
+
+      p b.say_hi # A say hi
+
+      class B
+        undef_method(:say_hi)
+      end
+
+      p b.say_hi # undefined method `say_hi' for #<B:0x007fae5c845ff0> (NoMethodError)
+
+h3 The Builder Example
+p 
+  | 書上舉了XML builder的例子，把除了reserved method(雙底線開頭的method)與instance_eval保留之外，其它的method都被undef了：
+pre
+  code.ruby
+    | class BlankSlate
+        def self.hide(name)
+          # ...
+          if instance_methods.include?(name._blankslate_as_name) && name !~ /^(__|instance_eval$)/
+            undef_method name
+          end
+        end
+        # ...
+        instance_methods.each { |m| hide(m) }
+      end
+
+h1 Wrap-Up
+
+h2 Dynamic Methods vs. Ghost Methods
+
+ul
+  li  
+    | Ghost method是覆寫method_missing而來，所以會視為比較危險的做法，而且ghost method也不會出現在 
+    code
+      | Object#methods
+    | 之中。相較起來dynamic method的行為就比較像是一般的method定義的方式，只是它可以在程式執行階段被動態的定義。
+  li 
+    | Ghost method是使用時機是在不知道有什麼method會被呼叫，或是有很多method需要處理，或是像API在未來有可能會變更的情況下才會使用，不然如果可以用dynamic method就用dynamic method。

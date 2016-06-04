@@ -13,5 +13,14 @@ p 這是 Metaprogramming Ruby 2 的閱讀筆記，只會記錄我覺得重要的
 
 ul
   li Metaprogramming就是讓程式去寫程式。
-  li Ruby語言一個很大的特性就是在執行階段時，我們仍然可以存取class的內部資訊。
+  li Ruby語言一個很大的特性就是在執行階段時，我們仍然可以存取class的內部資訊，所以非常適合寫meta-programming。
   li 一個MP的例子：ActiveRecord可以知道資料庫的table有哪些column並在model裡直接建立對應的attribute。
+
+h2 優點
+ul
+  li 減少重複的程式碼。
+  li 讓程式能自動適應未來的變化。
+
+h2 缺點
+ul
+  li 程式碼不易閱讀，自我可讀性降低。
