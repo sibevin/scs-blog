@@ -39,11 +39,15 @@ opt_parser = OptionParser.new do |opts|
                 "Assign the post permlink. If no permlink is given, it would use <post title>.to_url by default.") do |link|
     options.link = link
   end
+  opts.on("-w", "--website website",
+                "Assign the website link. It would be shown on the list with a external link button.") do |website|
+    options.website = website
+  end
   opts.on("-T", "--template template1,template2,template3", Array,
                 "Assign the templates to support. The default value is \"post\".") do |template|
     options.template = template
   end
-  opts.on("-D", "--draft", "Create a draft instead, the file would be stored in src/drafts/.") do |d|
+  opts.on("-D", "--draft", "Create a draft instead, the draft meta would be added in the post.") do |d|
     options.draft = d
   end
   opts.on("-e", "--editor editor",
@@ -108,8 +112,7 @@ file_header = <<eos
 .meta-data link #{post.link}
 .meta-data file #{post.name}
 .meta-data template #{post.template}
-#{options.draft ? ".meta-data draft" : ""}
-.meta-data end
+#{options.website ? ".meta-data website #{options.website}\n" : ""}#{options.draft ? ".meta-data draft\n" : ""}.meta-data end
 
 eos
 
@@ -126,16 +129,27 @@ ul
       |  ()
 h1 What
 p
-  | 
+  |
 h1 Why
 p
-  | 
+  |
 h1 How
 p
-  | 
+  |
 pre
   code.ruby
-    | 
+    |
+eos
+end
+
+if options.template.include?("link")
+  file_header = file_header + <<eos
+ul
+  li
+    a href="#{options.website}" target="_blank" Homepage
+h1 What
+p
+  |
 eos
 end
 
