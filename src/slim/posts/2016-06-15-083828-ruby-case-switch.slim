@@ -1,0 +1,125 @@
+.meta-data title Ruby的case語法
+.meta-data datetime 2016-06-15 08:38:28
+.meta-data tags ruby
+.meta-data category coding
+.meta-data link ruby-case-switch
+.meta-data file 2016-06-15-083828-ruby-case-switch
+.meta-data template post
+.meta-data end
+
+h1 寫法
+
+p 
+  | 根據 
+  a href="https://github.com/bbatsov/ruby-style-guide" target="_blank"
+    | Ruby Style Guide
+  | ，建議的寫法是 
+  code
+    | case
+  | 與 
+  code
+    | when
+  | 是在同一層：
+pre
+  code.ruby
+    | case
+      when song.name == 'Misty'
+        puts 'Not again!'
+      when song.duration > 120
+        puts 'Too long!'
+      when Time.now.hour > 21
+        puts "It's too late"
+      else
+        song.play
+      end
+p 
+  | 如果case前面有接變數，則對齊等號或是縮排一層：
+pre
+  code.ruby
+    | kind = case year
+             when 1850..1889 then 'Blues'
+             when 1890..1909 then 'Ragtime'
+             when 1910..1929 then 'New Orleans Jazz'
+             when 1930..1939 then 'Swing'
+             when 1940..1950 then 'Bebop'
+             else 'Jazz'
+             end
+             
+      kind = case year
+        when 1850..1889 then 'Blues'
+        when 1890..1909 then 'Ragtime'
+        when 1910..1929 then 'New Orleans Jazz'
+        when 1930..1939 then 'Swing'
+        when 1940..1950 then 'Bebop'
+        else 'Jazz'
+        end
+p 
+  | 由上面的例子也可以看出來
+  code
+    | then
+  | 只有在一行的時候使用，如果是判斷條件完要執行多行的程式，則不寫 
+  code
+    | then
+  | 。
+  
+h1 判斷式
+
+p 除了一般的boolean判斷，when後面可以接的東西比你像想的還多…
+
+pre
+  code.ruby
+    | case
+      when a == 5
+        # 一般的boolean運算式。
+      when 'a', 'b'
+        # 可接多的值。
+      when *['a', 'b']
+        # 接多個值可以用這個方式寫成一個Array。
+      when 1..10
+        # 可接一個Range
+      when /^[a-z]{3}/
+        # 可接Regex。
+      when MyClass, MySubClass
+        # 可接class，這時會判斷傳進來的物件是不是這個class的instance
+      else
+        # 如果上面都沒有符合的，跑這裡。
+      end
+p 
+  | 實際上when是採用 
+  code
+    | ===
+  | 做為判斷的，所以你可以在你自己的class實作 
+  code
+    | ===
+  | 的運算式method，那就可以在case中使用了。例如：
+pre
+  code.ruby
+    | class A
+        attr_accessor :name
+
+        def initialize(name)
+          @name = name
+        end
+
+        def ===(given_a)
+          name == given_a.name
+        end
+      end
+
+      a = A.new('Kevin')
+      b = A.new('Kait')
+      c = A.new('Kevin')
+
+      case a
+      when b
+        puts 'Has the same name with b.'
+      when c
+        puts 'Has the same name with c.' # The result
+      else
+        puts 'Has the same name with nobody.'
+      end
+h1 Refs  
+ul
+  li 
+    a href="http://www.skorks.com/2009/08/how-a-ruby-case-statement-works-and-what-you-can-do-with-it/" target="_blank"
+      | How A Ruby Case Statement Works And What You Can Do With It

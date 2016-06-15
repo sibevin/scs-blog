@@ -151,3 +151,30 @@ table.pt-table
           | select count(*) from [table] group by [col] having count(*) > 10;
       td
         | 將[col]中相同的值分成同一組，並計算各組的資料個數，只列出資料個數>10的個數。
+h2 一些範例
+
+p 使用年月group、重組table、count加上if、計算時間距離
+pre
+  code.nohighlight
+    | select 
+      year(created_at) as order_year, month(created_at) as order_month,
+      count(id), 
+      count(IF(time_diff = 0, 1, NULL)), 
+      count(IF(time_diff > 0 and time_diff <= 7, 1, NULL)), 
+      count(IF(time_diff > 7 and time_diff <= 14, 1, NULL)), 
+      count(IF(time_diff > 14 and time_diff <= 30, 1, NULL)), 
+      count(IF(time_diff > 30 and time_diff <= 60, 1, NULL)), 
+      count(IF(time_diff > 60 and time_diff <= 150, 1, NULL)), 
+      count(IF(time_diff > 150 and time_diff <= 365, 1, NULL)), 
+      count(IF(time_diff > 365, 1, NULL))
+      from 
+      (
+      select users.id, invoices.amount, invoices.processed_at, users.created_at, 
+      datediff(invoices.processed_at, users.created_at) as time_diff
+      from users inner join invoices on invoices.user_id = users.id 
+      where invoices.is_paid = 1 and (invoices.amount > 0) and (invoices.processed_at is not NULL)
+      group by (users.id)
+      ) 
+      as first_order
+      group by year(created_at), month(created_at)
+      order by year(created_at), month(created_at)
