@@ -2,7 +2,9 @@
 
 .layout
   .menu
-    left: -$menu_main_w - $menu_border_w
+    left: -$menu_w
+  .tos
+    right: -$tos_w
   .main-container
     position: absolute
     left: 0px
@@ -21,9 +23,21 @@
       left: 0px
     .main-container
       left: $menu_w
+    .tos
+      right: -$tos_w
+  &.lo-tos-open
+    .menu
+      left: -$menu_main_w - $menu_border_w
+    .main-container
+      right: $tos_w
+    .tos
+      right: 0
 
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px)
   .layout
     &.lo-menu-open
       .main
         right: -$menu_w
+    &.lo-tos-open
+      .main
+        left: -$tos_w

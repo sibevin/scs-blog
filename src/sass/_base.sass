@@ -14,18 +14,21 @@ h1
   +margin-leader(.25)
   +margin-trailer(.25)
   +adjust-font-size-to($fs_xxl)
+  +header-style
   &:before
-    +header-style($fs_xxl)
+    +header-point($fs_xxl)
 
 h2
   +adjust-font-size-to($fs_l)
+  +header-style
   &:before
-    +header-style($fs_l)
+    +header-point($fs_l)
 
 h3, h4, h5, h6
   +adjust-font-size-to($fs_ml)
+  +header-style
   &:before
-    +header-style($fs_ml)
+    +header-point($fs_ml)
 
 p
   +adjust-font-size-to($fs_def)
@@ -70,7 +73,7 @@ a
     +adjust-font-size-to($fs_def)
     &:before
       content: "_"
-      +header-style($fs_s)
+      +header-point($fs_s)
 
 strong
   font-weight: bold

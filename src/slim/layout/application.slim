@@ -13,10 +13,13 @@ html
     link rel="stylesheet" href="/css/application.css"
     link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?"
     script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"
+    script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"
     script src="//cdn.jsdelivr.net/highlight.js/8.7.0/highlight.min.js"
     script src="//cdn.jsdelivr.net/lodash/3.10.1/lodash.min.js"
     script src="/js/vendor/angular-tau-utils.min.js"
     script src="/js/vendor/focusIf.min.js"
+    script src="/js/vendor/md5.min.js"
+    script src="/js/vendor/contents.js"
     script src="/js/app.js"
     javascript:
       hljs.initHighlightingOnLoad();
@@ -27,7 +30,7 @@ html
       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
       ga('create', 'UA-26486503-2', 'auto');
       ga('send', 'pageview');
-  body.theme-color-default.layout ng-controller="LayoutCtrl" ng-class="{'lo-menu-open':footer_ts.isTab('menu')}" ng-keydown="layoutKeyDown($event)"
+  body.theme-color-default.layout ng-controller="LayoutCtrl" ng-class="{'lo-menu-open':footer_ts.isTab('menu'),'lo-tos-open':footer_ts.isTab('tos')}" ng-keydown="layoutKeyDown($event)"
     .main-container
       section.main
         == yield
@@ -37,6 +40,9 @@ html
           tr
             td.hd-btn-td
               a.hd-btn-menu href="#" ng-class="{active: footer_ts.isTab('menu')}" ng-click="switchFooter('menu')"
+                .hd-icon
+            td.hd-btn-td ng-show="has_tos"
+              a.hd-btn-tos href="#" ng-class="{active: footer_ts.isTab('tos')}" ng-click="switchFooter('tos')"
                 .hd-icon
             td.hd-btn-td
               a.hd-btn-search href="#" ng-class="{active: footer_ts.isTab('search')}" ng-click="switchFooter('search')"
@@ -67,6 +73,7 @@ html
           a.mu-btn-wizard class="#{menu == "wizard" ? "active" : "" }" href="/about"
             .mu-icon
             | 關於
+    nav.tos.anchorific
     aside.search-result-panel ng-show="footer_ts.isTab('search')"
       .posts
         .post-list
@@ -86,3 +93,30 @@ html
             .pl-cell.pl-time
               .time
                 | {{post.datetime}}
+  javascript:
+    $(function () {
+      var link,
+          contents,
+          eventEmitter,
+          articleId;
+      articleId = function (articleName, element) {
+        return md5(articleName);
+      };
+      contents = gajus
+        .Contents({articleId: articleId});
+      eventEmitter = contents.eventEmitter();
+      $('.tos').append(contents.list());
+      eventEmitter.on('change', function (data) {
+        if (data.previous) {
+          $(data.previous.guide)
+            .removeClass('active')
+            .parents('li')
+            .removeClass('active-child');
+        }
+        $(data.current.guide)
+          .addClass('active')
+          .parents('li')
+          .addClass('active-child');
+      });
+    });
+    
