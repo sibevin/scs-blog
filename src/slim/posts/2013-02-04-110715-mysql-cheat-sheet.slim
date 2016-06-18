@@ -151,6 +151,21 @@ table.pt-table
           | select count(*) from [table] group by [col] having count(*) > 10;
       td
         | 將[col]中相同的值分成同一組，並計算各組的資料個數，只列出資料個數>10的個數。
+h2 處理index
+table.pt-table
+  tbody
+    tr
+      td
+        code
+          | show index from [table];
+      td
+        | 列出[table]使用的index。
+    tr
+      td
+        code
+          | alter table [table] drop index [index_key_name];
+      td
+        | 刪掉[table]裡的[index_key_name]名稱的index。
 h2 一些範例
 
 p 使用年月group、重組table、count加上if、計算時間距離
