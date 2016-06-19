@@ -1,0 +1,66 @@
+.meta-data title 在部落格中加上目錄(TOC)功能
+.meta-data datetime 2016-06-19 11:11:38
+.meta-data tags js,blog
+.meta-data category coding
+.meta-data link add-toc-feature-in-blog
+.meta-data file 2016-06-19-111138-add-toc-feature-in-blog
+.meta-data template post
+.meta-data end
+
+.image-center
+  a href="/images/post/20160619121125087-toc-feature.png"
+    img src="/images/post/20160619121125087-toc-feature.png" alt="TOC"
+  .image-text
+    | TOC
+
+h1 前言
+
+p 
+  | 最近我在blog中加上了目錄(TOC = Table Of Contents)的功能，它會自動找出網頁的heading(h1, h2, ...)並加上anchor，另外也會自動生成目錄的列表。雖然只是小功能，可是對於瀏覽文章還蠻方便的。下面是實作這個功能一些相關的筆記。
+  
+h1 How
+
+h2 Why not AngularJS
+
+p 
+  | 首先我先解釋一下為什麼不用AngularJS來做這個功能。如果看過這個blog的source，你會發現基本上這個blog是用html加上AngularJS做的，不過如果要生成TOC，並不適合使用AngularJS來處理。因為我不想在寫文章的時候，還要在heading的元件額外加上directive，所以生出的html heading只會是普通的heading，要在html找出特定元件不是AngularJS的使用情境，所以最後我選了其它的js外掛來處理這個功能。(好啦…其實是因為我懶的寫…)
+  
+h2 使用contents.js
+
+p
+  | 其實有很多TOC相關的js外掛可以用，不過最後我選了
+  a href="https://github.com/gajus/contents" target="_blank"
+    | contents.js
+  | 。使用的方式可以參考repo的example(不要看README的Demo，因為Demo的範例反而沒有更新)。下面是目前blog使用的js：
+pre
+  code.javascript
+    | $(function () {
+        var contents,
+            articleId;
+        articleId = function (articleName, element) {
+          return md5(articleName);
+        };
+        contents = gajus
+          .Contents({articleId: articleId});
+        $('.tos').append(contents.list());
+      });
+p 
+  | contents.js 好用的地方就是很多東西可以客製化，例如我想把生出來的目錄放在 
+  code
+    | div.tos
+  | 之中，那只要加上 
+  code
+    | $('.tos').append(contents.list());
+  | 就可以了。另一個客製化的地方是下面這個：
+pre
+  code.javascript
+    | articleId = function (articleName, element) {
+        return md5(articleName);
+      };
+      contents = gajus
+        .Contents({articleId: articleId});
+p 
+  | contents.js 預設是去找heading中的文字並轉成anchor的id，不過它無法處理中文的heading。還好 contents.js 可以客製化id的生成方式，我直接使用
+  a href="https://github.com/blueimp/JavaScript-MD5" target="_blank"
+    | JavaScript MD5
+  | (這個js可以處理UTF的文字)將heading的文字轉成md5 string，這樣就可以用嘍。
