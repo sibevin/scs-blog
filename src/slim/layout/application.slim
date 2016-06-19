@@ -30,7 +30,7 @@ html
       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
       ga('create', 'UA-26486503-2', 'auto');
       ga('send', 'pageview');
-  body.theme-color-default.layout ng-controller="LayoutCtrl" ng-class="{'lo-menu-open':footer_ts.isTab('menu'),'lo-tos-open':footer_ts.isTab('tos')}" ng-keydown="layoutKeyDown($event)"
+  body.theme-color-default.layout ng-controller="LayoutCtrl" ng-class="{'lo-menu-open':footer_ts.isTab('menu'),'lo-toc-open':footer_ts.isTab('toc')}" ng-keydown="layoutKeyDown($event)"
     .main-container
       section.main
         == yield
@@ -41,8 +41,8 @@ html
             td.hd-btn-td
               a.hd-btn-menu href="#" ng-class="{active: footer_ts.isTab('menu')}" ng-click="switchFooter('menu')"
                 .hd-icon
-            td.hd-btn-td ng-show="has_tos"
-              a.hd-btn-tos href="#" ng-class="{active: footer_ts.isTab('tos')}" ng-click="switchFooter('tos')"
+            td.hd-btn-td ng-show="has_toc"
+              a.hd-btn-toc href="#" ng-class="{active: footer_ts.isTab('toc')}" ng-click="switchFooter('toc')"
                 .hd-icon
             td.hd-btn-td
               a.hd-btn-search href="#" ng-class="{active: footer_ts.isTab('search')}" ng-click="switchFooter('search')"
@@ -73,7 +73,7 @@ html
           a.mu-btn-wizard class="#{menu == "wizard" ? "active" : "" }" href="/about"
             .mu-icon
             | 關於
-    nav.tos.anchorific
+    nav.toc
     aside.search-result-panel ng-show="footer_ts.isTab('search')"
       .posts
         .post-list
@@ -95,28 +95,13 @@ html
                 | {{post.datetime}}
   javascript:
     $(function () {
-      var link,
-          contents,
-          eventEmitter,
+      var contents,
           articleId;
       articleId = function (articleName, element) {
         return md5(articleName);
       };
       contents = gajus
         .Contents({articleId: articleId});
-      eventEmitter = contents.eventEmitter();
-      $('.tos').append(contents.list());
-      eventEmitter.on('change', function (data) {
-        if (data.previous) {
-          $(data.previous.guide)
-            .removeClass('active')
-            .parents('li')
-            .removeClass('active-child');
-        }
-        $(data.current.guide)
-          .addClass('active')
-          .parents('li')
-          .addClass('active-child');
-      });
+      $('.toc').append(contents.list());
     });
     

@@ -4,7 +4,7 @@ angular.module("scsBlogApp").controller "PostCtrl", [
 
     initVars = ->
       $scope.current_post = APP_POST_DATA[CURRENT_FILE]
-      $scope.$parent.has_tos = true
+      $scope.$parent.has_toc = true
 
     init = ->
       initVars()

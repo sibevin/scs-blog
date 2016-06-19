@@ -62,7 +62,7 @@ angular.module("scsBlogApp").controller "LayoutCtrl", [
     initVars = ->
       $scope.footer_ts = new TabSwitcher("close")
       $scope.display_mode_ts = new TabSwitcher("web")
-      $scope.has_tos = false
+      $scope.has_toc = false
 
     init = ->
       initVars()
