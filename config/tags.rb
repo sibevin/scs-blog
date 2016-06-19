@@ -133,5 +133,9 @@ $tags = {
   "doc" => {
     name: "文件",
     color: "#56ab00",
+  },
+  "blog" => {
+    name: "部落格",
+    color: "#291657",
   }
 }
