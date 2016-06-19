@@ -3,8 +3,8 @@
 .layout
   .menu
     left: -$menu_w
-  .tos
-    right: -$tos_w
+  .toc
+    right: -$toc_w
   .main-container
     position: absolute
     left: 0px
@@ -23,14 +23,14 @@
       left: 0px
     .main-container
       left: $menu_w
-    .tos
-      right: -$tos_w
-  &.lo-tos-open
+    .toc
+      right: -$toc_w
+  &.lo-toc-open
     .menu
       left: -$menu_main_w - $menu_border_w
     .main-container
-      right: $tos_w
-    .tos
+      right: $toc_w
+    .toc
       right: 0
 
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px)
@@ -38,6 +38,6 @@
     &.lo-menu-open
       .main
         right: -$menu_w
-    &.lo-tos-open
+    &.lo-toc-open
       .main
-        left: -$tos_w
+        left: -$toc_w
