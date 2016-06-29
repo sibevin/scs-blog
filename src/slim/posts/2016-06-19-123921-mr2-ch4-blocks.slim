@@ -1,0 +1,265 @@
+.meta-data title Metaprogramming Ruby 2 - ch4 - Blocks
+.meta-data datetime 2016-06-19 12:39:21
+.meta-data tags mp,book_mr2,note,ruby
+.meta-data category coding
+.meta-data link mr2-ch4-blocks
+.meta-data file 2016-06-19-123921-mr2-ch4-blocks
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 這是 Metaprogramming Ruby 2 的閱讀筆記，只會記錄我覺得重要的地方。如果你想要了解完整的內容或是想讓Ruby程式做一些神奇的事，強烈推薦去讀讀這本書。
+
+h1 The Day of the Blocks
+h2 Today’s Roadmap
+h2 The Basics of Blocks
+pre
+  code.ruby
+    | def say(who, word)
+        if block_given?
+    = "\n" + '    "#{who}: #{yield(word)}"' + "\n"
+    |   else
+    = "\n" + '    "#{who}: #{word}"' + "\n"
+    |   end
+      end
+    = "\n\n" + 'p say(\'A\', \'Hi\') { |w| "#{w}~~~" }' + "\n"
+    | p say('B', 'Hi')
+
+h1 Quiz: Ruby#
+h2 The using Keyword
+h2 The Challenge
+h2 Quiz Solution
+
+h1 Blocks Are Closures
+
+p 當程式在執行的的時候，可能需要一些所謂的執行環境 environment ，例如：local variables、instance variables、self…等，這些又稱做 bindings 。當一個 block 要準備執行的時候，實際上就是包含了一段程式碼與一整組 bindings 。
+
+pre
+  code.ruby
+    | a = "a in the top"
+
+      def say(word)
+        a = "a in the method" # 1
+        p a # a in the method
+        yield(word)
+        p a # a in the method
+      end
+
+      p a # a in the top
+
+      say('Hi') do |w|
+        a = "a in the block" # 2
+        b = "b in the block" # 3
+    = "\n" + '  p "#{w}, #{a}, #{b}"  # Hi, a in the block, b in the block' + "\n"
+    | end
+
+      p a # a in the block # 4
+      p b # undefined local variable or method `b' for main:Object (NameError) # 5
+      
+p 由上面的範例可以看到變數與block之間scope的變化
+
+ul
+  li # 1：是 say 的區域變數，與外面的a沒有關係，另外在yield的前後a都沒被改變，所以yield所在的scope不會被block影響。
+  li # 2：是 block 裡定義的a，這時候它會改掉外層的a(從#4可以看出來)，也就是外層的a已經變成a in the block。
+  li # 3：是 block 裡定義的區域變數，當離開block之後就無法使用(從#5可以看出來)。
+
+p block 有改掉所在 scope 的特性，所以我們稱 block 是一個 closure 。
+
+h2 Scope
+p 
+  | 當程式執行到一半進行中斷時，目前所看到的一切即稱做 scope ，例如：bindings、local variables、目前所在的object(也就是所謂的self)與對應的instance variables與methods，另外還有目前已經定義的constants與global variables。
+h3 Changing Scope
+
+pre
+  code.ruby
+    | v1 = 1
+    
+      p local_variables # [:v1, :a] # 1
+
+      class A
+
+        v2 = 2
+        p local_variables # [:v2] # 2
+
+        def say
+          v3 = 3
+          p local_variables #[:v3] # 3
+        end
+
+        p local_variables # [:v2] # 4
+      end
+
+      p local_variables # [:v1, :a] # 5
+
+      a = A.new
+      a.say
+
+      p local_variables # [:v1, :a] # 6
+p 
+  | 上面的執行結果會是：
+pre
+  code.nohighlight
+    | [:v1, :a] # 1 top-level scope 這個結果還蠻讓我驚訝的，我以為只會有[:v1]…
+      [:v2]     # 2 class A scope
+      [:v2]     # 4 class A scope
+      [:v1, :a] # 5 top-level scope
+      [:v3]     # 3 method say scope
+      [:v1, :a] # 6 top-level scope
+p 
+  | 可以從上面的結果看到scope的轉換。在Ruby中，內層的scope無法取得外層scope的變數，也就是說隨著scope的切換，bindings也會跟著被切換，不過不是所有的bindings都會更新，例如在某個物件的method中呼叫另一個相同物件的method，則對應的instance variable並不會更新，相對於local variable，local variables在scope每次切換時都會更新。另外要注意的是method scope在method被呼叫的時候會被建立，當method執行完時，method scope也會跟著結束，所以當再次呼叫相同的method時，method scope會被重新建立，因此新舊的method scope彼此之間的變數是沒有關聯的。
+  
+h2 Global Variables and Top-Level Instance Variables
+
+p 
+  | Global variables是任何的scope都可以存取的變數，就是因為它在任何地方都可以被存取，所以會讓程式變得難以理解與維護(因為你不知道這個變數到底被誰改了，或是在什麼時候被改)。而如果有需要，你可以用Top-level instance variables來取代global variable。
+pre
+  code.ruby
+    | $v_global = 1
+      @v_instance = 1
+
+      def say
+        $v_global += 1
+        @v_instance += 1
+      end
+
+      p $v_global # 1
+      p @v_instance # 1
+
+      say
+
+      p $v_global # 2
+      p @v_instance # 2
+
+      class A
+        def talk
+          $v_global += 1
+          # @v_instance += 1 # undefined method `+' for nil:NilClass (NoMethodError)
+          p $v_global # 3
+          p @v_instance # nil
+        end
+      end
+
+      a = A.new
+      a.talk
+
+      p $v_global # 3
+      p @v_instance # 2
+p 
+  | 上面的例子可以看的出來，top-level instance variable在切換到class scope的時候也會被切換成class的instance variable，也就是在talk這個method中讀到的@v_instance不是top-level的instance variable，而是class A的instance variable。所以相較於global variable，top-level instance variable會比較安全(雖然還是建議少用啦)。
+
+h2 Scope Gates
+
+p 
+  | 有幾個地方會定義scope的範圍：
+ul
+  li Class definitions
+  li Module definitions
+  li Methods
+p 
+  | 而這些對應的keyword：class、module與def，我們稱做 Scope Gate 。另外class, module與method切換scope的時機點也不太一樣，class或module會在進入definition的地方就會立刻切換到class或module的scope，而method scope只有在這個method被呼叫的時候才會切換到method scope。
+
+p 
+  | 切換scope的時候，對應的bindings也會跟著切換，那如果要在不同的scope之間共享變數，這就是black的範疇了。
+
+h2 Flattening the Scope
+
+pre
+  code.ruby
+    | v1 = 1
+
+      class A
+    = "\n" + '  p "#{v1}" # undefined local variable or method `v1\' for A:Class (NameError)' + "\n"
+    |   def say
+    = "\n" + '    p "#{v1}" # undefined local variable or method `v1\' for #<A:0x007fd3ed07ab98> (NameError)' + "\n"
+    |   end
+      end
+
+      a = A.new
+      a.say
+p 
+  | 我們想要在class與method中使用top-level的local variable v1，上面的寫法因為scope的關係而無法做到。這時候我們可以改成下面的寫法：
+pre
+  code.ruby
+    | v1 = 1
+      A = Class.new do
+    = "\n" + '  p "#{v1}"' + "\n"
+    |   define_method(:say) do
+    = "\n" + '    p "#{v1}"' + "\n"
+    |   end
+      end
+
+      a = A.new
+      a.say
+p 
+  | 因為block並不是 Scope Gate，所以class的宣告改成 
+  code
+    | Class.new
+  | 的方式來宣告，而method的定義則是使用 Dynamical Method 的方式，也就是使用 
+  code
+    | define_method
+  | 的方式來宣告，那麼就可以做到變數的共享了。這個技巧通常稱做 nested lexical scopes，又稱為 flattening the scope，簡稱為
+  span.mk-blue
+    | Flat Scope
+  | 。
+
+h3 Sharing the Scope
+p 
+  | 有了 Flat Scope，我們就可以使用scope的特性控制變數可以變數看到的範圍。例如下面這個例子：
+pre
+  code.ruby
+    | def setup_counter
+        counter = 0
+
+        Kernel.send(:define_method, :add_count) do |size = 1|
+          counter += size
+        end
+
+        Kernel.send(:define_method, :get_count) do
+          counter
+        end
+      end
+
+      setup_counter
+
+      p get_count
+      add_count
+      add_count(5)
+      p get_count
+p 
+  | counter 這個 local variable 因為 scope 的關係只有 setup_counter 才看的到，而又使用 Flat Scope 的方式在 Kernel 中塞了兩個 method 可以看的到 counter ，所以唯一可以存取 counter 的方式就只有使用 add_count 與 get_count 。這個技巧又稱做
+  span.mk-blue
+    | Sharing Scope
+  | 。
+
+h2 Closures Wrap-Up
+
+h1 instance_eval()
+h2 Breaking Encapsulation
+h3 The Padrino Example
+h2 Clean Rooms
+
+h1 Callable Objects
+h2 Proc Objects
+h3 The & Operator
+h3 The HighLine Example
+h2 Procs vs. Lambdas
+h3 Procs, Lambdas, and return
+h3 Procs, Lambdas, and Arity
+h3 Procs vs. Lambdas: The Verdict
+h2 Method Objects
+h3 Unbound Methods
+h3 The Active Support Example
+h2 Callable Objects Wrap-Up
+
+h1 Writing a Domain-Specific Language
+h2 Your First DSL
+h3 Sharing Among Events
+
+h1 Quiz: A Better DSL
+h2 Runaway Bill
+h2 Quiz Solution
+h2 Removing the “Global” Variables
+h3 Adding a Clean Room
+
+h1 Wrap-Up

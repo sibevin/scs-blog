@@ -1,0 +1,44 @@
+.meta-data title 如何客製化Atom自動偵測的檔案類型
+.meta-data datetime 2016-06-29 22:52:00
+.meta-data tags atom
+.meta-data category tools
+.meta-data link how-to-customize-file-type-detection-in-atom
+.meta-data file 2016-06-29-225200-how-to-customize-file-type-detection-in-atom
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 最近在使用 script 這個 package 的時候，它一直把一般的 ruby 檔案用 rails 去跑，有點囧。後來發現是因為 .rb 的檔案被自動判斷成 rails 的檔案類型造成的。
+
+h1 How
+
+p 解決的方式很簡單，就是客製化tom自動偵測的檔案類型，方式如下：
+
+i ~/.atom/config.cson
+pre
+  code.json
+    | '*':
+        'core':
+          'customFileTypes':
+            'source.ruby': [
+              'rb'
+            ]
+
+p 
+  | 不過如果這個設定加上去了，原本 rails 的 .rb 檔也會被判斷成一般的ruby檔案，這個時候只能搭配 project-manager 來針對不用的專案加上這個設定：
+  
+i ~/.atom/projects.cson
+pre
+  code.ruby
+    | pure_ruby_project:
+        title: "Pure Ruby Project"
+        paths: [
+          "/Users/kait/my_ruby_project/"
+        ]
+        settings:
+          core:
+            customFileTypes:
+              "source.ruby": [
+                "rb"
+              ]
