@@ -25,7 +25,7 @@ $tags = {
     color: "#007f00",
   },
   "js" => {
-    color: "#f5f500",
+    color: "#efc100",
   },
   "angularjs" => {
     name: "AngularJS",
@@ -92,8 +92,54 @@ $tags = {
   "atom" => {
     color: "#40a977"
   },
-  "tp" => {
+  "mp" => {
+    name: "Metaprogramming",
+    color: "#28784d"
+  },
+  "regex" => {
+    name: "Regular Expression",
+    color: "#93bedf",
+  },
+  "nosql" => {
+    name: "NoSQL",
+    color: "#375000"
+  },
+  "nsd" => {
+    name: "NoSQL Distilled",
+    color: "#f5c531"
+  },
+  "english" => {
+    color: "#805315"
+  },
+  "alg" => {
+    name: "演算法",
+    color: "#ff7400"
+  },
+  "book" => {
+    name: "書"
+  },
+  "book_poodr" => {
+    name: "POODR",
+    color: "#cc342d",
+  },
+  "book_mr2" => {
+    name: "MR2",
+    color: "#cc342d",
+  },
+  "book_tp" => {
     name: "Test Prescription",
     color: "#cc342d",
+  },
+  "doc" => {
+    name: "文件",
+    color: "#56ab00",
+  },
+  "blog" => {
+    name: "部落格",
+    color: "#291657",
+  },
+  "dp" => {
+    name: "Design Pattern",
+    color: "#5e4543",
   }
 }
