@@ -1,0 +1,167 @@
+.meta-data title Observer - 觀察者模式
+.meta-data datetime 2016-07-23 19:31:22
+.meta-data tags dp
+.meta-data category coding
+.meta-data link observer-pattern
+.meta-data file 2016-07-23-193122-observer-pattern
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 最近讀書會在讀深入淺出設計模式，趁這個機會複習一下設計模式，試著舉出簡單的例子並且用非模式與模式的方式來實作，比較它們的差異與優缺點。
+  
+h1 範例問題
+
+p 
+  | 我們有一個訊息轉發系統(MessageDeliver)，它會接收傳入訊息並轉發給其它三個系統：螢幕顯示系統(ScreenDisplay)、列印系統(Printer)與寄信系統(Mailer)。其中每個系統有下列的行為：
+ul
+  li 訊息轉發系統(MessageDeliver)有一個 deliver(msg) 的 method 用來接收訊息並做轉發的動作。
+  li 螢幕顯示系統(ScreenDisplay)有一個 display(msg) 的 method 會將訊息顯示在螢幕(The message 'xxx' is displayed on the screen.)。
+  li 列印系統(Printer)有一個 print(msg) 的 method 會將訊息印出(The message 'xxx' is printed.)。
+  li 寄信系統(Mailer)有一個 mail(msg) 的 method 會將訊息用信件寄出(The message 'xxx' is mailed.)。
+  
+h1 沒有使用模式的實作
+
+pre
+  code.ruby
+    | class ScreenDisplay
+        def display(msg)
+    = "\n" + '    "The message \'#{msg}\' is displayed on the screen."' + "\n"
+    |   end
+      end
+
+      class Printer
+        def print(msg)
+    = "\n" + '    "The message \'#{msg}\' is printed."' + "\n"
+    |   end
+      end
+
+      class Mailer
+        def mail(msg)
+    = "\n" + '    "The message \'#{msg}\' is mailed."' + "\n"
+    |   end
+      end
+
+      class MessageDeliver
+        def initialize(screen_display, printer, mailer)
+          @screen_display = screen_display
+          @printer = printer
+          @mailer = mailer
+        end
+
+        def deliver(msg)
+          @screen_display.display(msg)
+          @printer.print(msg)
+          @mailer.mail(msg)
+        end
+      end
+
+      screen_display = ScreenDisplay.new
+      printer = Printer.new
+      mailer = Mailer.new
+
+      msg_deliver = MessageDeliver.new(screen_display, printer, mailer)
+      msg_deliver.deliver('Hello')
+      
+h2 上面實作的缺點
+ul
+  li MessageDeliver 無法動態增加或減少轉發的對象，例如：不需要轉發給 Printer 時，必須要更改 MessageDeliver 的 initialize 與 deliver method 。
+
+h1 使用模式的實作
+
+pre
+  code.ruby
+    | module Observer
+        def update(msg)
+          fail 'You should implement "update" in your Observer-based class'
+        end
+      end
+
+      class ScreenDisplay
+        include Observer
+
+        def display(msg)
+    = "\n" + '    "The message \'#{msg}\' is displayed on the screen."' + "\n"
+    |   end
+
+        def update(msg)
+          display(msg)
+        end
+      end
+
+      class Printer
+        include Observer
+
+        def print(msg)
+    = "\n" + '    "The message \'#{msg}\' is printed."' + "\n"
+    |   end
+
+        def update(msg)
+          print(msg)
+        end
+      end
+
+      class Mailer
+        include Observer
+
+        def mail(msg)
+    = "\n" + '    "The message \'#{msg}\' is mailed."' + "\n"
+    |   end
+
+        def update(msg)
+          mail(msg)
+        end
+      end
+
+      class MessageDeliver
+        def initialize
+          @observers = []
+        end
+
+        def attach(observer)
+          @observers.push(observer)
+        end
+
+        def deliver(msg)
+          @observers.each do |observer|
+            observer.update(msg)
+          end
+        end
+
+        def detach(observer)
+          @observers.delete(observer)
+        end
+      end
+
+      screen_display = ScreenDisplay.new
+      printer = Printer.new
+      mailer = Mailer.new
+      msg_deliver = MessageDeliver.new
+
+      msg_deliver.attach(screen_display)
+      msg_deliver.attach(printer)
+      msg_deliver.attach(mailer)
+      msg_deliver.deliver('Hello')
+
+      msg_deliver.detach(printer)
+      msg_deliver.deliver('Hi')
+    
+h2 上面實作的優點
+ul
+  li msg_deliver 可以使用 attach 與 detach 來動態增加或移除訊息轉發的系統。
+  li 容易新增一個接收轉發訊息系統，只要它實作 Observer 的界面就可以利用 attach 加到訊息轉發的對象(@observers)。
+      
+h1 樣式名稱
+p 
+  | Observer - 觀察者模式
+
+h1 目的
+p 
+  | 當主題(subject) class(MessageDeliver)有變動時，需要通知其它的觀察者(observer) class(ScreenDisplay, Printer, Mailer)去做對應的事情時，可以在主題 class中記錄(@observer)有哪些觀察者 class 已經有註冊(attach)，利用 attach 與 detach method 來註冊或移除觀察者，就可以做到變動時的通知，同時也可以動態增減通知的對象。
+  
+h1 應用時機
+p 
+  | 當某個主題 class 變動時需要通知其它觀察者 class，而且有可能需要動態增減通知的對象。
+  

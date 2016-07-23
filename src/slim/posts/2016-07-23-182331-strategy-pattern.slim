@@ -1,0 +1,218 @@
+.meta-data title Strategy - 策略模式
+.meta-data datetime 2016-07-23 18:23:31
+.meta-data tags dp
+.meta-data category coding
+.meta-data link strategy-pattern
+.meta-data file 2016-07-23-182331-strategy-pattern
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 最近讀書會在讀深入淺出設計模式，趁這個機會複習一下設計模式，試著舉出簡單的例子並且用非模式與模式的方式來實作，比較它們的差異與優缺點。
+  
+h1 範例問題
+
+p 
+  | 我們有三個class分別為鴨子(Duck)、企鵝(Penguin)、小雞(Chicken)，它們各自擁有不同的飛行(fly)與游泳(swim)的行為如下：
+ul
+  li 鴨子會飛(I can fly.)也會游泳(I can swim.)。
+  li 企鵝不會飛(I cannot fly.)但很會游泳(I can swim very fast.)。
+  li 小雞不會飛(I cannot fly.)也不會游泳(I cannot swim.)。
+  li 每種鳥都會有一個 method who 會印出自己是誰(I'm a xxx.)。
+p 
+  | 在建立上面三種鳥的 instance 時，每個 instance 必須要有 who, fly, swim 的 method 並會印出對應的行為。
+  
+h1 沒有使用模式的實作
+
+pre
+  code.ruby
+    | class Bird
+        def who
+    = "\n" + '    "I\'m a #{self.class}."' + "\n"
+    |   end
+
+        def fly
+          fail 'You should implement "fly" method in Bird-based class.'
+        end
+
+        def swim
+          fail 'You should implement "swim" method in Bird-based class.'
+        end
+      end
+
+      class Duck < Bird
+        def fly
+          'I can fly.'
+        end
+
+        def swim
+          'I can swim.'
+        end
+      end
+
+      class Penguin < Bird
+        def fly
+          'I cannot fly.'
+        end
+
+        def swim
+          'I can swim very fast.'
+        end
+      end
+
+      class Chicken < Bird
+        def fly
+          'I cannot fly.'
+        end
+
+        def swim
+          'I cannot swim.'
+        end
+      end
+
+      duck = Duck.new
+      p duck.who # "I'm a Duck."
+      p duck.fly # "I can fly."
+      p duck.swim # "I can swim."
+
+      penguin = Penguin.new
+      p penguin.who # "I'm a Penguin."
+      p penguin.fly # "I cannot fly."
+      p penguin.swim # "I can swim very fast."
+
+      chicken = Chicken.new
+      p chicken.who # "I'm a Chicken."
+      p chicken.fly # "I cannot fly."
+      p chicken.swim # "I cannot swim."
+
+h2 上面實作的缺點
+ul
+  li 行為定義在個別的 class 中，會造成重複的行為無法共用，例如： I cannot fly. 就重複出現在 Penguin 與 Chicken 中。
+  li fly 與 swim 的行為在執行階段無法動態更改，例如：chicken fly 的行為在程式執行時無法動態的從 I cannot fly. 變成 I can fly.。
+
+h1 使用模式的實作
+pre
+  code.ruby
+    | module FlyBehavior
+        class Base
+          def fly
+            fail 'You should implement "fly" method in FlyBehavior-based class.'
+          end
+        end
+
+        class CannotFly < FlyBehavior::Base
+          def fly
+            'I cannot fly.'
+          end
+        end
+
+        class CanFly < FlyBehavior::Base
+          def fly
+            'I can fly.'
+          end
+        end
+      end
+
+      module SwimBehavior
+        class Base
+          def swim
+            fail 'You should implement "swim" method in SwimBehavior-based class.'
+          end
+        end
+
+        class CannotSwim < SwimBehavior::Base
+          def swim
+            'I cannot swim.'
+          end
+        end
+
+        class CanSwim < SwimBehavior::Base
+          def swim
+            'I can swim.'
+          end
+        end
+
+        class SwimFast < SwimBehavior::Base
+          def swim
+            'I can swim very fast.'
+          end
+        end
+      end
+
+      class Bird
+        def initialize(fly_behavior, swim_behavior)
+          @fly_behavior = fly_behavior
+          @swim_behavior = swim_behavior
+        end
+
+        def who
+    = "\n" + '    "I\'m a #{self.class}."' + "\n"
+    |   end
+
+        def fly
+          @fly_behavior.fly
+        end
+
+        def swim
+          @swim_behavior.swim
+        end
+      end
+
+      class Duck < Bird
+        def initialize
+          super(FlyBehavior::CanFly.new, SwimBehavior::CanSwim.new)
+        end
+      end
+
+      class Penguin < Bird
+        def initialize
+          super(FlyBehavior::CannotFly.new, SwimBehavior::SwimFast.new)
+        end
+      end
+
+      class Chicken < Bird
+        def initialize
+          super(FlyBehavior::CannotFly.new, SwimBehavior::CannotSwim.new)
+        end
+      end
+
+      duck = Duck.new
+      p duck.who # "I'm a Duck."
+      p duck.fly # "I can fly."
+      p duck.swim # "I can swim."
+
+      penguin = Penguin.new
+      p penguin.who # "I'm a Penguin."
+      p penguin.fly # "I cannot fly."
+      p penguin.swim # "I can swim very fast."
+
+      chicken = Chicken.new
+      p chicken.who # "I'm a Chicken."
+      p chicken.fly # "I cannot fly."
+      p chicken.swim # "I cannot swim."
+      
+h2 上面實作的優點
+ul
+  li 相同的行為都定義在同一個class中，需要時就加進來，沒有重複程式碼的問題。
+  li 容易擴充新的行為，擁有共通界面(FlyBehavior::Base, SwimBehavior::Base)也比較容易了解新行為要實作哪些 method 。
+  li fly 與 swim 的行為可以動態更改，只要改掉對應的 @fly_behavior 與 @swim_behavior 即可。
+  
+h2 上面實作的缺點
+ul
+  li 會多出許多行為的小 class ，增加程式的複雜度。
+  li 這些行為必須要有共同的界面(FlyBehavior::Base, SwimBehavior::Base)才可以使用這個模式。
+      
+h1 樣式名稱
+p 
+  | Strategy - 策略模式
+
+h1 目的
+p 
+  | 將 class 的行為(例如：fly, swim)封裝成一系列的 class(FlyBehavoir, SwimBehavior) ，讓其它的 class(Duck, Penguin, Chicken) 藉由這些 class(FlyBehavoir, SwimBehavior) 而擁有這些行為，使行為可以動態的切換或變動而不會影響原本包含這些行為的 class(Duck, Penguin, Chicken)。
+  
+h1 應用時機
+p 
+  | 當多個 class 都擁有類似的行為，而這些行為可能需要動態的變更，則這些行為(變動的部分)就應該要抽離出來。
+  
