@@ -137,5 +137,9 @@ $tags = {
   "blog" => {
     name: "部落格",
     color: "#291657",
+  },
+  "dp" => {
+    name: "Design Pattern",
+    color: "#5e4543",
   }
 }
