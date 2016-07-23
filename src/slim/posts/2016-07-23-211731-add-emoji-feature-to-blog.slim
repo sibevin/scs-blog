@@ -1,0 +1,66 @@
+.meta-data title 在部落格中加上emoji功能
+.meta-data datetime 2016-07-23 21:17:31
+.meta-data tags blog
+.meta-data category coding
+.meta-data link add-emoji-feature-to-blog
+.meta-data file 2016-07-23-211731-add-emoji-feature-to-blog
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 一張圖勝千言萬語，是時候加上emoji的功能了。( :smirk: 好吧，我承認只是為了讓blog更華麗 :sparkles: )
+  
+h1 How
+
+h2 加入 emojify.js
+p 
+  a href="https://github.com/Ranks/emojify.js" target="_blank"
+    | emojify.js
+  | 是一個自動將網頁上的emoji代號轉成對應emoji圖的好用工具，基本上在head中加入它的js就可以了。
+
+h2 設定 emoji 的圖片路徑
+p 
+  | emoji 的圖要準備好，我將emojify github中的 dist/images/basic 加到網頁對應的 /images/emoji 路徑中。
+
+h2 設定 emojify
+p 
+  | emojify.js 提供了一些參數可以做額外的設定，可以參考官方的README。下面是本部落格的設定：
+pre
+  code.js
+    | emojify.setConfig({
+        ignore_emoticons: true,
+        img_dir: '/images/emoji'
+      });
+      emojify.run();
+p 
+  | 其中
+  code
+    | ignore_emoticons: true
+  | 指的是不使用
+  code
+    | :)
+  | 之類的符號，而是只使用
+  code
+    | :smile:
+  | 等代號，這樣可以避免貼程式碼被誤轉成 emoji 的情況。
+  code
+    | img_dir: '/images/emoji'
+  | 則是設定 emoji 的圖片路徑，注意這裡要用
+  code
+    | /
+  | 開頭，不然會用相對路徑來找圖片。
+  
+h2 在文章中插入 emoji
+p 
+  | 只要在想顯示 emoji 的地方加上代號即可，不過要注意的是在中文句子中要用空白隔開，例如：
+  code
+    | 這是一句 :smile: 中文。
+  | ，這樣就有 emoji 可以用了。Ya ~ :v:
+
+h1 Refs 
+ul
+  li
+    a href="https://github.com/Ranks/emojify.js" target="_blank"
+      | Github - emojify.js
