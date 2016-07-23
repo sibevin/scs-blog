@@ -20,6 +20,7 @@ html
     script src="/js/vendor/focusIf.min.js"
     script src="/js/vendor/md5.min.js"
     script src="/js/vendor/contents.js"
+    script src="/js/vendor/emojify.min.js"
     script src="/js/app.js"
     javascript:
       hljs.initHighlightingOnLoad();
@@ -95,6 +96,7 @@ html
                 | {{post.datetime}}
   javascript:
     $(function () {
+      // TOC
       var contents,
           articleId;
       articleId = function (articleName, element) {
@@ -103,5 +105,11 @@ html
       contents = gajus
         .Contents({articleId: articleId});
       $('.toc').append(contents.list());
+      // emoji
+      emojify.setConfig({
+        ignore_emoticons: true,
+        img_dir: 'images/emoji'
+      });
+      emojify.run();
     });
     
