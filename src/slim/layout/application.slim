@@ -110,7 +110,8 @@ html
         ignore_emoticons: true,
         img_dir: '/images/emoji',
         blacklist: {
-          elements: ['script', 'textarea', 'pre', 'code']
+          elements: ['script', 'textarea', 'pre', 'code'],
+          classes: ['no-emojify']
         }
       });
       emojify.run();
