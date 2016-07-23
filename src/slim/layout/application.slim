@@ -108,7 +108,8 @@ html
       // emoji
       emojify.setConfig({
         ignore_emoticons: true,
-        img_dir: '/images/emoji'
+        img_dir: '/images/emoji',
+        blacklist.elements: ['script', 'textarea', 'pre', 'code']
       });
       emojify.run();
     });
