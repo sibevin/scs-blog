@@ -97,14 +97,17 @@ html
   javascript:
     $(function () {
       // TOC
-      var contents,
-          articleId;
-      articleId = function (articleName, element) {
-        return md5(articleName);
-      };
-      contents = gajus
-        .Contents({articleId: articleId});
-      $('.toc').append(contents.list());
+      try {
+        var contents,
+            articleId;
+        articleId = function (articleName, element) {
+          return md5(articleName);
+        };
+        contents = gajus
+          .Contents({articleId: articleId});
+        $('.toc').append(contents.list());
+      } catch(e) {
+      }
       // emoji
       emojify.setConfig({
         ignore_emoticons: true,
