@@ -1,4 +1,4 @@
-.meta-data title Strategy - 策略模式
+.meta-data title Strategy Pattern - 策略模式
 .meta-data datetime 2016-07-23 18:23:31
 .meta-data tags dp
 .meta-data category coding
@@ -90,6 +90,7 @@ pre
 h2 上面實作的缺點
 ul
   li 行為定義在個別的 class 中，會造成重複的行為無法共用，例如： I cannot fly. 就重複出現在 Penguin 與 Chicken 中。
+  li 新增一個新的 bird class 時，很難知道有哪些 fly 與 swim 的行為可以用，必須看過所有的 class。
   li fly 與 swim 的行為在執行階段無法動態更改，例如：chicken fly 的行為在程式執行時無法動態的從 I cannot fly. 變成 I can fly.。
 
 h1 使用模式的實作
@@ -212,7 +213,7 @@ h1 目的
 p 
   | 將 class 的行為(例如：fly, swim)封裝成一系列的 class(FlyBehavoir, SwimBehavior) ，讓其它的 class(Duck, Penguin, Chicken) 藉由這些 class(FlyBehavoir, SwimBehavior) 而擁有這些行為，使行為可以動態的切換或變動而不會影響原本包含這些行為的 class(Duck, Penguin, Chicken)。
   
-h1 應用時機
+h1 使用時機
 p 
   | 當多個 class 都擁有類似的行為，而這些行為可能需要動態的變更，則這些行為(變動的部分)就應該要抽離出來。
   

@@ -152,7 +152,7 @@ p
 h2 Scope Gates
 
 p 
-  | 有幾個地方會定義scope的範圍：
+  | 有幾個地方會進行scope的切換：
 ul
   li Class definitions
   li Module definitions
@@ -199,7 +199,7 @@ p
   | 的方式來宣告，而method的定義則是使用 Dynamical Method 的方式，也就是使用 
   code
     | define_method
-  | 的方式來宣告，那麼就可以做到變數的共享了。這個技巧通常稱做 nested lexical scopes，又稱為 flattening the scope，簡稱為
+  | 的方式來宣告，那麼就可以做到變數的共享了。這個技巧通常稱做 nested lexical scopes(lexical意思是「詞彙上的」，也就是說它雖然看起來像是scope，但實際上卻不是)，又稱為 flattening the scope，簡稱為
   span.mk-blue
     | Flat Scope
   | 。
@@ -236,9 +236,121 @@ p
 h2 Closures Wrap-Up
 
 h1 instance_eval()
+
+pre
+  code.ruby
+    | class A
+        def initialize
+          @word = 'Hi'
+        end
+
+        def say
+          @word
+        end
+        
+        private
+
+        def murmur
+          'Mmm...'
+        end
+      end
+
+      a = A.new
+      p a.say
+
+      a.instance_eval do
+        @word = 'Hello'
+        p murmur
+      end
+
+      p a.say
+pre
+  code.nohighlight
+    | "Hi"
+      "Mmm..."
+      "Hello"
+p 
+  | BasicObject#instance_eval 相當於在 class 中開一個 block，其中的 self(scope 中預設的 receiver) 即是對應的 class。這意味著在這個 block 中可以存取 class 的 instance variable 與 private method。因為這個 block 可以直接存取 class 內的 bindings，所以又稱這個 block 為
+  span.mk-blue
+    | Context Probe
+  | 。
+
 h2 Breaking Encapsulation
+p 
+  | 由上面的程式碼可以發現 Context Probe 根本就是封裝的破壞者(原文還用了 wreak havoc on encapsulation! 這樣的文字啊，笑)，不過有時候需要存取 class 內部的資訊時(例如要做一個類似pry的功能)，封裝反而會成為阻礙，這時候 Context Probe 就是一條捷徑。
+
+h2 instance_exec
+
+pre
+  code.ruby
+    | class A
+        def initialize
+          @a = 'aaa'
+        end
+      end
+
+      class B
+        def say
+          @b = 'bbb'
+          A.new.instance_eval do
+    = "\n" + '      "@a = #{@a}, @b = #{@b}"' + "\n"
+    |     end
+        end
+      end
+
+      b = B.new
+      p b.say # "@a = aaa, @b = "
+p 
+  | 從上面的例子發現我們想在 A.new.instance_eval 中同時儲存 B 的 instance variable @b 是做不到的，因為在 block 中已經切成 class A 的 scope，class A 中並沒有 @b 這個 instance variable，所以當然讀不到 @b 的值，這時候我們可以改用 BasicObject#instance_exec，它可以利用參數的方式將值傳入到 block 中。
+
+pre
+  code.ruby
+    | class A
+        def initialize
+          @a = 'aaa'
+        end
+      end
+
+      class B
+        def say
+          @b = 'bbb'
+          A.new.instance_exec(@b) do |b|
+    = "\n" + '      "@a = #{@a}, @b = #{b}"' + "\n"
+    |     end
+        end
+      end
+
+      b = B.new
+      p b.say # "@a = aaa, @b = bbb"
+
 h3 The Padrino Example
+
+p 
+  | 這裡舉了 Padrino 測試使用 instance_eval 的例子，為了方便測試而直接使用 instance_eval 更改 instance variable 的值。就如同作者這裡提到的，封裝在 ruby 中與其它的功能一樣都可以有彈性的使用或者忽略，而寫程式的人必須要做出選擇。
+
 h2 Clean Rooms
+
+p 
+  | 有時候我們會建立一些 class 是專門給 instance_eval 來使用，我們稱做
+  span.mk-blue
+    | Clean Room
+  | 。理論上，Clean Room 中不會包含任何的 instance variable 與 method，而是完全靠 Context Probe 將程式碼寫入到 Clean Room 中。作者提到可以有一些 method 是為了方便使用而加上去的，但建議還是不要，因為有可能外部傳入相同名稱的 method 而造成影響。而 Clean Room 最好的候選者就是 BasicObject，因為它同時也是一個 Blank Slate (也就是包含最少 method 的物件)。
+  
+pre
+  code.ruby
+    | class A < BasicObject
+      end
+
+      a = A.new
+      # p a.say # undefined method `say' for #<A:0x007f8665876110> (NoMethodError)
+
+      a.instance_eval do
+        def say
+          'Hello'
+        end
+      end
+
+      p a.say
 
 h1 Callable Objects
 h2 Proc Objects

@@ -1,0 +1,352 @@
+.meta-data title Decorator Pattern - 裝飾者模式
+.meta-data datetime 2016-07-31 10:13:09
+.meta-data tags dp
+.meta-data category coding
+.meta-data link decorator-pattern
+.meta-data file 2016-07-31-101309-decorator-pattern
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 最近讀書會在讀深入淺出設計模式，趁這個機會複習一下設計模式，試著舉出簡單的例子並且用非模式與模式的方式來實作，比較它們的差異與優缺點。
+  
+h1 範例問題
+
+p 
+  | 咖啡廳有買三種輕食(Food)：漢堡(Burger)、貝果(Bagel)與三明治(Sandwich)，它們有各自的名稱與價錢如下：
+ul
+  li 漢堡：burger，30元。
+  li 貝果：bagel，35元。
+  li 三明治：sandwich，25元。
+p 
+  | 另外還提供客製化的服務，可以在輕食中加上配料(Additive)，每個配料也有名稱與價錢：
+ul
+  li 起司：cheese，10元。
+  li 蕃茄：tomoto，5元。
+  li 火腿：ham，15元。
+p 
+  | 系統必須能列印出客製化輕食的名稱與計算總金額，例如：有一片起司加上蕃茄的漢堡，要顯示名稱： "burger + cheese + tomoto"，金額則是 30 + 10 + 5 = 45元。
+  
+h1 沒有使用模式的實作
+
+pre
+  code.ruby
+    | class Food
+        def initialize
+          @cheese_count = 0
+          @tomoto_count = 0
+          @ham_count = 0
+        end
+
+        def name
+          ' + cheese' * @cheese_count +
+          ' + tomoto' * @tomoto_count +
+          ' + ham' * @ham_count
+        end
+
+        def cost
+          10 * @cheese_count +
+          5 * @tomoto_count +
+          15 * @ham_count
+        end
+
+        def add(additive)
+          if additive == :cheese
+            @cheese_count += 1
+          elsif additive == :tomoto
+            @tomoto_count += 1
+          elsif additive == :ham
+            @ham_count += 1
+          end
+        end
+      end
+
+      class Burger < Food
+        def name
+          'burger' + super
+        end
+
+        def cost
+          30 + super
+        end
+      end
+
+      class Bagel < Food
+        def name
+          'bagel' + super
+        end
+
+        def cost
+          35 + super
+        end
+      end
+
+      class Sandwich < Food
+        def name
+          'sandwich' + super
+        end
+
+        def cost
+          25 + super
+        end
+      end
+
+      burger = Burger.new
+      burger.add(:cheese)
+      burger.add(:tomoto)
+      p burger.name
+      p burger.cost
+
+      sandwich = Sandwich.new
+      sandwich.add(:ham)
+      sandwich.add(:ham)
+      sandwich.add(:cheese)
+      p sandwich.name
+      p sandwich.cost
+
+h2 上面實作的缺點
+ul
+  li 更改配料的名稱或金額時，必須要去修改 Food 裡的 name 或 cost。
+  li 新增一種新配料或是刪除某個配料時，也必須要去修改 Food 裡每一個 method(囧)。
+
+h1 使用模式的實作
+pre
+  code.ruby
+    | class Food
+        def name
+          fail 'Not implement'
+        end
+
+        def cost
+          fail 'Not implement'
+        end
+      end
+
+      class Burger < Food
+        def name
+          'burger'
+        end
+
+        def cost
+          30
+        end
+      end
+
+      class Bagel < Food
+        def name
+          'bagel'
+        end
+
+        def cost
+          35
+        end
+      end
+
+      class Sandwich < Food
+        def name
+          'sandwich'
+        end
+
+        def cost
+          25
+        end
+      end
+
+      class Additive < Food
+        def initialize(food)
+          @food = food
+        end
+      end
+
+      class Cheese < Additive
+        def name
+    = "\n" + '    "#{@food.name} + cheese"' + "\n"
+    |   end
+
+        def cost
+          @food.cost + 10
+        end
+      end
+
+      class Tomoto < Additive
+        def name
+    = "\n" + '    "#{@food.name} + tomoto"' + "\n"
+    |   end
+
+        def cost
+          @food.cost + 5
+        end
+      end
+
+      class Ham < Additive
+        def name
+    = "\n" + '    "#{@food.name} + ham"' + "\n"
+    |   end
+
+        def cost
+          @food.cost + 15
+        end
+      end
+      
+      burger = Burger.new
+      burger = Tomoto.new(Cheese.new(burger))
+      p burger.name
+      p burger.cost
+
+      sandwich = Sandwich.new
+      sandwich = Cheese.new(Ham.new(Ham.new(sandwich)))
+      p sandwich.name
+      p sandwich.cost
+      
+h2 上面實作的優點
+ul
+  li 更改配料的名稱或金額不會更改到其它的 class。
+  li 新增一種新配料或是刪除某個配料時，只要新增或移除對應的 class 就可以了，不會更改到其它的 class。
+  
+h2 上面實作的缺點
+ul
+  li 會多出許多行為的小 class ，增加程式的複雜度。
+  li 裝飾出來的 class 不是原本的 class，例如上面的 burger 原本是 Burger class，但裝飾完就變成 Tomoto class(最後一個裝飾者的 class)，如果接下來的程式在使用 burger 必須要判斷為 Burger class 時就會出錯。(不過如果需要做判斷 class 的動作就表示程式本身有設計上的問題。)
+      
+h1 樣式名稱
+p 
+  | Decorator - 裝飾者模式
+
+h1 目的
+p 
+  | 將原本的 class(Food) 一些附加的行為(加上 cheese, tomoto, ham)封裝成另一個系列的 class(Addtive) ，這些 class(Addtive) 仍然是繼承於原本 class(Food) 而擁有與之前 class 相同的界面。在實作上會將原本的 class(Food) 的 instance(burger, sandwich) 傳入並在對應的 method(name, cost) 去做修改。
+  
+h1 使用時機
+p 
+  | 當某個 class(Food) 擁有附加行為(加上 cheese, tomoto, ham)時，這些行為會變動原本的 method(name, cost)，另外這些行為在未來有可能需要變動。
+
+h1 備註
+p 
+  | 下面是我一開始不使用pattern實作的版本，基本上多了一個 CustomizedFood 來處理輕食與配料的組合：
+pre
+  code.ruby
+    | class Food
+        def name
+          fail 'Not implement'
+        end
+
+        def cost
+          fail 'Not implement'
+        end
+      end
+
+      class Burger < Food
+        def name
+          'burger'
+        end
+
+        def cost
+          30
+        end
+      end
+
+      class Bagel < Food
+        def name
+          'bagel'
+        end
+
+        def cost
+          35
+        end
+      end
+
+      class Sandwich < Food
+        def name
+          'sandwich'
+        end
+
+        def cost
+          25
+        end
+      end
+
+      class Additive < Food
+      end
+
+      class Cheese < Additive
+        def name
+          'cheese'
+        end
+
+        def cost
+          10
+        end
+      end
+
+      class Tomoto < Additive
+        def name
+          'tomoto'
+        end
+
+        def cost
+          5
+        end
+      end
+
+      class Ham < Additive
+        def name
+          'ham'
+        end
+
+        def cost
+          15
+        end
+      end
+
+      class CustomizedFood < Food
+        def initialize(food)
+          @food = food
+          @additives = []
+        end
+
+        def name
+    = "\n" + '  "#{@food.name}#{@additives.map {|ad| " + #{ad.name}"}.join}"' + "\n"
+    |   end
+
+        def cost
+          @food.cost + @additives.map(&:cost).inject(:+)
+        end
+
+        def add(additive)
+          @additives << additive
+          self
+        end
+      end
+
+      burger = CustomizedFood.new(Burger.new)
+      burger.add(Cheese.new).add(Tomoto.new)
+      p burger.name
+      p burger.cost
+
+      sandwich = CustomizedFood.new(Sandwich.new)
+      sandwich.add(Ham.new).add(Ham.new).add(Cheese.new)
+      p sandwich.name
+      p sandwich.cost
+
+h2 上面實作的優點
+ul
+  li 與裝飾者模式有相同的優點。
+  
+h2 上面實作的缺點
+ul
+  li 與裝飾者模式有相同的缺點。
+  li 上面的實作方式限定了每個配料顯示的方式( + 配料名稱)與金額計算(加總)必須一致。如果之後出現了另一個配料為「打8折」，顯示方式是在名稱後面加上 "(20% off)"，計算金額為總金額 * 0.8，那上面的實作方式完全不能用。但裝飾者模式完全不會有問題，只要新增下面的 class 就可以了。
+  
+pre
+  code.ruby
+    | class Discount20Off < Additive
+        def name
+    = "\n" + '    "#{@food.name} (20% off)"' + "\n"
+    |   end
+
+        def cost
+          @food.cost * 0.8
+        end
+      end

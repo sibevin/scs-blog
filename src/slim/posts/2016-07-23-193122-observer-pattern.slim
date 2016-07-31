@@ -1,4 +1,4 @@
-.meta-data title Observer - 觀察者模式
+.meta-data title Observer Pattern - 觀察者模式
 .meta-data datetime 2016-07-23 19:31:22
 .meta-data tags dp
 .meta-data category coding
@@ -161,7 +161,7 @@ h1 目的
 p 
   | 當主題(subject) class(MessageDeliver)有變動時，需要通知其它的觀察者(observer) class(ScreenDisplay, Printer, Mailer)去做對應的事情時，可以在主題 class中記錄(@observer)有哪些觀察者 class 已經有註冊(attach)，利用 attach 與 detach method 來註冊或移除觀察者，就可以做到變動時的通知，同時也可以動態增減通知的對象。
   
-h1 應用時機
+h1 使用時機
 p 
   | 當某個主題 class 變動時需要通知其它觀察者 class，而且有可能需要動態增減通知的對象。
   
