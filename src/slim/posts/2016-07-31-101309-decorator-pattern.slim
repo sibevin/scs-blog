@@ -24,7 +24,7 @@ p
   | 另外還提供客製化的服務，可以在輕食中加上配料(Additive)，每個配料也有名稱與價錢：
 ul
   li 起司：cheese，10元。
-  li 蕃茄：tomoto，5元。
+  li 蕃茄：tomato，5元。
   li 火腿：ham，15元。
 p 
   | 系統必須能列印出客製化輕食的名稱與計算總金額，例如：有一片起司加上蕃茄的漢堡，要顯示名稱： "burger + cheese + tomato"，金額則是 30 + 10 + 5 = 45元。
@@ -36,19 +36,19 @@ pre
     | class Food
         def initialize
           @cheese_count = 0
-          @tomoto_count = 0
+          @tomato_count = 0
           @ham_count = 0
         end
 
         def name
           ' + cheese' * @cheese_count +
-          ' + tomato' * @tomoto_count +
+          ' + tomato' * @tomato_count +
           ' + ham' * @ham_count
         end
 
         def cost
           10 * @cheese_count +
-          5 * @tomoto_count +
+          5 * @tomato_count +
           15 * @ham_count
         end
 
@@ -56,7 +56,7 @@ pre
           if additive == :cheese
             @cheese_count += 1
           elsif additive == :tomato
-            @tomoto_count += 1
+            @tomato_count += 1
           elsif additive == :ham
             @ham_count += 1
           end
@@ -408,7 +408,7 @@ pre
 
       class Cheese < Additive
         def name(input_name)
-    = "\n" + '  "#{input_name} + cheese"' + "\n"
+    = "\n" + '    "#{input_name} + cheese"' + "\n"
     |   end
 
         def cost(input_cost)
@@ -418,7 +418,7 @@ pre
 
       class Tomato < Additive
         def name(input_name)
-    = "\n" + '  "#{input_name} + tomato"' + "\n"
+    = "\n" + '    "#{input_name} + tomato"' + "\n"
     |   end
 
         def cost(input_cost)
@@ -428,7 +428,7 @@ pre
 
       class Ham < Additive
         def name(input_name)
-    = "\n" + '  "#{input_name} + ham"' + "\n"
+    = "\n" + '    "#{input_name} + ham"' + "\n"
     |   end
 
         def cost(input_cost)
