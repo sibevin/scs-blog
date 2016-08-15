@@ -15,36 +15,36 @@ p
 h1 範例問題
 
 p 
-  | 我們有一個訊息轉發系統(MessageDeliver) :repeat: 與加密系統(Encrypter) :secret: ，它們會接收傳入訊息並轉發給負責輸出的裝置(Exporter)，其中負責輸出的裝置(Exporter)有三個：螢幕顯示裝置(ScreenDisplay) :computer: 、列印裝置(Printer) :fax: 與寄信裝置(Mailer) :envelope: 。
+  | 我們有一個訊息轉發系統(MessageDeliver) :repeat: 與加密系統(Encrypter) :secret: ，它們會接收傳入訊息並轉發給負責輸出的裝置(Exporter)，其中負責輸出的裝置(Exporter)有三個：螢幕顯示裝置(ScreenDisplay) :computer: 、列印裝置(Printer) :fax: 與寄信裝置(Mailer) :envelope: ，每個 exporter 都有一個 output(msg) 的 method 用來輸出訊息。
 ul
-  li 螢幕顯示裝置(ScreenDisplay)有一個 display(msg) 的 method 會將訊息顯示在螢幕(The message 'xxx' is displayed on the screen.)。
-  li 列印裝置(Printer)有一個 print(msg) 的 method 會將訊息印出(The message 'xxx' is printed.)。
-  li 寄信裝置(Mailer)有一個 mail(msg) 的 method 會將訊息用信件寄出(The message 'xxx' is mailed.)。
+  li 螢幕顯示裝置(ScreenDisplay)的 output 會將訊息顯示在螢幕(The message 'xxx' is displayed on the screen.)。
+  li 列印裝置(Printer)的 output 會將訊息印出(The message 'xxx' is printed.)。
+  li 寄信裝置(Mailer)的 output 會將訊息用信件寄出(The message 'xxx' is mailed.)。
 p 
   | 程式碼如下：
 
 pre
   code.ruby
     | class Exporter
-        def output(_msg)
+        def output(msg)
           fail 'You should implement "output" in your Exporter-based class.'
         end
       end
       
       class ScreenDisplay < Exporter
-        def display(msg)
+        def output(msg)
     = "\n" + '    "The message \'#{msg}\' is displayed on the screen."' + "\n"
     |   end
       end
 
       class Printer < Exporter
-        def print(msg)
+        def output(msg)
     = "\n" + '    "The message \'#{msg}\' is printed."' + "\n"
     |   end
       end
 
       class Mailer < Exporter
-        def mail(msg)
+        def output(msg)
     = "\n" + '    "The message \'#{msg}\' is mailed."' + "\n"
     |   end
       end
