@@ -1,0 +1,61 @@
+.meta-data title 筆記 - Web Tech Topic 02
+.meta-data datetime 2016-08-04 19:14:39
+.meta-data tags note
+.meta-data category coding
+.meta-data link note-web-tech-topic-02
+.meta-data file 2016-08-04-191439-note-web-tech-topic-02
+.meta-data template post
+.meta-data end
+
+h1 Rspec
+
+h2 what is feature spec
+ul
+  li mimic user behavior
+  li three parts: visit url, input, result
+
+h2 feature spec vs request spec
+ul
+  li feature spec: mvc
+  li request spec: mvc * n
+
+h2 Capybara
+ul
+  li test email: open_email, current_eamil (capybara-eamil)
+
+h2 tools
+ul
+  li selenium, marionette
+  li database_cleaner to sync the web behavior
+  li save_and_open_page
+  
+h2 tips
+ul
+  li use real name to create user for testing, easy to find and check
+
+h1 Vagrant
+
+h2 commands
+ul
+  li init ubuntu/trusty64
+  li up
+  li status
+  li ssh
+  li halt
+  li reload - reload config and reboot
+
+h2 vagrantfile
+ul
+  li config.vm.box_check_update = false - 不檢查版本
+
+h2 provisioning
+ul
+  li 自動化執行指令
+  li 寫在vagrantfile
+  li config.vm.provision "shell", inline: "nginx -v"
+
+h2 打包
+ul
+  li package --output xxx.box
+  li box add xxx.box
+  

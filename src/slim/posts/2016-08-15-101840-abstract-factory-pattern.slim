@@ -1,0 +1,251 @@
+.meta-data title Abstract Factory Pattern - 抽象工廠模式
+.meta-data datetime 2016-08-15 10:18:40
+.meta-data tags dp
+.meta-data category coding
+.meta-data link abstract-factory-pattern
+.meta-data file 2016-08-15-101840-abstract-factory-pattern
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 最近讀書會在讀深入淺出設計模式，趁這個機會複習一下設計模式，試著舉出簡單的例子並且用非模式與模式的方式來實作，比較它們的差異與優缺點。
+  
+h1 範例問題
+
+p 
+  | 我們有一個機器人競技場(RobotAerna)會進行機器人比賽，在比賽的一開始會先進行建立機器人的動作。一個機器人(Robot)由身體(RobotBody)、頭(RobotBody)與腳(RobotFoot)組成，另外有一個 name 的 method 會顯示目前的組合與另一個 add_battery 的 method 做安裝電池的動作，如下所示：
+
+pre
+  code.ruby
+    | class Robot
+        attr_accessor :head, :body, :foot
+        def name
+    = "\n" + '   "I\'m a #{head.name}, #{body.name}, #{foot.name} robot."' + "\n"
+    |   end
+
+        def add_battery
+          @battery = 'Standard AAA Battery'
+        end
+      end
+p 
+  | 而機器人的身體、頭與腳又有各種不同的種類：
+    
+pre
+  code.ruby
+    | class RobotHead
+        def name
+          fail 'You should implement "name" in your RobotHead-based class.'
+        end
+      end
+
+      class IronHead < RobotHead
+        def name
+          'Iron-Head'
+        end
+      end
+
+      class WoodHead < RobotHead
+        def name
+          'Wood-Head'
+        end
+      end
+
+      class NoHead < RobotHead
+        def name
+          ''
+        end
+      end
+
+      class RobotBody
+        def name
+          fail 'You should implement "name" in your RobotBody-based class.'
+        end
+      end
+
+      class IronBody < RobotBody
+        def name
+          'Iron-Body'
+        end
+      end
+
+      class WoodBody < RobotBody
+        def name
+          'Wood-Body'
+        end
+      end
+
+      class RobotFoot
+        def name
+          fail 'You should implement "name" in your RobotFoot-based class.'
+        end
+      end
+
+      class TwoLeggedFoot < RobotFoot
+        def name
+          'Two-Legged'
+        end
+      end
+
+      class WheelFoot < RobotFoot
+        def name
+          'Wheel'
+        end
+      end
+
+      class RocketFoot < RobotFoot
+        def name
+          'Rocket'
+        end
+      end
+p 
+  | 現在的問題是要實作機器人競技場建立機器人的部分，需要建立的機器人如下：
+ul
+  li 鋼鐵機器人，由 IronBody, IronHead 與 TwoLeggedFoot 組成。
+  li 火箭機器人，由 WoodBody, WoodHead 與 RocketFoot 組成。
+p 
+  | 組裝的方式就是先建立一個 robot 的 instance，接著建立對應的 body, head, foot 的 instance 並設定到 robot 的 body, head 與 foot。組裝好機器人之後，還要記得安裝電池(add_battery)才會動。
+  
+h1 沒有使用模式的實作
+
+pre
+  code.ruby
+    | class RobotArena
+        def initialize
+          @robots = []
+          @robots << create_iron_robot
+          @robots << create_rocket_robot
+        end
+
+        def create_iron_robot
+          robot = Robot.new
+          robot.body = IronBody.new
+          robot.head = IronHead.new
+          robot.foot = TwoLeggedFoot.new
+          robot.add_battery
+          robot
+        end
+
+        def create_rocket_robot
+          robot = Robot.new
+          robot.body = IronBody.new
+          robot.head = IronHead.new
+          robot.foot = RocketFoot.new
+          robot.add_battery
+          robot
+        end
+
+        def roll_call
+          @robots.each do |robot|
+            p robot.name
+          end
+        end
+      end
+
+      arena = RobotArena.new
+      arena.roll_call
+
+h2 上面實作的缺點
+ul
+  li RobotAerna 不但與 Robot 相依，還與所有的零件都相依。
+  li RobotAerna 的 create_iron_robot 與 create_rocket_robot 都有建立一個 robot 的過程，一旦建立 robot 的流程有變動，就必須修改 create_iron_robot 與 create_rocket_robot 這兩個 method。
+  
+h1 使用模式的實作
+
+pre
+  code.ruby
+    | class RobotFactory
+        def create
+          robot = Robot.new
+          add_body(robot)
+          add_head(robot)
+          add_foot(robot)
+          robot.add_battery
+          robot
+        end
+
+        def add_body(robot)
+          fail 'You should implement "add_body" in your RobotFactory-based class.'
+        end
+
+        def add_head(robot)
+          fail 'You should implement "add_head" in your RobotFactory-based class.'
+        end
+
+        def add_foot(robot)
+          fail 'You should implement "add_foot" in your RobotFactory-based class.'
+        end
+      end
+
+      class IronRobotFactory < RobotFactory
+        def add_body(robot)
+          robot.body = IronBody.new
+        end
+
+        def add_head(robot)
+          robot.head = IronHead.new
+        end
+
+        def add_foot(robot)
+          robot.foot = TwoLeggedFoot.new
+        end
+      end
+
+      class RocketRobotFactory < RobotFactory
+        def add_body(robot)
+          robot.body = WoodBody.new
+        end
+
+        def add_head(robot)
+          robot.head = WoodHead.new
+        end
+
+        def add_foot(robot)
+          robot.foot = RocketFoot.new
+        end
+      end
+
+      class RobotArena
+        def initialize
+          @robots = []
+          @robots << create_iron_robot
+          @robots << create_rocket_robot
+        end
+
+        def create_iron_robot
+          factory = IronRobotFactory.new
+          factory.create
+        end
+
+        def create_rocket_robot
+          factory = RocketRobotFactory.new
+          factory.create
+        end
+
+        def roll_call
+          @robots.each do |robot|
+            p robot.name
+          end
+        end
+      end
+
+      arena = RobotArena.new
+      arena.roll_call
+
+h2 上面實作的優點
+ul
+  li 建立一個 robot 的流程封裝在 RobotFactory#create 之中，而針對不同機器人有不同的組裝方式(add_body, add_head, add_foot)則利用子類別多型的方式讓 IronRobotFactory 與 RocketRobotFactory 各別去實作。當要更改組裝流程時，只需要修改 RobotFactory#create 即可，而要新增另一種新的機器人則只要加一個對應的 RobotFactory-based class 就可以了。
+  li RobotArena 與建立 robot 的流程完全切割， RobotAerna 只需要呼叫對應 factory 的 create，不用了解 robot 建立流程的細節。
+  
+h1 樣式名稱
+p 
+  | Abstract Factory - 抽象工廠模式
+
+h1 目的
+p 
+  | 對於一個需要比較複雜建立流程的 class(Robot)，使用一個抽象工廠(RobotFactory)定義整體建立物件的流程(RobotFactory#create)，而不同種類物件(robot)所需的不同建立流程(add_body, add_head, add_foot)則由工廠的子類別(IronRobotFactory, RocketRobotFactory)各自定義客製化。client(RobotArena)端只需要使用對應的工廠(IronRobotFactory, RocketRobotFactory)建立出需要的物件(robot)而不用去了解物件本身建立的細節。
+  
+h1 使用時機
+p 
+  | 當建立一個物件(robot)需要複雜的流程，尤其是物件中包含了其它的零件(RobotHead, RobotBody, RobotFoot)的組合，而且會根據不同種類的物件會有不同的建立方式(add_body, add_head, add_foot)。

@@ -1,0 +1,297 @@
+.meta-data title Factory Method Pattern - 工廠方法模式
+.meta-data datetime 2016-08-14 11:59:26
+.meta-data tags dp
+.meta-data category coding
+.meta-data link factory-method-pattern
+.meta-data file 2016-08-14-115926-simple-factory-pattern
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 最近讀書會在讀深入淺出設計模式，趁這個機會複習一下設計模式，試著舉出簡單的例子並且用非模式與模式的方式來實作，比較它們的差異與優缺點。
+  
+h1 範例問題
+
+p 
+  | 我們有一個訊息轉發系統(MessageDeliver) :repeat: 與加密系統(Encrypter) :secret: ，它們會接收傳入訊息並轉發給負責輸出的裝置(Exporter)，其中負責輸出的裝置(Exporter)有三個：螢幕顯示裝置(ScreenDisplay) :computer: 、列印裝置(Printer) :fax: 與寄信裝置(Mailer) :envelope: 。
+ul
+  li 螢幕顯示裝置(ScreenDisplay)有一個 display(msg) 的 method 會將訊息顯示在螢幕(The message 'xxx' is displayed on the screen.)。
+  li 列印裝置(Printer)有一個 print(msg) 的 method 會將訊息印出(The message 'xxx' is printed.)。
+  li 寄信裝置(Mailer)有一個 mail(msg) 的 method 會將訊息用信件寄出(The message 'xxx' is mailed.)。
+p 
+  | 程式碼如下：
+
+pre
+  code.ruby
+    | class Exporter
+        def output(_msg)
+          fail 'You should implement "output" in your Exporter-based class.'
+        end
+      end
+      
+      class ScreenDisplay < Exporter
+        def display(msg)
+    = "\n" + '    "The message \'#{msg}\' is displayed on the screen."' + "\n"
+    |   end
+      end
+
+      class Printer < Exporter
+        def print(msg)
+    = "\n" + '    "The message \'#{msg}\' is printed."' + "\n"
+    |   end
+      end
+
+      class Mailer < Exporter
+        def mail(msg)
+    = "\n" + '    "The message \'#{msg}\' is mailed."' + "\n"
+    |   end
+      end
+p 
+  | 現在的問題是要實作訊息轉發與加密系統，這兩個系統有下列的行為：
+ul
+  li 訊息轉發系統(MessageDeliver)有一個 deliver(msg, target) 的 method 用來接收訊息並做轉發的動作，其中 target 是用來指定要轉發至哪個系統。
+  li 加密系統(MessageDeliver)有一個 encrypt(msg, target) 的 method 用來接收訊息並將訊息加密之後做轉發的動作，其中 target 是用來指定要轉發至哪個系統。
+  
+h1 沒有使用模式的實作
+
+pre
+  code.ruby
+    | class MessageDeliver
+        def deliver(msg, target)
+          exporter = case target
+                     when :screen_display then ScreenDisplay.new
+                     when :printer then Printer.new
+                     when :mailer then Mailer.new
+                     else
+                       fail 'Uknown exporter.'
+          end
+          exporter.output(msg)
+        end
+      end
+
+      class Encrypter
+        def encrypt(msg, target)
+          msg = msg.gsub(/[a-zA-Z0-9]/, '*')
+          exporter = case target
+                     when :screen_display then ScreenDisplay.new
+                     when :printer then Printer.new
+                     when :mailer then Mailer.new
+                     else
+                       fail 'Uknown exporter.'
+          end
+          exporter.output(msg)
+        end
+      end
+
+      msg_deliver = MessageDeliver.new
+      encrypter = Encrypter.new
+
+      msg_deliver.deliver('hello', :screen_display)
+      msg_deliver.deliver('Yoooo~~~', :mailer)
+      encrypter.encrypt('A secret message.', :mailer)
+
+h2 上面實作的缺點
+ul
+  li 選擇要使用哪個 exporter 的程式在 MessageDeliver#deliver 與 Encrypter#encrypt 都有出現，這表示只要新增或是刪除某個 exporter 都要修改這兩個 method 。
+  li MessageDeliver 與 Encrypter 與所有的 exporter 都產生相依性。
+  
+h1 使用模式的實作：靜態工廠方法(Static Factory Method)
+
+pre
+  code.ruby
+    | class ExporterFactory
+        def self.create(target)
+          case target
+          when :screen_display then ScreenDisplay.new
+          when :printer then Printer.new
+          when :mailer then Mailer.new
+          else
+            fail 'Uknown exporter.'
+          end
+        end
+      end
+
+      class MessageDeliver
+        def deliver(msg, target)
+          exporter = ExporterFactory.create(target)
+          exporter.output(msg)
+        end
+      end
+
+      class Encrypter
+        def encrypt(msg, target)
+          msg = msg.gsub(/[a-zA-Z0-9]/, '*')
+          exporter = ExporterFactory.create(target)
+          exporter.output(msg)
+        end
+      end
+
+      msg_deliver = MessageDeliver.new
+      encrypter = Encrypter.new
+
+      msg_deliver.deliver('hello', :screen_display)
+      msg_deliver.deliver('Yoooo~~~', :mailer)
+      encrypter.encrypt('A secret message.', :mailer)
+  
+h2 上面實作的優點
+ul
+  li 新增一種新 exporter 或是刪除某個 exporter 時，只要修改 ExporterFactory 的 create 就可以了，不會更改到其它的 class。
+  li MessageDeliver, Encrypter 只與 ExporterFactory 有相依，降低了與其它 exporter 的相依性。
+  
+h2 上面實作的缺點
+ul
+  li 使用靜態方法實作，變成無法處理更複雜的建立流程。(參考下面的例子)
+
+h1 範例問題(延伸)
+
+p 
+  | 加密方式每個 exporter 變得不同，需要另外三個 exporter(EncryptedScreenDisplay, EncryptedPrinter, EncryptedMailer) 各別處理加密如下：
+
+pre
+  code.ruby
+    | class EncryptedScreenDisplay < Exporter
+        def display(msg)
+          msg = msg.gsub(/[a-zA-Z0-9]/, '*')
+    = "\n" + '    "The message \'#{msg}\' is displayed on the screen."' + "\n"
+    |   end
+      end
+
+      class EncryptedPrinter < Exporter
+        def print(msg)
+          msg = msg.gsub(/[a-zA-Z0-9]/, 'o')
+    = "\n" + '    "The message \'#{msg}\' is printed."' + "\n"
+    |   end
+      end
+
+      class EncryptedMailer < Exporter
+        def mail(msg)
+          msg = msg.gsub(/[a-zA-Z0-9]/, 'x')
+    = "\n" + '    "The message \'#{msg}\' is mailed."' + "\n"
+    |   end
+      end
+
+h1 使用模式的實作：靜態工廠方法(Static Factory Method)
+
+pre
+  code.ruby
+    | class ExporterFactory
+        def self.create(target, encrypted = false)
+          if encrypted
+            return case target
+            when :screen_display then EncryptedScreenDisplay.new
+            when :printer then EncryptedPrinter.new
+            when :mailer then EncryptedMailer.new
+            else
+              fail 'Uknown exporter.'
+            end
+          else
+            return case target
+            when :screen_display then ScreenDisplay.new
+            when :printer then Printer.new
+            when :mailer then Mailer.new
+            else
+              fail 'Uknown exporter.'
+            end
+          end
+        end
+      end
+      
+      class MessageDeliver
+        def deliver(msg, target)
+          exporter = ExporterFactory.create(target)
+          exporter.output(msg)
+        end
+      end
+
+      class Encrypter
+        def encrypt(msg, target)
+          exporter = ExporterFactory.create(target, true)
+          exporter.output(msg)
+        end
+      end
+
+      msg_deliver = MessageDeliver.new
+      encrypter = Encrypter.new
+
+      msg_deliver.deliver('hello', :screen_display)
+      msg_deliver.deliver('Yoooo~~~', :mailer)
+      encrypter.encrypt('A secret message.', :mailer)
+
+h2 上面實作的缺點
+ul
+  li 因為多了一系列 encrypted exporter，使 ExporterFactory 內的 self.create 需要針對不同 encrypt 的情況建立 exporter，如果以後出現了另一個系列的 exporter， self.create 將會變得越來越複雜。
+  
+h1 使用模式的實作：工廠方法(Factory Method)
+
+pre
+  code.ruby
+    | class ExporterFactory
+        def create(target)
+          fail 'You should implement "create" in your ExporterFactory-based class.'
+        end
+      end
+
+      class NormalExporterFactory < ExporterFactory
+        def create(target)
+          return case target
+          when :screen_display then ScreenDisplay.new
+          when :printer then Printer.new
+          when :mailer then Mailer.new
+          else
+            fail 'Uknown exporter.'
+          end
+        end
+      end
+
+      class EncryptedExporterFactory < ExporterFactory
+        def create(target)
+          return case target
+          when :screen_display then EncryptedScreenDisplay.new
+          when :printer then EncryptedPrinter.new
+          when :mailer then EncryptedMailer.new
+          else
+            fail 'Uknown exporter.'
+          end
+        end
+      end
+
+      class MessageDeliver
+        def deliver(msg, target)
+          factory = NormalExporterFactory.new
+          exporter = factory.create(target)
+          exporter.output(msg)
+        end
+      end
+
+      class Encrypter
+        def encrypt(msg, target)
+          factory = EncryptedExporterFactory.new
+          exporter = factory.create(target)
+          exporter.output(msg)
+        end
+      end
+
+      msg_deliver = MessageDeliver.new
+      encrypter = Encrypter.new
+
+      msg_deliver.deliver('hello', :screen_display)
+      msg_deliver.deliver('Yoooo~~~', :mailer)
+      encrypter.encrypt('A secret message.', :mailer)
+      
+h2 上面實作的優點
+ul
+  li 建立 exporter 不是一個單純的 static method(self.create)，而是一個 ExporterFactory 的抽象方法 create，由子類別(NormalExporterFactory, EncryptedExporterFactory)多型的方式實作不同的 create 使建立 exporter 的方式可以更彈性。
+  
+h1 樣式名稱
+p 
+  | Factory Method - 工廠方法模式
+
+h1 目的
+p 
+  | 將原本建立 class(exporter) 的流程封裝在 factory(ExporterFactory) class 之中，需要建立 class(exporter) 時，就使用 factory(ExporterFactory) 來建立。這樣的好處是透過 factory(ExporterFactory) 降低使用這些 class(exporter) 的 client(MessageDeliver, Encrypter) 與 class(exporter) 之間的相依性。
+  
+h1 使用時機
+p 
+  | 當有一系列的 class(exporter) 需要被建立，而建立的方式可能會根據不同的情況而需要建立不同的 class(exporter)。
