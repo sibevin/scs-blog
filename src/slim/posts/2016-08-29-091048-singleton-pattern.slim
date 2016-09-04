@@ -1,0 +1,263 @@
+.meta-data title Singleton Pattern - 獨體模式
+.meta-data datetime 2016-08-29 09:10:48
+.meta-data tags dp
+.meta-data category coding
+.meta-data link singleton-pattern
+.meta-data file 2016-08-29-091048-singleton-pattern
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 最近讀書會在讀深入淺出設計模式，趁這個機會複習一下設計模式，試著舉出簡單的例子並且用非模式與模式的方式來實作，比較它們的差異與優缺點。
+  
+h1 範例問題
+
+p 
+  | 我們有一個 log 輸出系統會將 log 輸出個一個檔案之中，它有下面的功能：
+ul
+  li 在一開始的時候要呼叫一個 do_heavy_work 來設定 log 檔案。
+  li 有一個 write(msg) 用來記錄 log。
+  li 會記錄有多少筆 log 被寫入，有一個 count method 用來取得目前的 log 數。
+
+h1 沒有使用模式的實作
+
+pre
+  code.ruby
+    | class Logger
+        def initialize
+          @counter = 0
+          do_heavy_work
+        end
+
+        def write(msg)
+          @counter += 1
+    = "\n" + '    p "Write #{msg} to log ..."' + "\n"
+    |   end
+
+        def count
+          @counter
+        end
+
+        private
+
+        def do_heavy_work
+          p "Do heavy work..."
+        end
+      end
+      
+      logger = Logger.new
+      logger.write('Hello')
+      logger.write('Hi')
+      p logger.count
+
+      class A
+        def initialize
+          @logger = Logger.new
+        end
+
+        def say(msg)
+          @logger.write(msg)
+          p msg
+        end
+      end
+
+      a = A.new
+      a.say('Yoooo~~')
+
+      p logger.count # 2
+      
+h2 上面實作的缺點
+ul
+  li logger.count 的計數錯了，因為在 class A 中的 @logger 被重新建立，造成@counter無法共用。(將 @counter 改成 @@counter 可以解決這個問題。)
+  li do_heavy_work 在每一次 Logger 被建立的時候就會被呼叫，而上面這個例子因為建立了兩次，所以 do_heavy_work 被呼叫了兩次。
+  
+h1 使用模式的實作：使用靜態變數儲存單一 instance
+pre
+  code.ruby
+    | class Logger
+        def self.gen
+          @@instance
+        end
+        
+        private_class_method :new
+        def initialize
+          @counter = 0
+          do_heavy_work
+        end
+
+        def write(msg)
+          @counter += 1
+    = "\n" + '    p "Write #{msg} to log ..."' + "\n"
+    |   end
+
+        def count
+          @counter
+        end
+
+        private
+
+        def do_heavy_work
+          p "Do heavy work..."
+        end
+        
+        @@instance = new
+      end
+      
+      logger = Logger.gen
+      logger.write('Hello')
+      logger.write('Hi')
+      p logger.count
+
+      class A
+        def initialize
+          @logger = Logger.gen
+        end
+
+        def say(msg)
+          @logger.write(msg)
+          p msg
+        end
+      end
+
+      a = A.new
+      a.say('Yoooo~~')
+
+      p logger.count # 3
+      
+h2 上面實作的優點
+ul
+  li 在 class 宣告的時候就建立一個 instance，並使用 Logger.gen 取代 Logger.new 確保只會讀取到這個建立的 instance，do_heavy_work 只需要做一次就可以了。
+  
+h2 上面實作的缺點
+ul
+  li 無論有沒有使用到 Logger，一定會建立 instance，也就是 do_heavy_work 一定會被執行一次。
+
+h1 使用模式的實作：lazy-load的版本
+
+pre
+  code.ruby
+    | class Logger
+        @@instance = nil
+        
+        def self.gen
+          @@instance = @@instance || new
+        end
+        
+        private_class_method :new
+        def initialize
+          @counter = 0
+          do_heavy_work
+        end
+
+        def write(msg)
+          @counter += 1
+    = "\n" + '    p "Write #{msg} to log ..."' + "\n"
+    |   end
+
+        def count
+          @counter
+        end
+
+        private
+
+        def do_heavy_work
+          p "Do heavy work..."
+        end
+      end
+      
+      logger = Logger.gen
+      logger.write('Hello')
+      logger.write('Hi')
+      p logger.count # 2
+
+      class A
+        def initialize
+          @logger = Logger.gen
+        end
+
+        def say(msg)
+          @logger.write(msg)
+          p msg
+        end
+      end
+
+      a = A.new
+      a.say('Yoooo~~')
+
+      p logger.count # 3
+
+h2 上面實作的優點
+ul
+  li 同樣使用 Logger.gen 取代 Logger.new 確保只會有一個 instance 被產生， do_heavy_work 只需要做一次就可以了。
+  li 只有在使用 Logger 的第一次才會建立 instnace，沒有用到就不會建立，避免不必要的初使化流程。
+  
+h2 上面實作的缺點
+ul
+  li 在多執行緒的環境會有 race condition 的問題，無法確保只有單一的 instance 會被建立。例如：兩個執行緒同時執行判斷 @@instance 時候，因為都同時判斷為nil，這時候就會同時建立兩個 Logger 的 instance。
+
+h1 使用模式的實作：同步的版本
+
+pre
+  code.ruby
+    | class Logger
+        @@instance = nil
+        
+        def self.gen
+          instance_mutex = Mutex.new
+          instance_mutex.synchronize do
+            @@instance = @@instance || new
+          end
+        end
+        
+        private_class_method :new
+        def initialize
+          @counter = 0
+          do_heavy_work
+        end
+
+        def write(msg)
+          @counter += 1
+    = "\n" + '    p "Write #{msg} to log ..."' + "\n"
+    |   end
+
+        def count
+          @counter
+        end
+
+        private
+
+        def do_heavy_work
+          p "Do heavy work..."
+        end
+      end
+      
+h2 上面實作的優點
+ul
+  li 同樣有之前實作的優點。
+  li 使用 mutex 確保在多執行緒的環境下只會建立一個單一的 instance。
+  
+h1 樣式名稱
+p 
+  | Singleton - 獨體模式
+
+h1 目的
+p 
+  | 當某個 class (Logger) 只需要單一 instance 時，使用 private 的 contructor(Logger.new) 來限制 instance 的建立，取而代之的是使用另一個 class method (Logger.gen) 並搭配 class variable(@@instance) 來確保只有唯一個 instance 會被建立。要特別注意的是在多執行緒下的同步問題。
+  
+h1 使用時機
+p 
+  | 當某個 class 只需要單一 instance，而且在初使化的過程可能會花費較多的資源而希望可以減少初使化的次數。
+  
+h1 Refs
+ul
+  li 
+    a href="http://dalibornasevic.com/posts/9-ruby-singleton-pattern" target="_blank"
+      | Ruby Singleton Pattern - 使用多種不同的方式來實作 singleton pattern
+  li 
+    a href="http://c2.com/cgi/wiki?RubySingleton" target="_blank"
+      | Ruby Singleton - 一個使用 mutex 實作 singleton pattern 的範例。
+  li 
+    a href="http://stackoverflow.com/questions/212407/what-exactly-is-the-singleton-class-in-ruby" target="_blank"
+      | SO - What exactly is the singleton class in ruby?

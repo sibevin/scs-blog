@@ -1,0 +1,245 @@
+.meta-data title 一些有關rails model欄位設計的原則
+.meta-data datetime 2016-09-01 23:25:18
+.meta-data tags rails_model,rails_migration
+.meta-data category coding
+.meta-data link some-principles-about-rails-model-column-design
+.meta-data file 2016-09-01-232518-some-principles-about-rails-model-column-design
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 「原則」就表示可以打破，這裡分享的是筆者自己本身參與rails的專案，當需要建立新的欄位時會遵守的一些原則，但不代表這些原則會滿足各種的使用情境，所以在設計欄位時還是要以實際的需求來做考量。
+  
+h1 原則
+
+h2
+  | :one: 時間欄位命名一定都是「[動詞過去式]_at」
+
+h3 How
+p 
+  | 代表過期的時間欄位會命名為 
+  code
+    | expired_at
+  | ，付款完成的時間欄位會命名為 
+  code
+    | paid_at
+  | 。
+h3 Why
+ul
+  li 只要是看到 _at 結尾的就知道是時間欄位。
+  li 延用 created_at, updated_at 的規則。
+  
+h2
+  | :two: 金錢欄位的資料型態是 decimal(15,5)，也就是整數+小數共15位，整數10位、小數5位。
+
+h3 How
+p 
+  | 在 migrate 中的金錢欄位可以寫成
+  code
+    | t.decimal :unit_price, precision: 15, scale: 5
+  | 。
+h3 Why
+ul
+  li 使用decimal可以設定精準度。
+  li 
+    | 長度可以根據需求變更，例如只有處理新台幣的話，就不一定要小數。如果網站的日營業額超過100億的話，顯然
+    s 這個網站一定是做黑的
+    | 15是不太夠的。
+
+h2 
+  | :three: 確定必填的欄位在 migration 中一定要做 null: false，在 model 中要加 presence vaildation。如果不確定是必填，則不要在 migration 中加 null: false，在 model 中用 presence validation 即可。
+
+h3 How
+p 
+  | 如果 user 的 name 欄位是必填，則在 user 的 migration 中加上 
+  code
+    | t.string :name, null: false
+  | 並在 User model 中加上
+  code
+    | validates :name, presence: true
+h3 Why
+ul
+  li 避免因為資料不存在而造成的bug。
+  li 減少不必要的「檢查欄位是否有值」的動作，因為一定有值。
+  li 視情況可加 default。
+  li 不確定的話不要加 null: false，因為之後如果要改就很麻煩。
+  
+h2 
+  | :four: 確定唯一的欄位在 migration 中一定要加 unique: true 的 index，但 model 中建議不要加 unique validation。
+
+h3 How
+p 
+  | 如果 user 的 name 欄位是唯一，則在 user 的 migration 中加上 
+  code
+    | add_index :users, :name, unique: true
+  | ，因為不加 validation，所以要記得做 exception handling。
+    
+h3 Why
+ul
+  li unique validation 有兩個問題：1. 在極端的情況下會有 race condition 而造成值會重複，所以 migration 的 unique index 一定要加。2. 效能問題，每次儲存都要 query 所有的資料做 unique validation。
+
+h2 
+  | :five: 確定要有預設值的欄位在 migration 中一定要加 default: 'xxx'。如果預設值有可能在未來會變動，則不要加，取得代之的是使用 default_value_for gem 在 model 中做欄位的初始化。
+
+h3 How
+p 
+  | 例如售出數量(sale_count)一開始一定為0，則可以在 migration 中加上 
+  code
+    | t.integer :sale_count, default: 0, null: false
+  | ，最大可購買數量(max_sale_per_order)有預設值是5，但未來有可能變動，則 migration 不加 default，但在 model 中可以使用 default_value_for 來設定：
+pre
+  code.ruby
+    | class Ticket < ActiveRecord::Base
+        # ...
+        DEFAULT_MAX_SALE_PER_ORDER = 5
+        default_value_for :max_sale_per_order, DEFAULT_MAX_SALE_PER_ORDER
+        # ...
+      end
+p 
+  | 傳送門： 
+  a href="https://github.com/FooBarWidget/default_value_for" target="_blank"
+    | default_value_for
+h3 Why
+ul
+  li 避免因為預設值不存在而造成的 bug。
+  li 不確定的話不要加 default ，因為之後如果要改就很麻煩。
+
+h2 
+  | :six: reference 的欄位一定是 integer(11) 而且以 _id 結尾(也就是 references type)，一定要加 foreign_key: true ，視情況加 null: false 與 index。
+h3 How
+p 
+  | 例如 order 有關聯到使用者，則在 order 的 migration 會加上 
+  code
+    | t.references :course, foreign_key: true, null: false
+  | 。你也可以使用rails model generator，例如可以下 
+  code
+    | rg model Order user:references (...)
+  | ，這時候 migration 預設會產生 
+  code
+    | t.references :user, index: true, foreign_key: true
+  | 。但請記得要視情況去掉 indxe: true 或是加上 null: false 。
+
+h3 Why
+ul
+  li foreign_key: true 是 sql 提供的限制，代表的是如果 order 的 user_id 欄位有值，則一定找的到對應的 user，但不代表 order 的 user_id 一定有值，也就是可以為空。
+  li null: false 不一定要加，除非必填。
+  li index: true 不一定要加，除非會需要使用 user 來 query order。
+
+h2 
+  | :seven: 欄位長度如果非常明確，請在 migration 中使用 limit，並在 model 中加上對應的 validation。如果不確定，請不要設定長度，而是使用預設(integer, string, text)的長度，並且在 model 中加上對應的 validation。
+h3 How
+p 
+  | 例如訂單的訂單編號(order_number)只會有20字元的長度，則在 order 的 migration 可加上
+  code
+    | t.string :order_number, :limit: 20, null: false
+  | ，在 order model 中則加上 
+  code
+    | validates :order_number, length: { is: 20 }
+  | 。另外，文字欄位則可以依照長度需求視情況選擇使用 string 或是 text。在使用 integer 的 limit 時要特別注意，它不是指數字的位數，而是指數字欄位所使用的位元數(很容易踩到的坑)，請參考 
+  a href="/posts/2014-11-13-100547-rails-migration-integer-column-limit" target="_blank"
+    | rails migration中integer column的limit
+  | 。
+h3 Why
+ul 
+  li 避免因為格式長度錯誤而造成的bug。
+  li 不確定長度的話不要加 limit，因為之後如果要改就很麻煩。
+
+h2
+  | :eight: 當一個欄位只用來記錄某個值，而且這個值已經事先定義好，則請使用 enumerize gem。在使用 enumerize 時，建議使用 integer 方式定義並而設定 limit: 1，除非需要定義的值超過100個以上。
+h3 How
+p 
+  | 訂單記錄付款方式(payment_method)的欄位，每個訂單只會有一種付款方式，而且事先就知道有哪一些付款方式，也就是說付款方式是事先定義好的。則 payment_method 在 order 的 migration 會是
+  code
+    | t.integer :payment_method, :limit: 1, null: false
+  | ，而在 Order model 中會設定 payment_method enumerize 如下：
+pre
+  code.ruby
+    | class Order < ActiveRecord::Base
+        # ...
+        PAYMENT_METHODS = {
+          credit_card: 0,
+          atm: 1,
+          paypal: 2,
+          alipay: 3,
+          cash: 4
+        }
+        extend Enumerize
+        enumerize :payment_method, in: PAYMENT_METHODS, scope: true
+        # ...
+      end
+p 
+  | 在實際使用 payment_method 的欄位時，都用對應的字串操作，但資料庫欄位儲存的是對應的數值。
+pre
+  code.ruby
+    | order.payment_method # 'credit_card'
+      order.payment_method = 'atm'
+      order.credit_card? # false
+      Order.with_payment_method('paypal')
+p 
+  | 傳送門： 
+  a href="https://github.com/brainspec/enumerize" target="_blank"
+    | enumerize
+h3 Why
+ul
+  li 使用 integer(1) 比起使用 string 在 query 上比較有效率，同時節省欄位空間。
+  li 在程式碼中仍然是用字串來設定欄位，增加程式的可讀性。
+  li enumerize 本身支援 simple_form，只要一行程式就幫你生 select 與 radio buttons。
+  li enumerize 支援 i18n 。
+
+
+h1 ActiveRecord 相關的 gem 
+
+p 
+  | 這裡與資料庫欄位比較沒有關係，但當 model 需要處理一些特定的問題，使用下面的 gem 會特別方便。
+
+h2
+  | :one: 如果某個欄位的值需要在 model 被建立時產生，而且之後這個欄位只能讀取而不能修改，則可以使用 uidable gem 來處理。
+h3 How
+p 
+  | 例如在 User model 中有一個欄位是存取代碼(access_token)，它會在一個 user 被建立的時候自動產生，而且之後不能去修改這個欄位的值，則在 User model 中就可以使用 uidable 來設定這個欄位：
+pre
+  code.ruby
+    | class User < ActiveRecord::Base
+        # ...
+        include Uidable 
+        uidable uid_name: :access_token, scope: true
+        # ...
+      end
+p 
+  | 要注意的是，雖然這個欄位在資料建立的時候預設會使用 unique validation，但如果要讓這個欄位唯一，在 migration 中還是要記得加 unique index。
+p 
+  | 傳送門： 
+  a href="https://github.com/sibevin/uidable" target="_blank"
+    | uidable
+h3 Why
+ul
+  li 值會自動產生，不用在特地寫程式碼來處理。
+  li 欄位預設是 read-only，不用擔心因為錯誤的程式碼而改掉原本欄位的值。
+  li 欄位預設會在 create 的時候做 unique validation，一旦建立成功，就不再做 unique validation，避免 unique validation 造成的效能問題。
+  li uidable 有提供多樣的 option 可以做高度的客製化，你甚至可以客製化產生的欄位值。
+
+h2
+  | :two: 如果 model 需要一個欄位用來記錄狀態，而且有狀態機的操作，則可以使用 aasm gem。
+h3 How
+p 
+  | 傳送門： 
+  a href="https://github.com/aasm/aasm" target="_blank"
+    | aasm 
+
+h2
+  | :three: 如果 model 需要一個欄位用來記錄資料排序用的順序，則可以使用 acts_as_list gem。
+h3 How
+p 
+  | 傳送門： 
+  a href="https://github.com/swanandp/acts_as_list" target="_blank"
+    | acts_as_list
+
+h2
+  | :four: 如果 model 是用來處理樹狀結構，則可以用 awesome_nested_set gem。
+h3 How
+p 
+  | 傳送門： 
+  a href="https://github.com/collectiveidea/awesome_nested_set" target="_blank"
+    | awesome_nested_set

@@ -152,21 +152,21 @@ p
 pre
   code.ruby
     | class EncryptedScreenDisplay < Exporter
-        def display(msg)
+        def output(msg)
           msg = msg.gsub(/[a-zA-Z0-9]/, '*')
     = "\n" + '    "The message \'#{msg}\' is displayed on the screen."' + "\n"
     |   end
       end
 
       class EncryptedPrinter < Exporter
-        def print(msg)
+        def output(msg)
           msg = msg.gsub(/[a-zA-Z0-9]/, 'o')
     = "\n" + '    "The message \'#{msg}\' is printed."' + "\n"
     |   end
       end
 
       class EncryptedMailer < Exporter
-        def mail(msg)
+        def output(msg)
           msg = msg.gsub(/[a-zA-Z0-9]/, 'x')
     = "\n" + '    "The message \'#{msg}\' is mailed."' + "\n"
     |   end

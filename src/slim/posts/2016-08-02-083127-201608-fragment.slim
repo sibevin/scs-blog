@@ -24,3 +24,101 @@ ul
       | RDL is a lightweight system for adding contracts to Ruby.
   li 
     | https://github.com/yagop/telegram-bot
+  li 
+    | put 一直變成 post… 結果是一個奇怪的bug： event[mode_configs_input][code_expiration_kind][] vs event[mode_configs_input][]
+  li 
+    | request size limitation - http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size
+  li 
+    | remote table
+  li
+    | http://stackoverflow.com/questions/10055545/rails-301-redirection
+  li 
+    | https://blog.codeship.com/level-up-your-security-in-rails/
+  li 
+    | mycil
+  li 
+    | pdfkit
+  li 
+    a href="http://blog.arkency.com/2013/12/rails4-preloading/" target="_blank"
+      | 3 ways to do eager loading (preloading) in Rails 3 & 4
+    
+h2 SSDB
+
+p  $ssdb.client.call(['keys', '', '', 99999])
+p  $ssdb.hmset('iam_hash', 'k1', 'v1', 'k2', 'v2')
+p  $ssdb.hget('iam_hash', 'k1')
+p  $ssdb.hsize('iam_hash', 'k1')
+p  leveldb
+
+h2 lib
+
+p lib/yoo.rb
+p application.rb -> require 'yoo'
+  
+h2 漏洞通報
+
+p vulreport
+p zeroday
+
+h2 硬體資安
+
+p HSM
+p 超融合
+p fortigate
+p palo alto
+p OTP 華葑
+
+h2 Tools
+
+ul
+  li mac bartender2
+  li cc menu
+  li divvy
+  li quiver
+  li typora
+  li textexpander
+
+h1 WebRTC
+
+h2 History
+ul
+  li developed by Google
+  
+h2 Support
+ul
+  li mobile brower not supported by default for now, but can use native code to 
+  li OpenWebRTC - iOS library
+
+h2 Architecture
+ul
+  li a server for connecting each others
+  li after connected, browers contection each other self without server, but 要怎麼連外
+  li STUN(av without server) vs TURN(av need relay server) server - 要怎麼連外
+  li SDP - Session Descritpion Protocol
+  li Ice Candidate - https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/
+
+h2 API
+ul
+  li GetUserMedia - browser to ask the devise information
+  li RTCPeerConnection
+  li SDP
+  li IceCandidate
+  
+h2 Flow
+ul
+  li write SDP each other
+
+h2 iOS
+ul
+  li browser
+  
+h2 Tools
+ul
+  li Thin server faye gem - websocket solution for rails
+  li Chrome log: chrome://webrtc-internals
+  li FF: about:webrtc
+  li Xirsys - Third-Party IceServer (STUN or TURN server provider)
+
+h2 Mult-user
+ul
+  li 5人之後就會lag很嚴重：有可能是video decoding或是開多個channel。

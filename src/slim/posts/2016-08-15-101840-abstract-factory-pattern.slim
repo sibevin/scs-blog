@@ -15,7 +15,7 @@ p
 h1 範例問題
 
 p 
-  | 我們有一個機器人競技場(RobotAerna)會進行機器人比賽，在比賽的一開始會先進行建立機器人的動作。一個機器人(Robot)由身體(RobotBody)、頭(RobotBody)與腳(RobotFoot)組成，另外有一個 name 的 method 會顯示目前的組合與另一個 add_battery 的 method 做安裝電池的動作，如下所示：
+  | 我們有一個機器人競技場(RobotAerna)會進行機器人比賽，在比賽的一開始會先進行建立機器人的動作。一個機器人(Robot)由身體(RobotBody)、頭(RobotHead)與腳(RobotFoot)組成，另外有一個 name 的 method 會顯示目前的組合與另一個 add_battery 的 method 做安裝電池的動作，如下所示：
 
 pre
   code.ruby
@@ -129,8 +129,8 @@ pre
 
         def create_rocket_robot
           robot = Robot.new
-          robot.body = IronBody.new
-          robot.head = IronHead.new
+          robot.body = WoodBody.new
+          robot.head = WoodHead.new
           robot.foot = RocketFoot.new
           robot.add_battery
           robot

@@ -20,18 +20,18 @@ table.pt-table
       td
         | empty?
       td
+        | any?
+      td
         | blank?
       td
         | present?(!blank?)
-      td
-        | any?
   tbody
     tr
       td
         | Scope
-      td colspan="3"
+      td colspan="4"
         | ruby
-      td colspan="3"
+      td colspan="2"
         | rails only
     tr
       td
@@ -40,10 +40,10 @@ table.pt-table
         | all
       td
         | String, Array, Hash
-      td colspan="2"
-        | all
       td
         | Enumerable
+      td colspan="2"
+        | all
     tr
       td
         | nil
@@ -53,12 +53,12 @@ table.pt-table
         | false
       td.text-grey
         | NoMethodError
+      td.text-grey
+        | NoMethodError
       td.text-blue
         | true
       td.text-red
         | false
-      td.text-grey
-        | NoMethodError
     tr
       td
         | false
@@ -68,12 +68,12 @@ table.pt-table
         | false
       td.text-grey
         | NoMethodError
+      td.text-grey
+        | NoMethodError
       td.text-blue
         | true
       td.text-red
         | false
-      td.text-grey
-        | NoMethodError
     tr
       td
         | true
@@ -83,12 +83,12 @@ table.pt-table
         | true
       td.text-grey
         | NoMethodError
+      td.text-grey
+        | NoMethodError
       td.text-red
         | false
       td.text-blue
         | true
-      td.text-grey
-        | NoMethodError
     tr
       td
         | 0
@@ -98,12 +98,12 @@ table.pt-table
         | true
       td.text-grey
         | NoMethodError
+      td.text-grey
+        | NoMethodError
       td.text-red
         | false
       td.text-blue
         | true
-      td.text-grey
-        | NoMethodError
     tr
       td
         | 1
@@ -113,12 +113,12 @@ table.pt-table
         | true
       td.text-grey
         | NoMethodError
+      td.text-grey
+        | NoMethodError
       td.text-red
         | false
       td.text-blue
         | true
-      td.text-grey
-        | NoMethodError
     tr
       td
         | ""
@@ -128,12 +128,12 @@ table.pt-table
         | true
       td.text-blue
         | true
+      td.text-grey
+        | NoMethodError
       td.text-blue
         | true
       td.text-red
         | false
-      td.text-grey
-        | NoMethodError
     tr
       td
         | " "
@@ -143,12 +143,12 @@ table.pt-table
         | true
       td.text-red
         | false
+      td.text-grey
+        | NoMethodError
       td.text-blue
         | true
       td.text-red
         | false
-      td.text-grey
-        | NoMethodError
     tr
       td
         | []
@@ -158,10 +158,10 @@ table.pt-table
         | true
       td.text-blue
         | true
-      td.text-blue
-        | true
       td.text-red
         | false
+      td.text-blue
+        | true
       td.text-red
         | false
     tr
@@ -175,10 +175,10 @@ table.pt-table
         | false
       td.text-red
         | false
-      td.text-blue
-        | true
       td.text-red
         | false
+      td.text-blue
+        | true
     tr
       td
         | {}
@@ -188,10 +188,10 @@ table.pt-table
         | true
       td.text-blue
         | true
-      td.text-blue
-        | true
       td.text-red
         | false
+      td.text-blue
+        | true
       td.text-red
         | false
     tr
@@ -203,10 +203,10 @@ table.pt-table
         | true
       td.text-red
         | false
-      td.text-red
-        | false
       td.text-blue
         | true
+      td.text-red
+        | false
       td.text-blue
         | true
 h1 Refs
