@@ -64,3 +64,17 @@ p
   a href="https://github.com/blueimp/JavaScript-MD5" target="_blank"
     | JavaScript MD5
   | (這個js可以處理UTF的文字)將heading的文字轉成md5 string，這樣就可以用嘍。
+
+h1 UPDATE 2016.09.28
+
+p 
+  | 上面客製化 articleId 的方法仍然有問題，如果兩個 heading 有相同的文字，則 TOC 裡會產生相同的 md5 anchor 而造成連結都會被指向第一個的 heading。解決的方式就是將 articleId 改成下面這樣：
+pre
+  code.javascript
+    | articleId = function (articleName, element) {
+        return md5(articleName + element.previousSibling.innerText + element.nextSibling.innerText);
+      };
+      contents = gajus
+        .Contents({articleId: articleId});
+p 
+  | 也就是產生 articleId 的方式除了參考原本在 heading 的文字外，還參考了 heading 前後 DOM 包含的文字，這樣就可以大大減少重複的可能性。(如果連前後文都一樣，就只能說遺憾了…)

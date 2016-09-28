@@ -482,11 +482,11 @@ p
 
 h1 目的
 p 
-  | 使用中介的 class(RobotCommand系列的class) 做為傳遞命令的媒界，使呼叫命令的 client(UniversalControl) 與實際執行的 receiver(WalkingRobot, TankRobot, DuckRobot) 之間的相依性降低。另外藉由共同實作的 execute method，讓 client(UniversalControl) 可以動態切換要執行的命令，而不用了解執行命令的 receiver(WalkingRobot, TankRobot, DuckRobot) 是哪個 class，同時也可以做到復原(undo)與批次(batch)執行的功能。
+  | 使用中介的 class(RobotCommand系列的class) 做為傳遞命令的媒界，使呼叫命令的 invoker(UniversalControl) 與實際執行的 receiver(WalkingRobot, TankRobot, DuckRobot) 之間的相依性降低。另外藉由共同實作的 execute method，讓 invoker(UniversalControl) 可以動態切換要執行的命令，而不用了解執行命令的 receiver(WalkingRobot, TankRobot, DuckRobot) 是哪個 class，同時也可以做到復原(undo)與批次(batch)執行的功能。
   
 h1 使用時機
 ul
   li 
-    | 當 client(UniversalControl) 需要動態改變呼叫的命令，可能還需要實作復原(undo)與批次(batch)執行的功能。
+    | 當 invoker(UniversalControl) 需要動態改變呼叫的命令，可能還需要實作復原(undo)與批次(batch)執行的功能。
   li
     | 需要將命令做額外處理，例如佇列(queue)或是日誌(logging)。
