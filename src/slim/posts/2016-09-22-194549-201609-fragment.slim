@@ -1,0 +1,121 @@
+.meta-data title 2016.09 碎片
+.meta-data datetime 2016-09-22 19:45:49
+.meta-data tags frag
+.meta-data category coding
+.meta-data link 201609-fragment
+.meta-data file 2016-09-22-194549-201609-fragment
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+h1 WTT 2016-09-22 - Http Request
+
+h2 linux Command
+
+h3 nc
+p 
+  | nc 即是netcat，是一個可以使用網路 TCP / UDP 進行資料的讀寫工具。它同時包含了許多的功能，在測試或偵錯網路的相關問題都非常的好用。
+
+h4 使用方式1： server / client mode
+p 
+  | 步驟：
+ul
+  li 
+    | 1. 開一個console下指令 
+    code
+      | nc -l 1234
+    | 。這個指令是將nc打開，使用 
+    code
+      | -l
+    | 監聽指定的port。
+  li 
+    | 2. 開另一個console下指令 
+    code
+      | nc 127.0.0.1 1234
+    | 。這時候這兩個nc就會建立連線並進入輸入模式，當在這個console打字時，另一個console會顯示對應的字。輸入EOF(^D)結束連線。
+
+h4 使用方式2： a simple web server
+p 
+  | 步驟：
+ul
+  li 
+    | 1. 開一個console下指令 
+    code
+      | nc -k -l 80
+    | 。這個指令是將nc打開，使用 
+    code
+      | -l
+    | 監聽指定的port。而 
+    code
+      | -k
+    | 則是表示當連線結束時，重新開啟一個連線(如果不用-k，則在連線結束時，nc也會跟著結束)。
+  li 
+    | 2. 開瀏覽器，輸入 127.0.0.1 (localhost)，則在console可以收到瀏覽器傳來的http request。
+p 
+  | 另外也可以使用file做pipe，下面是一個例子：
+ul
+  li mkfifo f0
+  li cat f0 | nc -l 80
+  li cat data.txt > f0
+
+h4 使用方式3：檔案傳輸
+p 
+  | 步驟：
+ul
+  li 
+    | server 端： 
+    code
+      | 
+
+h4 Refs
+ul
+  li 
+    a href="http://www.computerhope.com/unix/nc.htm" target="_blank"
+      | Linux and Unix nc command
+
+
+h3 ab
+p 
+  | 
+
+h2 File Descritpion
+ul
+  li can use it to check the network socket
+
+h2 Set-cookie vs cookie
+
+h2 linux command
+ul
+  li ab - benchmarking tool for presure testing
+  li 
+    a href="https://httpd.apache.org/docs/2.4/programs/ab.html" target="_blank"
+      | ab - Apache HTTP server benchmarking tool
+  li lsof - to list current opened files，用來看連線有沒有成功
+  li 
+    a href="https://dotblogs.com.tw/ghoseliang/2015/01/21/148217" target="_blank"
+      | 摘要:Linux好用網管指令之一：lsof(List Open Files)
+ul
+  li ab -c -k 1 -n 5
+  li lsof -i :80
+  li lsof -p [pid]
+
+h1 WTT 2016-09-22 - ElasticSearch
+
+h2 Install
+ul
+  li 1. brew install elasticsearch
+  li 2. use docker
+  li install plugin: head
+  li other solution: use searchly service
+
+h2 Rails
+ul
+  li gem searchkick
+  li searchjoy - to analysis the search behavior
+  li
+    a href="https://github.com/run26kimo/searchkick_example" target="_blank"
+      | example
+  li 
+    
+    a href="http://keenwon.com/tag/elasticsearch" target="_blank"
+      | KeenWon's blog - elasticsearch tag

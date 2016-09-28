@@ -41,6 +41,12 @@ ul
   li 
     a href="http://blog.arkency.com/2013/12/rails4-preloading/" target="_blank"
       | 3 ways to do eager loading (preloading) in Rails 3 & 4
+  li 
+    a href="https://regexone.com/" target="_blank"
+      | RegexOne - Learn Regular Expressions with simple, interactive exercises.
+  li 
+    a href="https://regexcrossword.com/" target="_blank"
+      | Regex Cross­word
     
 h2 SSDB
 
@@ -122,3 +128,61 @@ ul
 h2 Mult-user
 ul
   li 5人之後就會lag很嚴重：有可能是video decoding或是開多個channel。
+
+h1 Mysql
+h2 Binary Log
+h2 CAP
+
+h2 NoSql
+h3 Fast
+ul
+  li memcache - fast, only key-value data structure, cannot do key searching
+  li redis - has many data structure, don't use key searching in production
+  li aerospike
+  li ssdb - file base, redis interface
+
+h3 Size
+ul
+  li HBase - java
+  li MongoDB - nodejs
+  li ElasticSearch - java
+
+h3 mapreduce
+p 做分散式運算
+
+h3 ???
+ul
+  li CouchDB - view, schema free, api json server, not very fast
+
+h1 Docker
+
+h2 o
+ul
+  li environment version ctrl
+  li process level - less resource and high perforance
+
+h2 module  
+ul
+  li machine - sh, create docker
+  li swarm - 叢集, merge many servers to one
+  li compose - like makefile, run one command to get an app running
+
+h2 Docker hub
+ul
+  li repo means registry
+
+h2 Structure
+ul
+  li image means vm image
+  li container means 快照
+  li dockerfile means makefile to build image
+
+h2 Command
+p 
+  | docker run -p 1234:2345 ghost
+p 
+  | docker build -t [tag] [image_file_path] - each run command build one image 
+p 
+  | -v `pwd`:/app -w /app means share folder between guess and host, run guest command in share folder
+p 
+  | -it = tty to docker /bin/sh

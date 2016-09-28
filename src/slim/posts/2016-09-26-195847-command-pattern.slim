@@ -1,0 +1,492 @@
+.meta-data title Command Pattern - 命令模式
+.meta-data datetime 2016-09-26 19:58:47
+.meta-data tags dp
+.meta-data category coding
+.meta-data link command-pattern
+.meta-data file 2016-09-26-195847-command-pattern
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 最近讀書會在讀深入淺出設計模式，趁這個機會複習一下設計模式，試著舉出簡單的例子並且用非模式與模式的方式來實作，比較它們的差異與優缺點。
+  
+h1 範例問題
+
+p 
+  | 玩具工廠製造了三種機器人，分別為走路機器人(WalkingRobot)、坦克機器人(TankRobot)與鴨鴨機器人(DuckRobot)，每個機器人都有各自的動作如下：
+ul
+  li 走路機器人(WalkingRobot)有走路(walk)與轉向(turn)的動作。
+  li 坦克機器人(TankRobot)有控制左右履帶(move_right/left_track)移動的動作。
+  li 鴨鴨機器人(DuckRobot)有游泳(swim)與控制槳方向(move_oar)的動作。
+p 
+  | 程式碼如下所示：
+pre
+  code.ruby
+    | class WalkingRobot
+        def walk(direction)
+    = "\n" + '    p "Walk #{direction}"' + "\n"
+    |   end
+
+        def turn(direction)
+    = "\n" + '    p "Turn #{direction}"' + "\n"
+    |   end
+      end
+
+      class TankRobot
+        def move_left_track(direction)
+    = "\n" + '    p "Move left track #{direction}"' + "\n"
+    |   end
+
+        def move_right_track(direction)
+    = "\n" + '    p "Move right track #{direction}"' + "\n"
+    |   end
+      end
+
+      class DuckRobot
+        def swim(direction)
+    = "\n" + '    p "Swim #{direction}"' + "\n"
+    |   end
+
+        def move_oar(direction)
+    = "\n" + '    p "Move the oar to #{direction}"' + "\n"
+    |   end
+      end
+
+p 
+  | 現在玩具工廠想做一個遙控器來控制機器人，遙控器有三個功能：控制向前移動(move)、右轉(turn_right)與左轉(turn_left)，要特別注意的是每種機器人都有各自移動與轉方向的方式：
+ul
+  li 走路機器人(WalkingRobot)是用走路(walk)的方式移動，可以控制移動的方式是向前(forward)還是向後(backward)，另外還有一個轉向(turn)的動作可以控制要左轉(left)還是右轉(right)。
+  li 坦克機器人(TankRobot)在移動的時候要同時控制左右履帶(move_right/left_track)的方向(forward/backward)，要轉向的話則是要控制左右履帶做反方向的移動，例如向必須控制左邊覆帶往前，右邊覆帶往後才能向右轉。
+  li 鴨鴨機器人(DuckRobot)是用游泳(swim)的方式移動，也是可以控制移動的方式是向前(forward)還是向後(backward)，做轉向的話要先控制槳(move_oar)的方向(right/left)，之後再向前游。
+p 
+  | 另外要針對三種機器人都各做一隻遙控器成本太高，所以希望能用同一隻通用遙控器(UniversalControl)就可以支援這三種機器人的控制，只要在一開始設定的時候指定要控制哪一種機器人就可以了。
+
+h1 沒有使用模式的實作
+
+pre
+  code.ruby
+    | class UniversalControl
+        def robot=(robot)
+          @robot = robot
+        end
+
+        def move
+          if @robot.is_a?(WalkingRobot)
+            @robot.walk(:forward)
+          elsif @robot.is_a?(TankRobot)
+            @robot.move_left_track(:forward)
+            @robot.move_right_track(:forward)
+          elsif @robot.is_a?(DuckRobot)
+            @robot.swim(:forward)
+          else
+            fail 'Not a supported robot!!'
+          end
+        end
+
+        def turn_right
+          if @robot.is_a?(WalkingRobot)
+            @robot.turn(:right)
+          elsif @robot.is_a?(TankRobot)
+            @robot.move_left_track(:forward)
+            @robot.move_right_track(:backward)
+          elsif @robot.is_a?(DuckRobot)
+            @robot.move_oar(:right)
+            @robot.swim(:forward)
+          else
+            fail 'Not a supported robot!!'
+          end
+        end
+
+        def turn_left
+          if @robot.is_a?(WalkingRobot)
+            @robot.turn(:left)
+          elsif @robot.is_a?(TankRobot)
+            @robot.move_left_track(:backward)
+            @robot.move_right_track(:forward)
+          elsif @robot.is_a?(DuckRobot)
+            @robot.move_oar(:left)
+            @robot.swim(:forward)
+          else
+            fail 'Not a supported robot!!'
+          end
+        end
+      end
+
+      control = UniversalControl.new
+
+      walking_robot = WalkingRobot.new
+      control.robot = walking_robot
+      control.move
+      control.turn_right
+      control.turn_left
+
+      tank_robot = TankRobot.new
+      control.robot = tank_robot
+      control.move
+      control.turn_right
+      control.turn_left
+
+      duck_robot = DuckRobot.new
+      control.robot = duck_robot
+      control.move
+      control.turn_right
+      control.turn_left
+
+h2 上面實作的缺點
+ul
+  li UniversalControl與所有的Robot都相依，除此之外，它還與這個Robot的所有method都相依。一旦任何一個Robot裡的任何一個method界面修改了，都必須同時修改UniversalControl對應的method。
+  li 當要支援一個新的Robot時，UniversalControl裡的move, trun_right與trun_left都要做修改。
+
+h1 使用模式的實作
+
+pre
+  code.ruby
+    | class RobotCommand
+        def initialize(robot)
+          @robot = robot
+        end
+
+        def execute
+          fail 'You should implement "execute" method in your RobotCommand-based class.'
+        end
+      end
+
+      class WalkingMoveCommand < RobotCommand
+        def execute
+          @robot.walk(:forward)
+        end
+      end
+
+      class WalkingTurnRightCommand < RobotCommand
+        def execute
+          @robot.turn(:right)
+        end
+      end
+
+      class WalkingTurnLeftCommand < RobotCommand
+        def execute
+          @robot.turn(:left)
+        end
+      end
+
+      class TankMoveCommand < RobotCommand
+        def execute
+          @robot.move_left_track(:forward)
+          @robot.move_right_track(:forward)
+        end
+      end
+
+      class TankTurnRightCommand < RobotCommand
+        def execute
+          @robot.move_left_track(:forward)
+          @robot.move_right_track(:backward)
+        end
+      end
+
+      class TankTurnLeftCommand < RobotCommand
+        def execute
+          @robot.move_left_track(:backward)
+          @robot.move_right_track(:forward)
+        end
+      end
+
+      class DuckMoveCommand < RobotCommand
+        def execute
+          @robot.swim(:forward)
+        end
+      end
+
+      class DuckTurnRightCommand < RobotCommand
+        def execute
+          @robot.move_oar(:right)
+          @robot.swim(:forward)
+        end
+      end
+
+      class DuckTurnLeftCommand < RobotCommand
+        def execute
+          @robot.move_oar(:left)
+          @robot.swim(:forward)
+        end
+      end
+
+      class UniversalControl
+        def initialize
+          @commands = {}
+        end
+
+        def setup(type, command)
+          @commands[type] = command
+        end
+
+        def move
+          @commands[:move].execute if @commands[:move] != nil
+        end
+
+        def turn_right
+          @commands[:turn_right].execute if @commands[:turn_right] != nil
+        end
+
+        def turn_left
+          @commands[:turn_left].execute if @commands[:turn_left] != nil
+        end
+      end
+
+      control = UniversalControl.new
+
+      walking_robot = WalkingRobot.new
+      control.setup(:move, WalkingMoveCommand.new(walking_robot))
+      control.setup(:turn_right, WalkingTurnRightCommand.new(walking_robot))
+      control.setup(:turn_left, WalkingTurnLeftCommand.new(walking_robot))
+      control.move
+      control.turn_right
+      control.turn_left
+
+      tank_robot = TankRobot.new
+      control.setup(:move, TankMoveCommand.new(tank_robot))
+      control.setup(:turn_right, TankTurnRightCommand.new(tank_robot))
+      control.setup(:turn_left, TankTurnLeftCommand.new(tank_robot))
+      control.move
+      control.turn_right
+      control.turn_left
+
+      duck_robot = DuckRobot.new
+      control.setup(:move, DuckMoveCommand.new(duck_robot))
+      control.setup(:turn_right, DuckTurnRightCommand.new(duck_robot))
+      control.setup(:turn_left, DuckTurnLeftCommand.new(duck_robot))
+      control.move
+      control.turn_right
+      control.turn_left
+
+h2 上面實作的優點
+ul
+  li UniversalControl只與RobotCommand有相依，UniversalControl與Robot之間的相依性被鬆綁了。
+  li 原本的Robot class完全不用做任何的修改。
+  li 因為只要有實作 execute 的 RobotCommand 都可以使用遙控器控制，大大增加了UniversalControl的通用性。
+
+h1 使用命令模式的附加好處1：可以支援復原(undo)功能
+
+p 
+  | 我們希望可以在遙控器上加一個復原的按鈕，當按鈕按下去的時候可以復原前一個命令。這時候只要在command中定義相對應的undo method，在按鈕按下去的時候去呼叫對應的undo就ok了。
+
+pre
+  code.ruby
+    | class RobotCommand
+        def initialize(robot)
+          @robot = robot
+        end
+
+        def execute
+          fail 'You should implement "execute" method in your RobotCommand-based class.'
+        end
+
+        def undo
+          fail 'You should implement "undo" method in your RobotCommand-based class.'
+        end
+      end
+
+      class WalkingMoveCommand < RobotCommand
+        def execute
+          @robot.walk(:forward)
+        end
+
+        def undo
+          @robot.walk(:backward)
+        end
+      end
+
+      class WalkingTurnRightCommand < RobotCommand
+        def execute
+          @robot.turn(:right)
+        end
+
+        def undo
+          @robot.turn(:left)
+        end
+      end
+
+      class WalkingTurnLeftCommand < RobotCommand
+        def execute
+          @robot.turn(:left)
+        end
+
+        def undo
+          @robot.turn(:right)
+        end
+      end
+
+      class TankMoveCommand < RobotCommand
+        def execute
+          @robot.move_left_track(:forward)
+          @robot.move_right_track(:forward)
+        end
+
+        def undo
+          @robot.move_left_track(:backward)
+          @robot.move_right_track(:backward)
+        end
+      end
+
+      class TankTurnRightCommand < RobotCommand
+        def execute
+          @robot.move_left_track(:forward)
+          @robot.move_right_track(:backward)
+        end
+
+        def undo
+          @robot.move_left_track(:backward)
+          @robot.move_right_track(:forward)
+        end
+      end
+
+      class TankTurnLeftCommand < RobotCommand
+        def execute
+          @robot.move_left_track(:backward)
+          @robot.move_right_track(:forward)
+        end
+
+        def undo
+          @robot.move_left_track(:forward)
+          @robot.move_right_track(:backward)
+        end
+      end
+
+      class DuckMoveCommand < RobotCommand
+        def execute
+          @robot.swim(:forward)
+        end
+
+        def undo
+          @robot.swim(:backward)
+        end
+      end
+
+      class DuckTurnRightCommand < RobotCommand
+        def execute
+          @robot.move_oar(:right)
+          @robot.swim(:forward)
+        end
+
+        def undo
+          @robot.move_oar(:right)
+          @robot.swim(:backward)
+        end
+      end
+
+      class DuckTurnLeftCommand < RobotCommand
+        def execute
+          @robot.move_oar(:left)
+          @robot.swim(:forward)
+        end
+
+        def undo
+          @robot.move_oar(:left)
+          @robot.swim(:backward)
+        end
+      end
+
+      class UniversalControl
+        def initialize
+          @commands = {}
+        end
+
+        def setup(type, command)
+          @commands[type] = command
+        end
+
+        def move
+          @commands[:move].execute if @commands[:move] != nil
+          @last_command = :move
+        end
+
+        def turn_right
+          @commands[:turn_right].execute if @commands[:turn_right] != nil
+          @last_command = :turn_right
+        end
+
+        def turn_left
+          @commands[:turn_left].execute if @commands[:turn_left] != nil
+          @last_command = :turn_left
+        end
+
+        def undo
+          @commands[@last_command].undo if @commands[@last_command] != nil
+        end
+      end
+
+      control = UniversalControl.new
+
+      walking_robot = WalkingRobot.new
+      control.setup(:move, WalkingMoveCommand.new(walking_robot))
+      control.setup(:turn_right, WalkingTurnRightCommand.new(walking_robot))
+      control.setup(:turn_left, WalkingTurnLeftCommand.new(walking_robot))
+      control.move
+      control.undo
+      control.turn_right
+      control.undo
+      
+h1 使用命令模式的附加好處2：可以支援批次命令(batch)功能
+
+p 
+  | 使用命令模式的另一個好處是可以定義批次命令，例如我們可以建一個 BatchCommand class 如下：
+
+pre
+  code.ruby
+    | class BatchCommand
+        def initialize(commands)
+          @commands = commands
+        end
+
+        def execute
+          @commands.each do |command|
+            command.execute
+          end
+        end
+
+        def undo
+          @commands.reverse.each do |command|
+            command.undo
+          end
+        end
+      end
+
+p 
+  | 這時候我們可以利用 BatchCommand 來組合多個 command，例如我們想要讓走路機器人的move是往前走三步，而不是只有一步，則我們可以設定遙控器如下：
+  
+pre
+  code.ruby
+    | control = UniversalControl.new
+      walking_robot = WalkingRobot.new
+      
+      move_command = WalkingMoveCommand.new(walking_robot)
+      boost_command = BatchCommand.new([
+        move_command,
+        move_command,
+        move_command
+      ])
+      
+      control.setup(:move, boost_command)
+      control.setup(:turn_right, WalkingTurnRightCommand.new(walking_robot))
+      control.setup(:turn_left, WalkingTurnLeftCommand.new(walking_robot))
+      
+      control.move
+      control.undo
+      control.turn_right
+      control.undo
+
+h1 樣式名稱
+p 
+  | Command Pattern - 命令模式
+
+h1 目的
+p 
+  | 使用中介的 class(RobotCommand系列的class) 做為傳遞命令的媒界，使呼叫命令的 client(UniversalControl) 與實際執行的 receiver(WalkingRobot, TankRobot, DuckRobot) 之間的相依性降低。另外藉由共同實作的 execute method，讓 client(UniversalControl) 可以動態切換要執行的命令，而不用了解執行命令的 receiver(WalkingRobot, TankRobot, DuckRobot) 是哪個 class，同時也可以做到復原(undo)與批次(batch)執行的功能。
+  
+h1 使用時機
+ul
+  li 
+    | 當 client(UniversalControl) 需要動態改變呼叫的命令，可能還需要實作復原(undo)與批次(batch)執行的功能。
+  li
+    | 需要將命令做額外處理，例如佇列(queue)或是日誌(logging)。
