@@ -265,6 +265,10 @@ ul
   li UniversalControl只與RobotCommand有相依，UniversalControl與Robot之間的相依性被鬆綁了。
   li 原本的Robot class完全不用做任何的修改。
   li 因為只要有實作 execute 的 RobotCommand 都可以使用遙控器控制，大大增加了UniversalControl的通用性。
+  
+h2 上面實作的缺點
+ul
+  li 所有的命令都必須建立一個對應的 RobotCommand-based class，這表示要使用命令模式就一定要建立很多的 class。
 
 h1 使用命令模式的附加好處1：可以支援復原(undo)功能
 

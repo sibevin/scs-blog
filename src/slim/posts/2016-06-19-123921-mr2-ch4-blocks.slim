@@ -5,7 +5,6 @@
 .meta-data link mr2-ch4-blocks
 .meta-data file 2016-06-19-123921-mr2-ch4-blocks
 .meta-data template post
-.meta-data draft
 .meta-data end
 
 h1 前言
@@ -161,7 +160,7 @@ p
   | 而這些對應的keyword：class、module與def，我們稱做 Scope Gate 。另外class, module與method切換scope的時機點也不太一樣，class或module會在進入definition的地方就會立刻切換到class或module的scope，而method scope只有在這個method被呼叫的時候才會切換到method scope。
 
 p 
-  | 切換scope的時候，對應的bindings也會跟著切換，那如果要在不同的scope之間共享變數，這就是black的範疇了。
+  | 切換scope的時候，對應的bindings也會跟著切換，那如果要在不同的scope之間共享變數，這就是block的範疇了。
 
 h2 Flattening the Scope
 
@@ -353,17 +352,247 @@ pre
       p a.say
 
 h1 Callable Objects
+p 
+  | Block只是所謂可被呼叫物件(Callable Object)的其中一種，可呼叫物件就是將程式碼暫存起來，而等過一段時間之後再來呼叫(package code first, call it later)，也就是可以先定義要執行的程式碼而不用立刻呼叫它。在ruby中至少有三種可被呼叫的物件：
+ul
+  li proc 即是轉成物件型式的 block。
+  li lambda 同樣是轉成物件型式的 block，但使用上與 proc 有些許的不同。
+  li method 就是 method。
+  
 h2 Proc Objects
+
+p 
+  | 因為 block 不是物件，所以沒辦法做到暫存之後再呼叫的需求。在ruby中可以使用 Proc 來將 block 物件化，方式如下：
+pre
+  code.ruby
+    | add_one = Proc.new { |x| x + 1 }
+      p add_one.call(1) # 2
+p 
+  | 上面的程式碼先使用 Proc.new 建立一個 add_one 的 proc，這個時候 add_one 儲存了 block { |x| x + 1 }，我們可以使用 call 這個 method來執行 block 的程式。將程式碼暫存起來，而等過一段時間之後再來呼叫的技巧稱做
+  span.mk-blue Deferred Evaluation
+  | 。除了上面這個方式可以建立 Proc，還有下面這幾種建立 Proc 的方法：
+pre
+  code.ruby
+    | add_one = lambda { |x| x + 1 }
+      p add_one.call(1) # 2
+
+      add_one = -> (x) { x + 1 }
+      p add_one.call(1) # 2
+p 
+  | 上面這兩個寫法做的事是一樣的。
+
 h3 The & Operator
+
+p 
+  | 如果我們要在某個 method 裡使用 block，通常都是使用 yield 的方式來使用，不過在某些情況下 yield 是沒辦法處理的。例如：
+ul
+  li 要將傳進來的 block 再次傳給另一個 method 或是另一個 block 中。
+  li 要將傳進來的 block 轉成 proc。
+p 
+  | 這兩種情況都是因為使用 yield 就像把 block 視做一個沒有名字的 method 來處理，而上面的情況是要指定這個 block 做一些事情，所以我們要給傳進來的 block 一個名字，方式就是使用 & 這個 operator。方式如下：
+  
+i 這是原本使用 yield 的寫法：  
+pre
+  code.ruby
+    | def do_math(a, b)
+        yield(a, b)
+      end
+
+      p do_math(1, 2) { |x, y| x + y } # 3
+      
+i 這是使用 & 的寫法：  
+pre
+  code.ruby
+    | def do_math(a, b, &c)
+        c.call(a, b)
+      end
+
+      p do_math(1, 2) { |x, y| x + y } # 3
+p 
+  | 你會發現使用 & 傳進來的 block 會被自動轉成 proc 並且將它存在一個參數裡(上面的例子就是 c 這個參數)，這時候我們就可以透過這個 proc 來做一些事情，這也是將 block 轉成 proc 的另一種方式。 & 另一個用途是將 proc 轉回 block，方式如下：
+pre
+  code.ruby
+    | def do_math(a, b)
+        yield(a, b)
+      end
+
+      do_add = Proc.new { |x, y| x + y }
+
+      p do_math(1, 2, &do_add) # 3
+p 
+  | 上面的例子在呼叫 do_math 的時候，不帶 block，而是在最後一個參數傳入 do_add 這個 proc，並且加上 & ，這時候在 do_math 裡的 yield 就會使用 do_add 裡定義的程式碼。 
+
 h3 The HighLine Example
 h2 Procs vs. Lambdas
+p 
+  | ruby裡最常搞混的東西就是 Proc.new 與 lambda 所產生的 proc，如果你用 .class 去看它們產生的物件，它們都是 Proc：
+pre
+  code.ruby
+    | proc_from_proc_new = Proc.new do |x|
+        x + 1
+      end
+
+      p proc_from_proc_new.class # Proc
+      p proc_from_proc_new.call(1) # 2
+
+      proc_from_lambda = lambda do |x|
+        x + 1
+      end
+
+      p proc_from_lambda.class # Proc
+      p proc_from_lambda.call(1) # 2
+p 
+  | 但實際上這兩個 proc 還是有一些差異，而且這些差異大到要用不同的名稱來稱呼這兩種 proc，如果是用 Proc.new 產生的 proc 稱做
+  span.mk-blue proc
+  | ，用 lambda 產生的 proc 稱做
+  span.mk-blue lambda
+  | 。
+  
 h3 Procs, Lambdas, and return
+
+p 
+  | 第一個最大的差別是 return 的行為，如果是在一個 method 裡建立 proc，而這個 proc 裡又有 return 的話，使用 Proc.new 與 lambda 的行為會不同，舉個例子：
+pre
+  code.ruby
+    | def do_math_proc_new(a)
+        proc_from_proc_new = Proc.new do |x|
+          return (x + 1)
+        end
+        result = proc_from_proc_new.call(a)
+        result = result * 2
+        result
+      end
+
+      p do_math_proc_new(1) # 2
+
+      def do_math_lambda(a)
+        proc_from_lambda = lambda do |x|
+          return (x + 1)
+        end
+        result = proc_from_lambda.call(a)
+        result = result * 2
+        result
+      end
+
+      p do_math_lambda(1) # 4
+p 
+  | 上面的例子你會發現使用 Proc.new 算出來的值並沒有 * 2，這是因為 do_math_proc_new 在 result = proc_from_proc_new.call(a) 的時候因為 proc_from_proc_new 裡面有定義 return ，而這個 return 會導致 do_method_proc_new 會被 return 而提早結束執行，所以 result = result * 2 反而沒有執行到。如果我們把 proc_from_proc_new 從 do_math_proc_new 中搬到外面執行，就會出現下面的 error：
+pre
+  code.ruby
+    | proc_from_proc_new = Proc.new do |x|
+        return (x + 1)
+      end
+
+      p proc_from_proc_new.call(1) # in 
+    = '`block in <main>\': unexpected return (LocalJumpError)'
+p 
+  | 這是因為上面的程式碼嘗試從 top-level return，這沒辦法做到，所以就出 exception 了。要讓 Proc.new 的 proc 可以正確運作，只要把 return 拿掉就可以了：
+pre
+  code.ruby
+    | proc_from_proc_new = Proc.new do |x|
+        x + 1
+      end
+
+    p proc_from_proc_new.call(1) # 2
+p 
+  | 相較於 Proc.new，lambda 裡的 return 就不會有這個行為，是比較符合我們的預期。
+
 h3 Procs, Lambdas, and Arity
+
+p
+  | arity 指的就是接收的參數個數， proc 與 lambda 的第二個差異是對 arity 的容錯度，也就是當接收到與預期不同的參數個數時，proc 與 lambda有不同的處理方式：
+
+pre
+  code.ruby
+    | proc_from_proc_new = Proc.new do |a, b|
+        [a, b]
+      end
+      p proc_from_proc_new.arity # 2
+      p proc_from_proc_new.call(1, 2) # [1, 2]
+      p proc_from_proc_new.call(1) # [1, nil]
+      p proc_from_proc_new.call(1, 2, 3) # [1, 2]
+
+      proc_from_lambda = lambda do |a, b|
+        [a, b]
+      end
+      p proc_from_lambda.arity # 2
+      p proc_from_lambda.call(1, 2) # [1, 2]
+      p proc_from_lambda.call(1) # 
+    = 'in `block in <main>\': wrong number of arguments (1 for 2) (ArgumentError)' + "\n"
+    | p proc_from_lambda.call(1, 2, 3) #
+    = 'in `block in <main>\': wrong number of arguments (3 for 2) (ArgumentError)'
+p 
+  | 從例子可以發現 proc 會試著讀取傳入的參數，如果少了就會變成nil，多了則會略過。而 lambda 會做比較嚴格的檢查，只要參數不對就會出 exception。
+
 h3 Procs vs. Lambdas: The Verdict
+
+p 
+  | 所以到底要用 Proc.new 還是用 lambda 呢？大部分的rubyist還是會建議如果可以用 lambda 就用 lambda，因為 return 的行為比較像 method，而且對參數列也採取比較嚴謹的檢查。
+
 h2 Method Objects
+
+p 
+  | 除了 proc 與 lambda 外， method 也是另一種可被呼叫的物件。例子如下：
+pre
+  code.ruby
+    | class A
+        def initialize(word)
+          @word = word
+        end
+
+        def say
+          @word
+        end
+      end
+
+      a = A.new('Hi')
+
+      do_say = a.method(:say)
+      p do_say.call # Hi
+      p do_say.class # Method
+p 
+  | 我們可以使用 Kernel#method 將一個物件裡的 method 變成一個物件化的 method，這樣就可以使用 call 做到延後呼叫的效果。BTW，有另一個 Kernel#singleton_method 可以把一個物件裡的 singleton method 轉成物件化的 method，不過等到下一章才會介紹什麼是 singleton method。
+  
+p 
+  | 那 method 與 proc / lambda 到底是差在什麼地方呢？最大的差別在於 method 它所參照到 scope 是屬於物件本身(也就是上面的 instance a，所以才可以使用 @word 這個 instance variable)，而 proc / lambda 則是參照它被宣告定義的時候所在的 scope (因為我們是使用 block 來宣告定義 proc / lambda，而 block 有 closure 的特性，也就是它是參照 block 被宣告定義時所在的 scope。)
+
 h3 Unbound Methods
+
+p 
+  | 上面的例子 instance method say 所參照的是對應它所屬的 instance a，但如果是一個 module 的 method 被物件化，那它所參照的是什麼東西呢？
+pre
+  code.ruby
+    | module B
+        def say
+          'Hello'
+        end
+      end
+
+      do_say = B.instance_method(:say)
+      p do_say.call # 
+    = 'in `<main>\': undefined method `call\' for #<UnboundMethod: B#say> (NoMethodError)' + "\n"
+    | p do_say.class # UnboundMethod
+p 
+  | module 的 method 被物件化會變成所謂的 UnboundMethod ，它沒辦法直接被呼叫，但它可以做很神奇的事情：
+pre
+  code.ruby
+    | String.class_eval do
+        define_method(:say, do_say)
+      end
+
+      p 'Yoooo'.say # Hello
+p 
+  | UnboundMethod 可以使用 define_method 被重新綁定(bind)到其它的 class，不過這樣的用法真的是很少見啊。
+
 h3 The Active Support Example
+
+p 
+  | 書上舉了一個 Active Support 使用 UnboundMethod 的範例。在這個範例也提到了如果使用 UnboundMethod 來做 bind會造成method lookup的順序混亂，所以還是能盡量不用比較好。
+
 h2 Callable Objects Wrap-Up
+
+p 
+  | 接下來的兩個章節，作者使用了之前提到的 meta-programming 的技巧實作了一組DSL。
 
 h1 Writing a Domain-Specific Language
 h2 Your First DSL

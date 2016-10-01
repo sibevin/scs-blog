@@ -1,0 +1,311 @@
+.meta-data title 用ruby來寫DSL吧
+.meta-data datetime 2016-10-01 14:07:02
+.meta-data tags ruby,mp
+.meta-data category coding
+.meta-data link build-dsl-with-ruby
+.meta-data file 2016-10-01-140702-build-dsl-with-ruby
+.meta-data template post
+.meta-data end
+
+h1 前言
+p 
+  | 這個例子是從 Metaprogramming Ruby 2 的書擷錄出來並且做了一些修改。如果你對這篇文章的內容有興趣的話，建議可以去讀讀這本書的第五章。
+
+h1 What
+
+p 
+  | DSL 即是 Demain Specific Language 領域特定語言，好啦，這樣講也是沒人聽的懂，簡言之，就是用自己定義的關鍵字來寫程式。
+  
+h1 建立第一個 DSL
+
+p 
+  | 先從一個例子來看吧，我們希望可以做到下面的效果，也就是使用 event 這個關鍵字後面接一個字串，例如："Hello"，這時候就會印出 "EVENT: Hello"
+pre
+  code.ruby
+    | event 'Hello' # EVENT: Hello
+p 
+  | 其實 DSL 的本質就是 method 啊，上面的 event 'Hello' 只不過是呼叫一個叫做 event 的 method，然後把 'Hello' 當參數傳進去而已。因為 ruby 在呼叫 method 的時候可以把括號省略，才會看起來不像 method 而像是關鍵字，如果把括號加上去就很明顯了： event('Hello')。要達到上面的效果很容易，只要建立一個 method 就好了：
+pre
+  code.ruby
+    | def event(msg)
+    = "\n" +'  p "EVENT: #{msg}"' + "\n"
+    | end
+      
+      event 'Hello' # EVENT: Hello
+
+h1 為 DSL 加上 block
+
+p 
+  | event 的功能需求增加了，我們希望可以讓 event 後面可以多接一個 block，當 block 執行完回傳 true 才會印出訊息，如下面這個例子：
+pre
+  code.ruby
+    | count = 5
+      event 'Hello' do
+        count > 1
+      end
+      
+      event 'Yoooo' do
+        count > 10
+      end
+pre
+  code.nohighlight
+    | EVENT: Hello
+p 
+  | 這個需求也很簡單，因為 method 本身就可以接受 block 的傳入，只要用 yield 就可以做到了：
+pre
+  code.ruby
+    | def event(msg)
+    = "\n" +'  p "EVENT: #{msg}" if yield' + "\n"
+    | end
+
+      count = 5
+
+      event 'Hello' do
+        count > 1
+      end
+
+      event 'Yoooo' do
+        count > 10
+      end
+pre
+  code.nohighlight
+    | EVENT: Hello
+
+h1 建立第二個 DSL
+p 
+  | 需求又更新了，這次多了一個 setup 的 DSL，setup 後面只接一個 block。它的作用就是在 event 被呼叫前，先呼叫 setup 執行 block 裡的程式做一些設定，這時候 event 可以根據 setup 執行的結果來顯示訊息，例如：
+pre
+  code.ruby
+    | setup do
+        @count = 5
+      end
+
+      event 'Hello' do
+        @count > 1
+      end
+
+      setup do
+        @count = 15
+      end
+
+      event 'Yoooo' do
+        @count > 10
+      end
+pre
+  code.nohighlight
+    | "EVENT: Hello"
+      "EVENT: Yoooo"
+p 
+  | 附帶說明：這裡將 count 用 @count 取代是因為如果只使用 count 而不在程式的一開始做宣告的話，在 setup 與 event block 中的 count 會被視作 block 裡的 local variable，這時候 event 就會出現 undefined local variable 的 exception，因此如果要在 DSL 共享變數，一定要用 instance variable。回到正題，基本上這個需求沒有做什麼，只要建立一個新的 setup method，裡面只有一行 yield 的程式去執行傳進來的 block，完全沒有難度。
+pre
+  code.ruby
+    | def setup
+        yield
+      end
+
+      def event(msg)
+    = "\n" +'  p "EVENT: #{msg}" if yield' + "\n"
+    | end
+
+      setup do
+        @count = 5
+      end
+
+      event 'Hello' do
+        @count > 1
+      end
+
+      setup do
+        @count = 15
+      end
+
+      event 'Yoooo' do
+        @count > 10
+      end
+pre
+  code.nohighlight
+    | "EVENT: Hello"
+      "EVENT: Yoooo"
+h1 建立只有 DSL 可以共享存取的變數
+p 
+  | 上面的實作有個問題，如果 DSL 外部的程式不小心改了 @count，就會讓 event 顯示的結果就不對了：
+pre
+  code.ruby
+    | def setup
+        yield
+      end
+
+      def event(msg)
+    = "\n" +'  p "EVENT: #{msg}" if yield' + "\n"
+    | end
+
+      setup do
+        @count = 15
+      end
+
+      event 'Hello' do
+        @count > 1
+      end
+
+      @count = 5
+
+      event 'Yoooo' do
+        @count > 10
+      end
+pre
+  code.nohighlight
+    | "EVENT: Hello"
+p 
+  | 這是因為 block 本身是 closure，也就是 block 內的變數是與 block 外的程式共享存取的，所以當外面的程式改成 @count 的值，在 event 的 block 變數也會跟著被改變。要讓 block 裡的變數不受外面的程式影響，需要了解下面的一些知識：
+
+ol
+  li instance variable 有一個特性是不同 instance 的 instance varible 彼此之間不會互相影響，所以如果我們把執行 block 的動作丟到一個 instance 裡面去做，那 @count 就會變成對應那個 instance 的 instance variable，而不會是最外層程式的 instance varible，這樣就可以做到 block 內外 instance variable 的切割。
+  li 要把程式丟進一個 instance 裡執行，就要用使 instance_eval 這個 method。
+  li 要把 block 從一個 method 傳到另一個 method，就要使用 & 這個 operator 將傳進來的 block 變成 proc，這樣才可以將 proc 再傳給其它的 method。
+  li 得到 proc 之後，要讓它變回 block 的型式傳入 method，又要使用到 & 這個 operator。
+p 
+  | 最後程式可以改成下面這個樣子：
+pre
+  code.ruby
+    | $env = Object.new
+    
+      def setup(&setting)
+        $env.instance_eval(&setting)
+      end
+
+      def event(msg, &condition)
+    = "\n" +'  p "EVENT: #{msg}" if $env.instance_eval(&condition)' + "\n"
+    | end
+
+      setup do
+        @count = 15
+      end
+
+      event 'Hello' do
+        @count > 1
+      end
+
+      @count = 5
+
+      event 'Yoooo' do
+        @count > 10
+      end
+pre
+  code.nohighlight
+    | "EVENT: Hello"
+      "EVENT: Yoooo"
+      
+h1 將那個剌眼的 global variable 拿掉吧
+p 
+  | 上面的程式碼有一個很大的缺點就是用到了 $env 這個 global varible，會用到這個 global variable 的原因是為了讓 setup 與 event 兩個 method 可以存取相同的變數。如果不要用 global variable 但又要讓 setup 與 event 可以存取變數，就要使用 Flat Scope 的技巧，使用 define_method 來取代原本的 method 宣告，這時候宣告 method 的方式變成了使用 block 來做宣告，而 block 就可以與外部共享變數。下面是改善後的程式：
+pre
+  code.ruby
+    | env = Object.new
+    
+      define_method(:setup) do |&setting|
+        env.instance_eval(&setting)
+      end
+
+      define_method(:event) do |msg, &condition|
+    = "\n" +'  p "EVENT: #{msg}" if env.instance_eval(&condition)' + "\n"
+    | end
+
+      setup do
+        @count = 15
+      end
+
+      event 'Hello' do
+        @count > 1
+      end
+pre
+  code.nohighlight
+    | "EVENT: Hello"
+      
+h1 將那個剌眼的 local variable 拿掉吧
+p 
+  | 雖然將 global variable 改成了 local variable，但這個 local variable 還是屬於外部的程式的一部分，也就是還是可能會被其它人存取。如果要讓 local variable不被其它人讀到，就表示要將這個變數放到某個程式區塊當中，例如某個 method 中，這樣就只有這個 method 裡的程式可以存取這個 local variable。
+
+pre
+  code.ruby
+    | def init_dsl
+        env = Object.new
+      
+        define_method(:setup) do |&setting|
+          env.instance_eval(&setting)
+        end
+
+        define_method(:event) do |msg, &condition|
+    = "\n" +'    p "EVENT: #{msg}" if env.instance_eval(&condition)' + "\n"
+    |   end
+      end
+      
+      init_dsl
+
+      setup do
+        @count = 15
+      end
+
+      event 'Hello' do
+        @count > 1
+      end
+pre
+  code.nohighlight
+    | "EVENT: Hello"
+
+h1 讓 DSL 自動初始化
+p 
+  | 上面的程式我們把整個 DSL 的初始化動作包在 init_dsl method 裡，然後呼叫 init_dsl 來初始化 DSL，這個方式有個問題是 init_dsl 可能會被其它人呼叫。有沒有辦法可以讓它自動作初始化的動作而不用呼叫 init_dsl 呢？有，就是把 method 改寫成 lambda，基本上 lambda 可以視做一個沒有名字的 method，在定義完 lambda 之後馬上呼叫它，這樣就可以做到自動初始化 DSL 了。
+pre
+  code.ruby
+    | lambda do
+        env = Object.new
+      
+        define_method(:setup) do |&setting|
+          env.instance_eval(&setting)
+        end
+
+        define_method(:event) do |msg, &condition|
+    = "\n" +'    p "EVENT: #{msg}" if env.instance_eval(&condition)' + "\n"
+    |   end
+      end.call
+
+      setup do
+        @count = 15
+      end
+
+      event 'Hello' do
+        @count > 1
+      end
+pre
+  code.nohighlight
+    | "EVENT: Hello"
+
+h1 將 DSL 定義成 Kernel Method
+p 
+  | 上面的程式定義了 event 與 setup method 在 top-level 裡，這兩個 method 會變成 Object 的兩個 public instance method，這表示基本上在任何地方都可以使用 DSL。但是 event 與 setup 都是我們自定義的 method，直接加到 Object 裡是個危險的做法(有可能會有名稱衝突的問題)，比較好的做法是將它們變成 Kernel Method，利用 send 呼叫 Kernel 的 define_method 將我們的 DSL 定義在 Kernel 之中，如下所示：
+pre
+  code.ruby
+    | lambda do
+        env = Object.new
+      
+        Kernel.send(:define_method, :setup) do |&setting|
+          env.instance_eval(&setting)
+        end
+
+        Kernel.send(:define_method, :event) do |msg, &condition|
+    = "\n" +'    p "EVENT: #{msg}" if env.instance_eval(&condition)' + "\n"
+    |   end
+      end.call
+
+      setup do
+        @count = 15
+      end
+
+      event 'Hello' do
+        @count > 1
+      end
+pre
+  code.nohighlight
+    | "EVENT: Hello"
+p 
+  | 大功告成，這就是一個完整的 DSL 實作範例。
