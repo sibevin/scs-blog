@@ -1,0 +1,81 @@
+.meta-data title ruby的top-level
+.meta-data datetime 2016-10-02 12:42:09
+.meta-data tags ruby
+.meta-data category coding
+.meta-data link ruby-top-level
+.meta-data file 2016-10-02-124209-ruby-top-level
+.meta-data template post
+.meta-data end
+
+h1 What：top-level是啥？
+
+p 
+  | top-level 即是 ruby 程式一開始執行的時候，預設所在的 scope。如果我們執行 irb，則 irb 開始等待我們輸入程式的那個時間點，就是在 top-level中了。
+
+h1 top-level 所擁有的 instance 特性
+p 
+  | 如果我們在 irb 中去看它的 self，結果會是：
+pre
+  code.nohighlight
+    | > self
+      => main
+      > self.class
+      => Object
+p 
+  | self 表示目前程式所在的 instance，它是一個叫做 main 的 Object。即然是在 instance 中，我們可以使用 instance variables，例如：
+pre
+  code.nohighlight
+    | > @var = 1
+      => 1
+      > instance_variables
+      => [@var]
+
+h1 top-level 所擁有的 class 特性
+p 
+  | top-level 有 instance 的特性是比較容易理解的，因為它本身就是一個 Object 的 instance，但神奇的是它還有一些是像 class 的特性，這些是在一般用 Object.new 建立的 instance 所沒有的特性。
+
+h2 在 top-level 中建立的 method 會變成 Object 的 private instance method
+p 
+  | 第一個奇怪的特性就是在 top-level 中建立的 method 會變成 Object 的 private instance method，舉個例子：
+pre
+  code.ruby
+    | def say
+        p 'Hi'
+      end
+
+      say # 'Hi'
+
+      class A
+      end
+
+      a = A.new
+      p a.private_methods.include?(:say) # true
+p 
+  | 我們在 top-level 裡先宣告了一個 say method，接著再宣告了一個 class A。在 ruby 裡宣告的 class 預設會繼承 Object，當我們用 private_methods 查看 a 的 private method 會連帶將 Object 的 private method 也印出來，結果竟然出現了 say 這個 method。也因為這個特性，表示我們可以在程式的任何地方呼叫 say。(因為是 private ，所以只能使用隱含的方式呼叫，也就是不帶 receiver。)
+
+h2 在 top-level 裡定義的 Constant 會變成 Object 裡的 Constant
+p 
+  | 同上面的例子，宣告的 class A 會變成 Object 裡的一個 Constant，也就是在程式的任何地方都可以使用 A 這個 class。
+pre
+  code.ruby
+    | class A
+      end
+
+      p Object.constants.include?(:A) # true
+
+
+h1 八掛
+p 
+  | top-level 的奇怪特性，其實在 ruby 社群中爭論了很多次，尤其是「在 top-level 中建立的 method 會變成 Object 的 private instance method」這樣的行為。在這個
+  a href="https://groups.google.com/forum/#!topic/comp.lang.ruby/e7e0UajzzKc" target="_blank"
+    | 討論串
+  | 中 ruby 之父 Matz 解釋了當初這樣設計的理由：因為比較直覺。
+
+h1 Refs
+ul
+  li 
+    a href="https://banisterfiend.wordpress.com/2010/11/23/what-is-the-ruby-top-level/" target="_blank"
+      | What is the Ruby Top-Level?
+  li
+    a href="http://stackoverflow.com/a/1766131/232710" target="_blank"
+      | SO - Where are methods defined at the ruby top level?

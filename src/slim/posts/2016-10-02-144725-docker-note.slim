@@ -1,0 +1,150 @@
+.meta-data title docker 筆記
+.meta-data datetime 2016-10-02 14:47:25
+.meta-data tags docker
+.meta-data category tools
+.meta-data link docker-note
+.meta-data file 2016-10-02-144725-docker-note
+.meta-data template post
+.meta-data end
+
+h1 一般的 vm 與 docker 差在哪？
+
+p
+  | 一般的 vm 會在 hypervisor上再架一個完整的 Guest OS，接著才會安裝對應的 library 與 application。而 docker 會是基於 Docker Engine上跑多個 container，每一個 container 都是一支獨立的 user process，共用 Host OS 的 Kernel。
+
+.rwd-table
+  table
+    tbody
+      tr
+        td
+          | 一般的 vm
+        td 
+          | docker
+      tr
+        td.table-block
+          table
+            tbody
+              tr
+                td Applications 01
+                td Applications 02
+                td Applications 03
+              tr
+                td libraries 01
+                td libraries 02
+                td libraries 03
+              tr.text-red
+                td Guest OS 01
+                td Guest OS 02
+                td Guest OS 03
+              tr.text-blue
+                td colspan="3"
+                  | Hyervisor (例如：VirtualBox)
+              tr
+                td colspan="3"
+                  | Host OS
+        td.table-block
+          table
+            tbody
+              tr
+                td
+                  span.text-green
+                    | Container 01
+                  table
+                    tbody
+                      tr
+                        td
+                          | Application 01 
+                      tr
+                        td
+                          | Libraries 01 
+                td
+                  span.text-green
+                    | Container 02
+                  table
+                    tbody
+                      tr
+                        td
+                          | Application 02 
+                      tr
+                        td
+                          | Libraries 02 
+                td
+                  span.text-green
+                    | Container 03
+                  table
+                    tbody
+                      tr
+                        td
+                          | Application 03 
+                      tr
+                        td
+                          | Libraries 03 
+              tr.text-blue
+                td colspan="3"
+                  | Docker Engine
+              tr
+                td colspan="3"
+                  | Host OS
+h2 Refs
+ul
+  li 
+    a href="https://www.docker.com/what-docker" target="_blank"
+      | WHAT IS DOCKER?
+  li 
+    a href="http://stackoverflow.com/questions/16047306/how-is-docker-different-from-a-normal-virtual-machine" target="_blank"
+      | SO - How is Docker different from a normal virtual machine?
+                
+h1 基本名詞
+
+h2 Docker Client
+p 
+  | 一個工具用來讓使用者可以對 Docker Daemon 送指令與設定。
+  
+h2 Docker Daemon
+p 
+  | 一個跑在 Host Machine 的程式，用來操作 Docker。
+  
+.image-center
+  img src="/images/post/20161002180552965-docker-image-container.png" alt="Dockerfile, Image and Container"
+  .image-text
+    | Dockerfile, Image and Container
+  
+h2 Dockerfile
+p 
+  | 一個檔案用來定義一個 Docker Image 要怎麼產生的，也就是 Docker Image 的原始檔。裡面包含了多個指令來描述 Docker Image 要怎麼被建立。在整個 Docker 的運作中只會被讀取用來建立 Docker Image，而不會被 Docker 更改。
+
+h2 Docker Image
+p 
+  | 一個檔案用來定義怎麼建立 Docker Container，它是 Dockerfile 生成的產物，包含了跑一個應用程式所需的執行環境與函式庫。可以使用 
+  code
+    | build
+  | 這個指令來從 Dockerfile 建立 Docker Image。
+
+h2 Docker Container
+p 
+  | Docker Container 是一個 Docker Image 的可執行實體(runnable instance)，當它被建立的時候，除了包含了對應的 Docker Image 外，Docker 還會建立一個對應的 read-write file system 與並做一些初始化與網路設定。當它被執行時，Docker Container 會有一隻對應的正在執行中的 process。可以使用 
+  code
+    | create
+  | 指令從 Docker Image 來建立一個 Docker Container。使用 
+  code
+    | start
+  | 執行 Docker Container。一個正在執行中的 Docker Container 也有 
+  code
+    | stop, restart
+  | 等指令可以使用。
+
+h2 Docker Register
+p 
+  | 用來存放 Docker Image 的地方，當需要使用 Docker Image 時，可以直接從 Docker Register 下載而不用重新 build image。
+
+h2 Refs
+ul
+  li 
+    a href="https://docs.docker.com/engine/understanding-docker/" target="_blank"
+      | Docker Overview
+  li 
+    a href="http://stackoverflow.com/questions/23735149/docker-image-vs-container" target="_blank"
+      | SO - Docker image vs container
+  li 
+    a href="http://www.slideshare.net/trunk-studio/docker-65378344" target="_blank"
+      | 創科 從零開始認識 Docker

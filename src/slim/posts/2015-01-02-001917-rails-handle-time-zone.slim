@@ -47,17 +47,34 @@ ul
     code
       | Time.zone.to_s
     | 。
-ul
   li
     | 要檢查form傳來的字串是否為合法的時區字串，可以用
     code
       | ActiveSupport::TimeZone[input_string]
     | ，回傳非nil的值即代表是合法的時區字串。
-ul
   li
     | 存進資料庫的時候會自動轉成utc儲存，不用特別轉換。
+  li 
+    | 如果要切換時區，但時間本身不變，例如原本是
+    code
+      | 2016-11-22 12:26:44 +0800
+    | ，要改成
+    code
+      | 2016-11-22 12:26:44 -0500
+    | ，則需要用到下面的方式處理：
+pre
+  code.nohighlight
+    | > now = Time.now
+      2016-11-22 12:26:44 +0800
+      > now_new_york_utc = ActiveSupport::TimeZone.new('America/New_York').local_to_utc(now)
+      2016-11-22 17:26:44 UTC
+      > now_new_york_utc.in_time_zone('America/New_York')
+      Tue, 22 Nov 2016 12:26:44 EST -05:00
 h1 Ref
 ul
   li
     a href="http://api.rubyonrails.org/classes/Time.html#method-c-zone-3D" target="_blank"
       | api.rubyonrails.org - Time - zone=
+  li 
+  a href="http://stackoverflow.com/questions/16818180/ruby-rails-how-do-i-change-the-timezone-of-a-time-without-changing-the-time" target="_blank"
+    | SO - Ruby / Rails - How do i change the timezone of a Time, without changing the time
