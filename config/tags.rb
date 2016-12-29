@@ -141,5 +141,9 @@ $tags = {
   "dp" => {
     name: "Design Pattern",
     color: "#5e4543",
+  },
+  "docker" => {
+    name: "Docker",
+    color: "#2294ca"
   }
 }
