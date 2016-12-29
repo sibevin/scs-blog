@@ -1,0 +1,112 @@
+.meta-data title Metaprogramming Ruby 2 - ch5 - Class Definitions
+.meta-data datetime 2016-12-02 20:11:43
+.meta-data tags mp,book_mr2,note,ruby
+.meta-data category coding
+.meta-data link mr2-ch5-class-definitions
+.meta-data file 2016-12-02-201143-mr2-ch5-class-definitions
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+h1 前言
+
+p 這是 Metaprogramming Ruby 2 的閱讀筆記，只會記錄我覺得重要的地方。如果你想要了解完整的內容或是想讓Ruby程式做一些神奇的事，強烈推薦去讀讀這本書。
+
+h1 Class Definitions Demystified
+
+h2 Inside Class Definitions
+p 
+  | ruby宣告class的區塊其實是可以執行程式的，當程式執行到這個宣告的時候就會執行裡面的程式。
+pre
+  code.ruby
+    | class A
+        puts 'Yoooo'
+      end
+p 
+  | class宣告的區域甚至還會回傳最後一行執行的結果：
+pre
+  code.ruby
+    | result = class A
+        self
+      end
+
+      p result # A
+p 
+  | 上面的程式class A最後是回傳執行self的結果，有趣的是在class區塊中的self竟然是回傳A本身。
+
+h2 The Current Class
+
+p 
+  | self是回傳目前程式區塊所在的instance，我們稱做
+  span.mk-blue
+    | Current Object(Instance)
+  | 。在一般class內的instance method中，self即是呼叫這個method的instance；而在class的宣告區塊中，self則是回傳class A本身。其實class A也是一個Class的instance，所以並沒有矛盾的地方。
+p 
+  | 另一個要區分的概念是
+  span.mk-blue
+    | Current Class
+  | 。在ruby中並沒有一個method可以得到Current Class，不過可以從程式碼來看出目前的Current Class到底是誰：
+ul
+  li 如果是top-level，Current Class就是Object。
+  li 如果是在一個method中，則method中的self，它的class就是Current Class。
+  li 當你使用class或是module關鍵字做reopen的動作時，Current Class就是你做reopen的class或是module。
+p 
+  | Current Class在定義method時非常的重要，因為當你定義一個method的時候，其實就是對Current Class建立一個屬於它的instance method。
+h3 class_eval
+p 
+  | 有時候我們想在某個class中動態建立一個method，其中一個方式就是使用Open Class的技巧：
+pre
+  code.ruby
+    | class A
+        def say
+          'Hi'
+        end
+      end
+p 
+  | 但Open Class有一個缺點是一定要知道Class的名稱(也就是上面的 class A 這一行)。這會大大限制Open Class的使用，因為有時候我們要動態新增method的對象可能是存在一個變數中，可能會變動的。這時候就要用到class_eval了，上面的動作可以用下面的方式重寫：
+pre
+  code.ruby
+    | A.class_eval do
+        def say
+          'Hi'
+        end
+      end
+p 
+  | 我們甚至可以把動態加method的過程寫成一個method：
+pre
+  code.ruby
+    | def add_say_hi_method(target_class)
+        target_class.class_eval do
+          def say
+            'Hi'
+          end
+        end
+      end
+      
+      add_say_hi_method(String)
+      
+      'a'.say # 'Hi'
+p 
+  | 使用class_eval的另一個好處是它是一個
+  span.mk-blue
+    | Flat Scope
+  | ，另外跟instance_eval一樣也有一個處理變數傳遞的class_exec可以使用，細節請參見第四章。
+
+h2 Class Instance Variables
+p 
+  | 我們可以在class中宣告一個instance variable，如下所示：
+pre
+  code.ruby
+    | class A
+        @var = 1
+      end
+p 
+  | 但要注意的是，它就只是一個在A(要記得A是Class的一個instance)中的一個 instance variable，而它也有A可以使用。
+
+
+h1 Quiz: Class Taboo
+h1 Singleton Methods
+h1 Singleton Classes
+h1 Quiz: Module Trouble
+h1 Method Wrappers
+h1 Quiz: Broken Math Wrap-Up

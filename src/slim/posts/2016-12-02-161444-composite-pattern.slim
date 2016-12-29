@@ -1,0 +1,225 @@
+.meta-data title Composite Pattern - 合成模式
+.meta-data datetime 2016-12-02 16:14:44
+.meta-data tags dp
+.meta-data category coding
+.meta-data link composite-pattern
+.meta-data file 2016-12-02-161444-composite-pattern
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 最近讀書會在讀深入淺出設計模式，趁這個機會複習一下設計模式，試著舉出簡單的例子並且用非模式與模式的方式來實作，比較它們的差異與優缺點。
+  
+h1 範例問題
+
+p 
+  | 我們要實作一個繪圖軟體，其中支援的圖形有點(Point)、線(Line)與圓(Circle)，而這三個圖形都實作了 Drawable 這個 module，也就是每個圖形都會支援移動(move)與繪圖(draw)的功能。
+
+pre
+  code.ruby
+    | module Drawable
+        def draw
+          fail 'You should implement "draw" method.'
+        end
+
+        def move(delta_x, delta_y)
+          fail 'You should implement "move" method.'
+        end
+      end
+
+      class Point
+        include Drawable
+
+        def initialize(x, y)
+          @x = x
+          @y = y
+        end
+
+        def draw
+    = "\n" + '    "A point on (#{@x}, #{@y})."' + "\n"
+    |   end
+
+        def move(delta_x, delta_y)
+          @x = @x + delta_x
+          @y = @y + delta_y
+        end
+      end
+
+      class Line
+        include Drawable
+
+        def initialize(x1, y1, x2, y2)
+          @x1 = x1
+          @y1 = y1
+          @x2 = x2
+          @y2 = y2
+        end
+
+        def draw
+    = "\n" + '    "A line from (#{@x1}, #{@y1}) to (#{@x2}, #{@y2})."' + "\n"
+    |   end
+
+        def move(delta_x, delta_y)
+          @x1 = @x1 + delta_x
+          @y1 = @y1 + delta_y
+          @x2 = @x2 + delta_x
+          @y2 = @y2 + delta_y
+        end
+      end
+
+      class Circle
+        include Drawable
+
+        def initialize(x, y, r)
+          @x = x
+          @y = y
+          @r = r
+        end
+
+        def draw
+    = "\n" + '    "A circle with the center at (#{@x}, #{@y}) and #{@r} redius."' + "\n"
+    |   end
+
+        def move(delta_x, delta_y)
+          @x = @x + delta_x
+          @y = @y + delta_y
+        end
+      end
+
+      p1 = Point.new(1, 1)
+      l1 = Line.new(1, 2, 3, 4)
+      c1 = Circle.new(5, 5, 3)
+
+      p c1.draw # A circle with the center at (5, 5) and 3 redius.
+      c1.move(5,5)
+      p c1.draw # A circle with the center at (10, 10) and 3 redius.
+
+p 
+  | 現在要實作群組(Group)的功能，一個群組可以包含多的圖形，同時也可以包含其它的群組。當群組移動/繪圖時，它所包含的圖形與群組也必須跟著移動/繪圖。
+  
+h1 沒有使用模式的實作
+
+pre
+  code.ruby
+    | class Group
+        def initialize(shapes)
+          @shapes = shapes
+        end
+
+        def draw_all
+          draws = []
+          @shapes.each do |shape|
+            if shape.is_a?(Drawable)
+              draws << shape.draw
+            end
+            if shape.is_a?(Group)
+              draws << shape.draw_all
+            end
+          end
+          draws.join(' ')
+        end
+
+        def move_all(delta_x, delta_y)
+          @shapes.each do |shape|
+            if shape.is_a?(Drawable)
+              shape.move(delta_x, delta_y)
+            end
+            if shape.is_a?(Group)
+              shape.move_all(delta_x, delta_y)
+            end
+          end
+        end
+      end
+
+      p1 = Point.new(1,1)
+      l1 = Line.new(1,2,3,4)
+      c1 = Circle.new(5,5,3)
+
+      g1 = Group.new([p1, l1, c1])
+
+      p g1.draw_all # A point on (1, 1). A line from (1, 2) to (3, 4). A circle with the center at (5, 5) and 3 redius.
+
+      g1.move_all(5,5)
+
+      p g1.draw_all # A point on (6, 6). A line from (6, 7) to (8, 9). A circle with the center at (10, 10) and 3 redius.
+
+      p2 = Point.new(100,100)
+      g2 = Group.new([p2, g1])
+
+      p g2.draw_all # A point on (100, 100). A point on (6, 6). A line from (6, 7) to (8, 9). A circle with the center at (10, 10) and 3 redius.
+
+      g2.move_all(10,20)
+
+      p g2.draw_all # A point on (110, 120). A point on (16, 26). A line from (16, 27) to (18, 29). A circle with the center at (20, 30) and 3 redius.
+
+h2 上面實作的缺點
+ul
+  li 在處理移動與繪圖的動作都要區分是一般的Drawable還是Group。只要Drawable被修改了，例如多了一個刪除(delete)的功能，則必須記得Group也要加上相同的修改。
+  
+
+h1 使用模式的實作
+p 
+  | 其實從上面的例子很明顯可以看的出來，刻意區分一般的Drawable與Group並不是一個好的做法，相反的因為Group也有move與draw的method，所以可以把Group視做一個Drawable，這時候處理Group就像處理一般的Drawable一樣，行為可以一致。另外Group的move與draw method的實作，則是直接呼叫它所包含的Drawable對應的move與draw，也就是委派(delegate)method給它底下的Drawable。
+pre
+  code.ruby
+    | class Group
+        include Drawable
+
+        def initialize(shapes)
+          @shapes = shapes
+        end
+
+        def draw
+          @shapes.map(&:draw).join(' ')
+        end
+
+        def move(delta_x, delta_y)
+          @shapes.each { |shape| shape.move(delta_x, delta_y) }
+        end
+      end
+
+      p1 = Point.new(1,1)
+      l1 = Line.new(1,2,3,4)
+      c1 = Circle.new(5,5,3)
+
+      g1 = Group.new([p1, l1, c1])
+
+      p g1.draw # A point on (1, 1). A line from (1, 2) to (3, 4). A circle with the center at (5, 5) and 3 redius.
+
+      g1.move(5,5)
+
+      p g1.draw # A point on (6, 6). A line from (6, 7) to (8, 9). A circle with the center at (10, 10) and 3 redius.
+
+      p2 = Point.new(100,100)
+      g2 = Group.new([p2, g1])
+
+      p g2.draw # A point on (100, 100). A point on (6, 6). A line from (6, 7) to (8, 9). A circle with the center at (10, 10) and 3 redius.
+
+      g2.move(10,20)
+
+      p g2.draw # A point on (110, 120). A point on (16, 26). A line from (16, 27) to (18, 29). A circle with the center at (20, 30) and 3 redius.
+      
+h2 上面實作的優點
+ul
+  li 將Group視做一種Drawable，則在操作Group與一般的Drawable可以用一樣的方式處理。
+  
+h2 上面實作的缺點
+ul
+  li 因為Group實作了Drawable，這表示Group的行為必須要與Drawable一樣，如果有差異就無法使用這個模式。
+  
+h1 樣式名稱
+p 
+  | Composite Pattern - 合成模式
+
+h1 目的
+p 
+  | 當處理由個體 Leaf(Point, Line, Circle) 組成的群組 Composite(Group)時，將其視做一種個體並實作與個體一致的界面 Component(Drawable)，這樣就可以使用相同的方式 operation(move, draw)來處理個體與群組。
+  
+h1 使用時機
+ul
+  li 
+    | 當我們要同時處理個體與個體所組成的群組，而群組中除了包含多個個體之外，也可以包含其它的群組而有多層槽狀結構。
+  li 
+    | 群組與個體有相同的行為。

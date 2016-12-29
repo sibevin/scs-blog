@@ -1,0 +1,79 @@
+.meta-data title MySQL的最大連線數一直被設成214
+.meta-data datetime 2016-12-02 17:45:19
+.meta-data tags mysql
+.meta-data category tools
+.meta-data link mysql-max-connections-always-be-set-with-214
+.meta-data file 2016-12-02-174519-mysql-max-connections-always-be-set-with-214
+.meta-data template post
+.meta-data end
+
+h1 問題
+
+p 
+  | 在 /etc/mysql/my.cnf 中加上的max_connections的設定
+i
+  | /etc/mysql/my.cnf
+pre
+  code.nohighlight
+    | [mysqld]
+      max_connections=10000
+p
+  | 但在查看實際的設定值仍然是214。
+pre
+  code.nohighlight
+    | mysql> show global variables like '%max_connecti%';
+      +-----------------+-------+
+      | Variable_name   | Value |
+      +-----------------+-------+
+      | max_connections |   214 |
+      +-----------------+-------+
+      1 row in set (0.01 sec)
+
+h1 解法
+
+p 
+  | 造成這個問題是有兩個原因，一是系統的「一個process最大可開起的檔案數」的值預設是1024，可以使用 ulimit -a，或是從mysql下面的指令看到這個值：
+pre
+  code.nohighlight
+    | mysql> show global variables like '%open_files_limit%';
+      +------------------+-------+
+      | Variable_name    | Value |
+      +------------------+-------+
+      | open_files_limit |  1024 |
+      +------------------+-------+
+      1 row in set (0.00 sec)
+p 
+  | 這個值會限定MySQL同時連線的數量，所以要先改這個數值。這是linux系統本身的設定，所以必須使用sudo將下面的設定加入到/etc/security/limits.conf這個檔案。
+i
+  | /etc/security/limits.conf
+pre
+  code.nohighlight
+    | * soft nofile 65536
+      * hard nofile 65536
+p 
+  | 當設定完成，可以重啟系統讓設定值生效。第二個原因是在啟動mysql的時候要解除open file的限制，方法是在啟動mysql的service檔裡加上LimitNOFILE=65535的設定：
+i
+  | /lib/systemd/system/mysql.service
+pre
+  code.nohighlight
+    | LimitNOFILE=65535
+p 
+  | 當這兩步做完，重啟mysql之後，就可以看到正確的連線數設定了。
+pre
+  code.nohighlight
+    | mysql> show global variables like '%max_connecti%';
+      +-----------------+-------+
+      | Variable_name   | Value |
+      +-----------------+-------+
+      | max_connections | 10000 |
+      +-----------------+-------+
+      1 row in set (0.01 sec)
+pre
+  code.nohighlight
+    | mysql> show global variables like '%open_files_limit%';
+      +------------------+-------+
+      | Variable_name    | Value |
+      +------------------+-------+
+      | open_files_limit | 65535 |
+      +------------------+-------+
+      1 row in set (0.00 sec)
