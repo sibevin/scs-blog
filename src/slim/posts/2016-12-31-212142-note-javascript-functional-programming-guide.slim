@@ -1,0 +1,187 @@
+.meta-data title 閱讀筆記 - JavaScript Functional Programming 指南
+.meta-data datetime 2016-12-31 21:21:42
+.meta-data tags fp,note
+.meta-data category coding
+.meta-data link note-javascript-functional-programming-guide
+.meta-data file 2016-12-31-212142-note-javascript-functional-programming-guide
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+h1 前言
+p 
+  | 聽說FP很大力，應該來了解一下。
+
+h1 Refs
+ul
+  li 
+    a href="https://www.gitbook.com/book/jigsawye/mostly-adequate-guide/details" target="_blank"
+      | JavaScript Functional Programming 指南
+  
+h1 第1章:我們在做什麼？
+h2 介紹
+h2 一個簡單例子
+p 
+  | 作者在這裡舉了一個例子說明OO與FP在實作上的差異，與OO有可能帶來的問題。以計算鳥群的數量做為例子：
+i 書上OO的版本
+pre
+  code.ruby
+    | class Flock
+        attr_reader :size
+        def initialize(size)
+          @size = size
+        end
+
+        def conjoin(flock)
+          @size = @size + flock.size
+          self
+        end
+
+        def breed(flock)
+          @size = @size * flock.size
+          self
+        end
+      end
+
+      flock_a = Flock.new(4)
+      flock_b = Flock.new(2)
+      flock_c = Flock.new(0)
+
+      p flock_a.conjoin(flock_c).breed(flock_b).conjoin(flock_a.breed(flock_b)).size # 32
+p 
+  | 上面計算的結果是錯的，因為第二個flock_a的數量已經被改掉了，所以會是錯的結果。但如果是用FP寫的話：
+i FP的範例
+pre
+  code.ruby
+    | def conjoin(size1, size2)
+        size1 + size2
+      end
+
+      def breed(size1, size2)
+        size1 * size2
+      end
+
+      flock_a = 4
+      flock_b = 2
+      flock_c = 0
+
+      p conjoin(breed(flock_b, conjoin(flock_a, flock_c)), breed(flock_a, flock_b)) # 16
+p 
+  | 計算的結果就是正確的，而且程式比較簡潔易懂。其實 conjoin 與 breed 就相當於數學上的 + 與 * 。因為function的運作滿足下面的規則：
+ul
+  li
+    | 結合率（associative）
+    code
+      | add(add(x, y), z) === add(x, add(y, z))
+  li
+    | 交換律（commutative）
+    code
+      | add(x, y) === add(y, x)
+  li
+    | 同一律（identity）
+    code
+      | add(x, 0) === x
+  li
+    | 分配綠（distributive）
+    code
+      | multiply(x, add(y,z)) === add(multiply(x, y), multiply(x, z))
+p
+  | 所以上面的程式又可以更簡化成：
+pre
+  code.ruby
+    | p breed(flock_a, conjoin(flock_b, flock_b)) # 16
+
+p 
+  | 補充：這個範例我覺得是故意的(作者也有提到啦)，因為基本上OO的範例是錯誤的使用方式，如果要正確的數字，也就是在計算的時候不能改變物件裡的個數，那可以寫成下面這個樣子：
+pre
+  code.ruby
+    | class Flock
+        attr_reader :size
+        def initialize(size)
+          @size = size
+        end
+
+        def conjoin(flock)
+          Flock.new(@size + flock.size)
+        end
+
+        def breed(flock)
+          Flock.new(@size * flock.size)
+        end
+      end
+
+      flock_a = Flock.new(4)
+      flock_b = Flock.new(2)
+      flock_c = Flock.new(0)
+
+      p flock_a.conjoin(flock_c).breed(flock_b).conjoin(flock_a.breed(flock_b)).size # 16
+
+h1 第2章:一等公民的函數
+h2 快速概覽
+p 
+  | function is first class：指的是function就是與一般的variable一樣操作。作者提到了javascript function就具有這樣的特性，所以某些使用function封裝的語法根本就是多餘的寫法，例如：
+pre
+  code.javascript
+    | var say_hi = function(name) {
+        return 'Hi, ' + name;
+      };
+      
+      var say_again = function(name) {
+        return say_hi(name);
+      };
+p 
+  | say_again中的function(name)其實是多餘的，應該要寫成：
+pre
+  code.javascript
+    | var say_again = say_hi;
+h2 為何鍾愛一等公民
+h1 第3章:純函數的好處
+h2 再次強調“純”
+h2 副作用可能包括...
+h2 八年級數學
+h2 追求“純”的理由
+h2 總結
+h1 第4章:柯里化（curry）
+h2 不可或缺的curry
+h2 不僅僅是雙關語／咖哩
+h2 總結
+h1 第5章:代碼組合（compose）
+h2 函數飼養
+h2 pointfree
+h2 debug
+h2 範疇學
+h2 總結
+h1 第6章:示例應用
+h2 聲明式代碼
+h2 一個函數式的flickr
+h2 有原則的重構
+h2 總結
+h1 第7章: Hindley-Milner類型簽名
+h2 初識類型
+h2 神秘的傳奇故事
+h2 縮小可能性範圍
+h2 自由定理
+h2 總結
+h1 第8章:特百惠
+h2 強大的容器
+h2 第一個functor
+h2 薛定諤的Maybe
+h2 “純”錯誤處理
+h2 王老先生有作用...
+h2 異步任務
+h2 一點理論
+h2 總結
+h1 第9章: Monad
+h2 pointed functor
+h2 混合比喻
+h2 chain函數
+h2 理論
+h2 總結
+h1 第10章: Applicative Functor
+h2 應用applicative functor
+h2 瓶中之船
+h2 協調與激勵
+h2 lift
+h2 免費開瓶器
+h2 定律
+h2 總結
