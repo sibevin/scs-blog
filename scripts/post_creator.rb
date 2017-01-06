@@ -44,7 +44,7 @@ opt_parser = OptionParser.new do |opts|
     options.website = website
   end
   opts.on("-T", "--template template1,template2,template3", Array,
-                "Assign the templates to support. The default value is \"post\".") do |template|
+                "Assign the templates to support. The supported templates are \"post\", \"gem\", \"link\". The default value is \"post\".") do |template|
     options.template = template
   end
   opts.on("-D", "--draft", "Create a draft instead, the draft meta would be added in the post.") do |d|

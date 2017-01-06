@@ -145,5 +145,9 @@ $tags = {
   "docker" => {
     name: "Docker",
     color: "#2294ca"
+  },
+  "fp" => {
+    name: "Functional Programming",
+    color: "#0e543f"
   }
 }
