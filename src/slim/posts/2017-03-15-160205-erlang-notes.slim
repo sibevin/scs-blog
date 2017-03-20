@@ -1,0 +1,63 @@
+.meta-data title erlang 學習筆記
+.meta-data datetime 2017-03-15 16:02:05
+.meta-data tags erlang,note
+.meta-data category coding
+.meta-data link erlang-notes
+.meta-data file 2017-03-15-160205-erlang-notes
+.meta-data template post
+.meta-data end
+
+h1 Erl
+
+ul
+  li erl 就是 erlang's shell
+  li 離開erl的兩種方式： 1. ctrl + c, then press a; 2. halt().
+  li 程式用 "." 結束，例如： 2 + 3.
+  li help(). 顯示所有指令。
+
+h1 Erl file
+
+p 一個erl的檔案長得像下面這個樣子：
+
+i tut.erl
+pre
+  code.erlang
+    | -module(tut).
+      -export([double/1]).
+
+      double(X) ->
+        2 * X.
+
+ul
+  li 檔名(tut.erl)一定要與module的名稱(-module(tut).)一樣
+  li 
+    code
+      | -module(tut).
+    | 表示這個檔案是一個叫 tut 的module。
+  li 
+    code
+      | -export([double/1]).
+    | 表示有一個叫 double 的funcation可以在module外被呼叫，它有一個參數在呼叫的時候要傳入。
+  li
+    | 要注意double(X)的X必須是大寫，erlang中的變數必須是大寫開頭(capital)或是底線開頭的字串。
+  
+p 
+  | .erl 檔必須轉成 object code 才
+
+h2 更多例子
+
+pre
+  code.erlang
+    | -module(tut1).
+      -export([fac/1, mult/2]).
+
+      fac(1) ->
+        1;
+      fac(N) ->
+        N * fac(N - 1).
+
+      mult(X, Y) ->
+        X * Y.
+ul
+  li 
+    | ";" 表示有一個以上叫 fac 的funcation。

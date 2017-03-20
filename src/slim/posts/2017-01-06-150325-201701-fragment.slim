@@ -1,0 +1,261 @@
+.meta-data title 2017.01 碎片
+.meta-data datetime 2017-01-06 15:03:25
+.meta-data tags frag
+.meta-data category coding
+.meta-data link 201701-fragment
+.meta-data file 2017-01-06-150325-201701-fragment
+.meta-data template post
+.meta-data draft
+.meta-data end
+
+h1 No topic
+
+h2 Links
+ul
+  li 
+    a href="https://github.com/randy-girard/app_perf" target="_blank"
+      | AppPerf (Application Performance Monitoring) - 可以看一下它的moniter是怎麼做的
+  li 
+    a href="https://quilljs.com/" target="_blank"
+      | Quill - 小而巧的網頁文字編輯器
+  li 
+    a href="http://www.moundalexis.com/v2/2016/09/06/securing-sshd.html" target="_blank"
+      | Locking Down an SSH Server
+  li 
+    a href="http://blog.codeclimate.com/blog/2012/10/17/7-ways-to-decompose-fat-activerecord-models/" target="_blank"
+      | 7 Patterns to Refactor Fat ActiveRecord Models - brynary 
+  li 
+    a href="https://umaar.com/dev-tips/" target="_blank"
+      | screencases for dev tools
+  li 
+    a href="https://github.com/trailblazer/reform" target="_blank"
+      | trailblazer/reform
+
+h2 Keywords
+ul
+  li sequel
+  li shrine
+  li axios - Promise based HTTP client for the browser and node.js
+  li express - nodejs restful server
+  li elixir
+
+h2 Elixir
+ul
+  li Elixir ~= Ruby + Erlang
+  li Elixir code -> BESM bytecode -> run on BEAM
+
+h3 Erlang
+ul
+  li functional language
+  li concurrent + mass
+  li fault-torrent, soft real time, let it crash
+
+h3 Functional
+ul
+  li Immutable
+
+h3 Concurrent
+ul
+  li lightweight process = thread with layers
+  li Erlang VM process: 1us up to 2500 processes / 3us per message - very lightweight
+
+h3 Fault-torrent
+ul
+  li two kinds of bugs: 1. easy to reproduce and fixe v.s. 2. difficult to reproduce
+  li the 2nd bug: let it crash and trace it
+  li lightweight processes are independent and not affected by others
+  
+h3 OO vs Functional
+ul
+  li OO - data and behavior are in the same place(object)
+  li functional - data and behavor are separated
+
+h3 Erlang basic
+ul
+  li 'aaa' = integer array
+  li :atom = symbol
+  li %{} = hash
+  li {} = tuple, fixed size list
+  li [1, 2] ++ [3, 4] = [1, 2, 3, 4]
+  li order of type: every thing can be compare
+  li 2 kinds of method: def and lenda
+  li |> pipe operator - left method's result to the 1st parameters to right method
+  li |> IO.inspect
+
+h3 Pattern matching
+ul
+  li = is not an assignment, is a function => f(x) = ax + b
+  li [a, a, b] = [1, 2, 3] Match Error
+  li [a, a, b] = [1, 1, 3] a: 1, b: 3
+  li x = 1 => x: 1
+  li list
+  li map %{x: x} = %{x: 1, y: 2} => x: 1
+  li type claim
+
+h3 Actor model
+ul
+  li 1 server to 10000 server
+  li processes are workers or supervisor
+  li worker = receive given params(include next process id), handle them and send result to next process 
+  li supervisor = know who do what, and handle when someone die
+  li spawn: to create an process
+
+h3 pmap
+pre
+  code.ruby
+    | defmodule Pmap do
+        def pmap(list, f) do
+          parent = self()
+          pids = Enum.map(list, fn(el) -> spwan(fn -> send(parent, f.(el))end)end)
+          gather(pids)
+        end
+        
+        def gather([]), do: []
+        def gather([head|tails]) do
+          recive do
+            {head, return} -> [return | gather(tails)]
+        end
+      end
+
+h3 mix
+ul
+  li mix = rails' rake + rails + bundle
+  li max deps.get = bundle install
+
+h3 Doctest
+
+ul
+  li implementation + doc + test
+
+pre
+  code.ruby
+    | defmodule Num do
+        @doc """
+        Demonstrate doctest feature
+        ## Example
+          iex> Num.is_even?(1)
+          true
+        def is_even?(num) do
+          rem(num, 2) == 0
+        end
+      end
+
+h3 other
+ul
+  li exs = don't compile to bin file
+  li ex = compile to bin file
+  
+h3 Meta-Programming
+
+ul
+  li Manipulate AST, directly {:operator, context, args}
+  li quote do: 1 + 2
+  li defmocro = more dynamical behavior inside the method 
+  li https://github.com/taiansu/pipe_to
+  li https://hexdocs.pm/elixir/master/operators.html
+  
+pre
+  code.ruby
+    | defmodule M do
+        defmacro foo({operator, _, args}) do
+          {:-, [], args}
+        end
+      end
+
+      defmodule M do
+        defmacro foo({operator, _, args}) do
+          quote do
+            unquote(x) - unquote(y)
+          end
+        end
+      end
+
+h2 ToI
+h3 Who
+ul
+  li lctseng
+
+h3 Connection
+h4 With browser
+ul
+  li xvfb
+  li headless
+pre
+  code.ruby
+    | @browser.driver.execute_async_script
+
+h4 action_cable_client
+
+h3 Refactor
+ul
+  li Connection separated from main program
+  li Use websocket, but withoug Action Cable
+  li Use components for Agent, run its own thread and event loop
+  li Need to define the communication between threads
+  li Use channel to group Manger and Agent
+
+h3 Gems
+ul
+  li tamashii-agent
+  li tamashii-manager
+  li tamashii-common
+
+h3 Q&A
+ul
+  li cache
+  li auth
+
+
+h2 Phoenix
+
+h3 Performance
+ul
+  li phoenix showdown
+
+h3 mix
+ul
+  li mix local.hex
+  li mix archive.install - install a binary/command file
+  li mix phoenix.gen.html User users name:string age:integer - User(model name), users(table name)
+  
+h3 World
+ul
+  li a web app is a function
+  li input url, session cookie
+  li output html, json
+  li url |> Endpoint |> router |> Controller |> Model(*) |> Controller |> View
+  li pass "conn" through functions
+
+h3 Plug
+pre
+  code.ruby
+    | def some_plug(conn, params) do
+      end
+ul
+  li just a function
+  li like rake
+  li conn = the current connection information
+  li params = other parameters
+
+h3 View
+ul
+  li web/views/user_view.ex -> view logic
+  li web/templates/user.html.eex -> view html
+  li when compile: eex would be compiled to a string and merge to a function "rander" in .ex file
+
+h3 1.3
+ul
+  li web is moved to lib
+  li no model
+  li mix phoenix.xxx => mix.pho.xxx
+
+h3 Model
+ul
+  li schema
+  li preload => (like includes in rails) to load association
+
+h3 Tools
+ul
+  li :observer.start - to see all elixir tree
+  li dialyzer - strong type check
+  li credo - robocop

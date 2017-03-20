@@ -1,0 +1,60 @@
+.meta-data title Logrotate - 處理log rotation的好用工具
+.meta-data datetime 2017-03-20 12:14:33
+.meta-data tags linux,ops
+.meta-data category tools
+.meta-data link logrotate
+.meta-data file 2017-03-20-121433-logrotate
+.meta-data template post
+.meta-data end
+
+p
+  | 最近在處理公司production的log rotation，找了一下資料，發現linux本身就有一個很好用的工具 logrotate ，這裡就來做一個簡單的介紹。
+  
+h2 What
+p 
+  | logrotate 是linux提供的一個工具專門用來做log rotation，它會由cron job定期去執行對應的設定檔來做rotation。預設的設定檔是放在/etc/logrotate.conf，如果是自訂義的設定檔則會放在/etc/logrotate.d/下。
+  
+h2 How
+p 
+  | 下面是一個設定檔的範例：
+  
+i 
+  | /etc/logrotate.d/rails
+pre
+  code.nginx
+    | /var/www/ukik/shared/log/*.log {
+       	weekly
+       	size=100M
+       	rotate 10
+       	create 0664 appuser appuser
+      }
+p 
+  | 參數說明：
+ul
+  li 第一行指定了哪些檔案要做rotation，路徑後面接大括號放相關的設定。
+  li
+    code weekly
+    | 指每週定期做rotation。
+  li 
+    code
+      | size=100M
+    | 每100M做一次rotation，如果 weekly 與 size 這兩個設定都有加，表示如果檔案不到100M便不會生成rotation。
+  li
+    code
+      | rotate 10
+    | 要保留幾次rotation。
+  li 
+    code
+      | create 0664 appuser appuser
+    | rotation log建立時的檔案權限與所屬的使用者/群組。
+p 
+  | 除了上面提到的設定，其實 logrotate 還有非常多的功能可以做調整，細節與使用方式可以參考 man logrotate 。
+
+h2 Refs
+ul
+  li 
+    a href="https://linux.die.net/man/8/logrotate" target="_blank"
+      | logrotate(8) - Linux man page
+  li 
+    a href="http://linux.vbird.org/linux_basic/0570syslog.php#rotate" target="_blank"
+      | 鳥哥的 Linux 私房菜 - 18.3 登錄檔的輪替(logrotate)

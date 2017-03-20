@@ -49,6 +49,12 @@ table.pt-table
     tr
       td
         code
+          | show create table [table];
+      td
+        | 列出[table]的詳細資訊，例如foregin_key
+    tr
+      td
+        code
           | truncate [table];
       td
         | 刪除[table]內所有的資料，id從1開始計算(如果使用delete刪除所有的資料，則id不會從1開始)

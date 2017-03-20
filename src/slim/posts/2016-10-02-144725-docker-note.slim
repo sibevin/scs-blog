@@ -118,7 +118,7 @@ p
   | 一個檔案用來定義怎麼建立 Docker Container，它是 Dockerfile 生成的產物，包含了跑一個應用程式所需的執行環境與函式庫。可以使用 
   code
     | build
-  | 這個指令來從 Dockerfile 建立 Docker Image。
+  | 這個指令來從 Dockerfile 建立 Docker Image。Docker Image一旦被建立之後，它不會被更改，但可以使用這個 image 去建立另一個新的 image。
 
 h2 Docker Container
 p 
@@ -136,7 +136,7 @@ p
 h2 Docker Register
 p 
   | 用來存放 Docker Image 的地方，當需要使用 Docker Image 時，可以直接從 Docker Register 下載而不用重新 build image。
-
+  
 h2 Refs
 ul
   li 
@@ -145,6 +145,77 @@ ul
   li 
     a href="http://stackoverflow.com/questions/23735149/docker-image-vs-container" target="_blank"
       | SO - Docker image vs container
+  
+h1 指令
+
+h2 docker ps
+p
+  | 列出正在執行(running)的container。
+ul
+  li docker ps -a 列出所有的containger。
+
+h2 docker run [image]
+p 
+  | 取得image、建立container並執行。
+
+h3 docker search [keyword]
+p 
+  | 查詢Docker Hub上的image。
+
+h3 docker images
+p
+  | 列出所有的image
+
+h3 docker stop [container]
+p 
+  | 停止目前正在運作的container
+
+h3 docker rm [container]
+p 
+  | 移除container
+
+h1 使用範例
+
+h2 範例：一個建立phoenix環境的Dockerfile
+pre
+  code.dockerfile
+    | FROM elixir:1.4.2-slim
+
+      RUN apt-get update && apt-get upgrade -y && \
+          apt-get install -y curl sudo && \
+          curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && sudo apt-get install -y nodejs
+
+      RUN mix local.hex --force && \
+          mix archive.install --force https://github.com/phoenixframework/archives/raw/master/phoenix_new.ez
+
+      CMD ["/bin/bash"]
+
+h2 範例：起一個mysql的docker，並且讓host mysql client可以連的到它
+ul
+  li 建立一個 docker-compose.yml 如下：
+pre
+  code.yaml
+    | db:
+        image: mysql:5.7
+        environment:
+          MYSQL_ROOT_PASSWORD: "yit0v5911gcfckbd1guk2ctumrdcy8nb"
+        ports:
+          - "7364:3306"
+ul
+  li
+    | 執行
+    code
+      | docker-compose up
+  li 
+    | 連線
+    code
+      | mysql -h 127.0.0.1 -P 7364 -u root -p
+
+h1 Refs
+ul
+  li 
+    a href="https://www.gitbook.com/book/philipzheng/docker_practice/details" target="_blank"
+      | 《Docker —— 從入門到實踐­》正體中文版
   li 
     a href="http://www.slideshare.net/trunk-studio/docker-65378344" target="_blank"
       | 創科 從零開始認識 Docker

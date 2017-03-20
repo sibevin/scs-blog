@@ -1,0 +1,113 @@
+.meta-data title Unicode 筆記
+.meta-data datetime 2017-03-16 10:03:30
+.meta-data tags note,web
+.meta-data category coding
+.meta-data link unicode-notes
+.meta-data file 2017-03-16-100330-unicode-notes
+.meta-data template post
+.meta-data end
+
+h1 Why
+
+p
+  | 世界上的文字這麼多，ASCII顯然不夠用，而Unicode的出現就是為了要表示世界上所有的文字。
+  
+h1 What
+
+p 
+  | Unicode就是將每一個字用一組數字對應，稱做 code prints。表示的方式就用U+開頭，後面接16位元表示的數字，例如 A 所對應的 Unicode 就是 U+0041，而中文字的「一」則是 U+4e00。
+
+h1 How
+
+h2 編碼方式
+
+p 
+  | Unicode可以分成不同的編碼方式，最原始的編碼是UTF-32，也就是每個字都用32-bit來儲存，但可以想像的是如果用這個編碼來儲存資料，檔案的大小會變得超大，另外它對原本的ASCII編碼的檔案也不相容，所以一開始Unicode並沒有被廣泛的使用。直到 UTF-8 的出現，它特殊的編碼方式解決了之前 UTF-32 遇到的問題。
+  
+p 
+  | UTF-8 的編碼方式如下：
+
+table.pt-table
+  tbody
+    tr
+      td 
+        | UTF-8 的數值(二進位表示)
+      td 
+        | 對應的 Code Print 的數值(二進位表示)
+      td
+        | 對應的 Code Print 的範圍
+    tr
+      td
+        | 0xxxxxxx 
+      td
+        | xxxxxxx
+      td
+        | U+0000 - U+007F
+    tr
+      td
+        | 110xxxxx 10yyyyyy
+      td
+        | xxxxxyyyyyy
+      td
+        | U+0080 - U+07FF
+    tr
+      td
+        | 1110xxxx 10yyyyyy 10zzzzzz
+      td
+        | xxxxyyyyyyzzzzzz
+      td
+        | U+0800 - U+FFFF
+    tr
+      td
+        | 11110xxx 10yyyyyy 10zzzzzz 10aaaaaa
+      td
+        | xxxyyyyyyzzzzzzaaaaaa
+      td
+        | U+10000 - U+1FFFFF
+    tr
+      td
+        | 111110xx 10yyyyyy 10zzzzzz 10aaaaaa 10bbbbbb
+      td
+        | xxyyyyyyzzzzzzaaaaaabbbbbb
+      td
+        | U+200000 - U+3FFFFFF
+    tr
+      td
+        | 1111110x 10yyyyyy 10zzzzzz 10aaaaaa 10bbbbbb 10cccccc
+      td
+        | xyyyyyyzzzzzzaaaaaabbbbbbcccccc
+      td
+        | U+4000000 - U+7FFFFFFF
+
+p 
+  | 這樣的編碼方式帶來了許多的優點：
+ul
+  li 編碼長度是根據字元對應的code print變動，所以檔案大小會比全部的字都用32-bit的方式儲存還來的省空間。
+  li 一開始的 U+0000 - U+007F 的範圍完全相容 ASCII 的編碼方式，所以原本用 ASCII 儲存的檔案可以無痛轉移。
+  li UTF-8的第一段編碼可以很明顯示區隔所表示的字，所以有極高的辦識度與容錯力。
+
+p 
+  | 它的優點不只是上面這些，更多細節可以參考這篇文章： 
+  a href="https://blog.gslin.org/archives/2013/10/01/3670/%E9%9D%9E%E5%B8%B8%E7%B6%93%E5%85%B8%E7%9A%84-utf-8/" target="_blank"
+    | 非常經典的 UTF-8... - Gea-Suan Lin's BLOG
+  | 。
+  
+h2 使用方式
+
+p 
+  | 如果你的網站不是用 UTF-8 的方式編碼，那顯然已經落後到看不到別人的車尾燈。要支援 UTF-8 其實很簡單，只要在網頁中head的一開始加上
+  code
+    = '<meta charset="utf-8" />'
+  | 就可以嘍，不過要注意的是這個meta一定得放在head非常前面的地方，因為瀏覽器一看到這個meta就會停止分析，然後改用指定的編碼方式重新分析網頁。
+
+h1 Links
+ul
+  li 
+    a href="http://reedbeta.com/blog/programmers-intro-to-unicode/" target="_blank"
+      | A Programmer’s Introduction to Unicode
+  li
+    a href="http://local.joelonsoftware.com/wiki/The_Joel_on_Software_Translation_Project:%E8%90%AC%E5%9C%8B%E7%A2%BC" target="_blank"
+      | 每個軟體開發者都絕對一定要會的Unicode及字元集必備知識(沒有藉口！)
+  li
+    a href="https://blog.gslin.org/archives/2013/10/01/3670/%E9%9D%9E%E5%B8%B8%E7%B6%93%E5%85%B8%E7%9A%84-utf-8/" target="_blank"
+      | 非常經典的 UTF-8... - Gea-Suan Lin's BLOG

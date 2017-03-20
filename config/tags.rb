@@ -149,5 +149,12 @@ $tags = {
   "fp" => {
     name: "Functional Programming",
     color: "#0e543f"
+  },
+  "ops" => {
+    name: "Operation"
+  },
+  "linux" => {
+    name: "Linux",
+    color: "#660000"
   }
 }
