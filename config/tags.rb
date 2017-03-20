@@ -156,5 +156,9 @@ $tags = {
   "linux" => {
     name: "Linux",
     color: "#660000"
+  },
+  "erlang" => {
+    name: "Erlang",
+    color: "#A2003E"
   }
 }
