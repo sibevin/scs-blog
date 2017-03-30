@@ -163,10 +163,10 @@ $tags = {
   },
   "article" => {
     name: "好文",
-    color: "#f7fa8e",
+    color: "#a04208",
   },
   "rx" => {
     name: "ReactiveX",
-    color: "#a04208",
+    color: "#a0147b",
   },
 }
