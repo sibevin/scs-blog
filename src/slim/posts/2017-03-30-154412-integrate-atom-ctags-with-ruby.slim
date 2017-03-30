@@ -1,0 +1,71 @@
+.meta-data title 整合atom-ctags與ripper-tags來支援ruby的專案
+.meta-data datetime 2017-03-30 15:44:12
+.meta-data tags atom,ctags,ruby
+.meta-data category tools
+.meta-data link integrate-atom-ctags-and-ripper-tags-to-support-ruby
+.meta-data file 2017-03-30-154412-integrate-atom-ctags-with-ruby
+.meta-data template post
+.meta-data end
+
+h1 前言
+
+p 
+  | 最近為了追公司專案裡的bug，需要可以方便trace ruby code的工具，另一方面，也想趁這個機會把atom的ruby自動補齊弄好。於是就看了一下atom有什麼套件可以用，最後找上了atom-ctags。不過官方的atom-ctags與ripper-tags一起用會遇到一些問題，最終的解法只能修改這兩個工具的source code來達到我想要的效果(這就是open source的好處啊)。
+  
+h1 需求
+
+ul
+  li 要能可以方便的trace code，需要能在程式碼裡方便的跳轉class或method的定義。 -> atom-ctags
+  li 當程式碼修改時，可以自動更新ctags。 -> atom-ctags
+  li atom-ctags底層是吃ctags，但官方的ctags對ruby的支援度不好，需要找一個工具可以產生ruby的ctags。 -> ripper-tags
+
+h1 遇到的問題
+
+p
+  | 基本上直接使用官方的atom-ctags加上ripper-tags會遇到一些問題，下面是問題列表：
+
+h2 
+  | atom-ctags只吃特定格式(--fields=+KSn)的ctags，但ripper-tags只會支援幾種內建的格式。
+p 
+  | 只能修改ripper-tags，讓它多一種格式專門給atom-tags來使用。
+
+h2
+  | atom-ctags在呼叫ripper-tags會出錯
+p
+  | atom-ctags有一個設定是可以指定產生tag要用的ctags，所以可以替換成ripper-tags來生tag，但atom-ctags會在呼叫ctags程式時，額外產生一些內建的參數給ctags。而有些參數(例如：--options, --fields等)ripper-tags是不支援的，所以在生tag的時候就會出錯。
+p 
+  | 因為atom-ctags內建的預設參數是沒辦法使用套件設定，所以只能改程式碼。我的修改是將原本的cmdArgs套件當做是呼叫ctags傳的參數，所有的建入參考都轉的cmdArgs的預設值。這樣如果要改傳其它的參數，就可以修改這個cmdArgs的設定值。當使用修改過後的atom-ctags與ripper-tags，就可以設定atom-ctags呼叫ripper-tags來生tag了。
+pre
+  code.yaml
+    | "*":
+        "atom-ctags":
+          cmd: "ripper-tags"
+          cmdArgs: "-R --exclude=vendor --format=atom"
+          tagsPath: "./tmp/tags"
+
+h1 修改的程式碼
+
+h2 ripper-tags
+ul
+  li 
+    a href="https://github.com/tmm1/ripper-tags/compare/master...sibevin:feature-support-atom-ctags" target="_blank"
+      | Diff
+  li
+    a href="https://github.com/sibevin/ripper-tags/tree/feature-support-atom-ctags" target="_blank"
+      | github:sibevin/ripper-tags branch:feature-support-atom-ctags
+
+h2 atom-ctags
+ul
+  li 
+    a href="https://github.com/yongkangchen/atom-ctags/compare/master...sibevin:feature-refine-configs" target="_blank"
+      | Diff
+  li 
+    a href="https://github.com/sibevin/atom-ctags/tree/feature-refine-configs" target="_blank"
+      | github:sibevin/atom-ctags branch:feature-refine-configs
+
+h1 感想
+ul
+  li
+    | 以前如果發現不能用，大概就放棄了，這次竟然會trace到atom-ctags與ripper-tags的程式碼，感覺自己又成長了一些。 :muscle: :muscle: :muscle:
+  li 
+    | 第一次嘗試改atom的package，收獲還蠻多的，不過如果要用atom原生的ui，需要用coffeescript寫啊。自從ES6之後，我已經丟掉coffeescript很久了…

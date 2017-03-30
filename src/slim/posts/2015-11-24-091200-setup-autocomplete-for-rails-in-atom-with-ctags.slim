@@ -7,6 +7,17 @@
 .meta-data template post
 .meta-data end
 
+h1 UPDATE 2017-03-30
+
+p 
+  | 使用guard來自動產生tag有幾個問題，一個是每次修改檔案都會重建所有的tag，這不太對。另一點是要開guard才能生tag，但有些專案又不用guard，這樣有點尷尬，所以這個方法顯然不太好。後來我發現atom-ctags本身就會做產生tag的事，只是如果要整合ripper-tags，就必須要做一些修改。詳細內容可以參考：
+  a href="/posts/2017-03-30-154412-integrate-atom-ctags-with-ruby" target="_blank"
+    | 整合atom-ctags與ripper-tags來支援ruby的專案
+  | 。
+
+h1 
+  | === 以下是舊的文章內容 ===
+
 h1 確認系統裡有安裝ctags
 
 pre
