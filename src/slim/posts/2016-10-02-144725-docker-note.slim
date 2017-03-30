@@ -152,11 +152,16 @@ h2 docker ps
 p
   | 列出正在執行(running)的container。
 ul
-  li docker ps -a 列出所有的containger。
+  li -a 列出所有的containger。
 
 h2 docker run [image]
 p 
   | 取得image、建立container並執行。
+ul
+  li -t 分配一個虛擬終端（pseudo-tty）並綁定到container的標準輸入。
+  li -i 使用interaction模式，讓container的標準輸入保持開啟狀態，使用者可以由此輸入指令。
+  li 如果需要一個console連到container，則 -i 與 -t 必須要一起用，可以縮寫成 -it 。
+  li --rm 當離開container時，清除所有的資料與file system，要注意的是會連volumn都會一起刪。
 
 h3 docker search [keyword]
 p 
@@ -164,15 +169,19 @@ p
 
 h3 docker images
 p
-  | 列出所有的image
+  | 列出所有的image。
 
 h3 docker stop [container]
 p 
-  | 停止目前正在運作的container
+  | 停止目前正在運作的container。
 
 h3 docker rm [container]
 p 
-  | 移除container
+  | 移除container。
+
+h3 docker inspect [container]
+p 
+  | 取得目前container的資訊。
 
 h1 使用範例
 
@@ -190,17 +199,19 @@ pre
 
       CMD ["/bin/bash"]
 
-h2 範例：起一個mysql的docker，並且讓host mysql client可以連的到它
+h2 範例：起一個mysql的docker，並且讓host的mysql client可以連到它。
 ul
   li 建立一個 docker-compose.yml 如下：
 pre
   code.yaml
-    | db:
-        image: mysql:5.7
-        environment:
-          MYSQL_ROOT_PASSWORD: "yit0v5911gcfckbd1guk2ctumrdcy8nb"
-        ports:
-          - "7364:3306"
+    | version: "3"
+      services:
+        db:
+          image: mysql:5.7
+          environment:
+            MYSQL_ROOT_PASSWORD: "yit0v5911gcfckbd1guk2ctumrdcy8nb"
+          ports:
+            - "7364:3306"
 ul
   li
     | 執行
@@ -210,8 +221,52 @@ ul
     | 連線
     code
       | mysql -h 127.0.0.1 -P 7364 -u root -p
+      
 
-h1 Refs
+h2 範例：起一個 debian server 與 mysql server 的docker，並且讓 debian server 可以連到 mysql server。
+ul
+  li 建立一個 docker-compose.yml 如下：
+pre
+  code.yaml
+    | version: "3"
+      services:
+        db:
+          image: mysql:5.7
+          environment:
+            MYSQL_ROOT_PASSWORD: "lvkn9ey1bcty55ghmyedncr79ycdcvgo"
+        server:
+          image: debian:jessie
+          stdin_open: true
+          tty: true
+ul
+  li
+    | 執行
+    code
+      | docker-compose up
+  li 
+    | 執行
+    code
+      | docker attach [debian_server_container_name]
+    | 進入 server 的 container。其中debian_server_container_name即是對應debian container的name。當你執行docker-compose up的時候，log就會顯示container的名稱。
+  li 
+    | 安裝 mysql-client
+    code
+      | root@210978bba57f:/# apt-get update && apt-get upgrade && apt-get install mysql-client
+  li 
+    | 連線至mysql
+    code
+      | root@210978bba57f:/# mysql -hdb -P3306 -uroot -p
+    | 。其中我們把host設成db，這是因為docker compose的功能，它將同一個compose下的service都放在同一個private network中，而在compose.yml裡設定的service名稱就可以用來代表server對應的ip位址。
+    
+h2 Refs
+ul
+  li 
+    a href="https://docs.docker.com/compose/networking/" target="_blank"
+      | Docker Doc - Networking in Compose
+
+h1 Resources
+
+h2 Links
 ul
   li 
     a href="https://www.gitbook.com/book/philipzheng/docker_practice/details" target="_blank"
@@ -219,3 +274,27 @@ ul
   li 
     a href="http://www.slideshare.net/trunk-studio/docker-65378344" target="_blank"
       | 創科 從零開始認識 Docker
+  li 
+    a href="http://bingohuang.com/simplify-docker-image-1/" target="_blank"
+      | 7 步精简 Docker 镜像（上）
+  li 
+    a href="http://bingohuang.com/simplify-docker-image-2/" target="_blank"
+      | 7 步精简 Docker 镜像（下）
+  li 
+    a href="http://blog.runnable.com/post/145895165446/9-common-dockerfile-mistakes" target="_blank"
+      | 9 Common Dockerfile Mistakes
+  li 
+    a href="http://container-solutions.com/understanding-volumes-docker/" target="_blank"
+      | Understanding Volumes in Docker
+  li 
+    a href="http://dockone.io/" target="_blank"
+      | DockOne.io，最专业的Docker交流平台
+  li 
+    a href="https://thehftguy.com/2016/11/01/docker-in-production-an-history-of-failure/" target="_blank"
+      | Docker in Production: A History of Failure
+
+h2 Books
+ul
+  li 
+    a href="https://www.openshift.com/promotions/docker-security.html" target="_blank"
+      | Docker Security: Using Containers Safely in Production - Adrian Mouat

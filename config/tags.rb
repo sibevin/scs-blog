@@ -160,5 +160,13 @@ $tags = {
   "erlang" => {
     name: "Erlang",
     color: "#A2003E"
-  }
+  },
+  "article" => {
+    name: "好文",
+    color: "#f7fa8e",
+  },
+  "rx" => {
+    name: "ReactiveX",
+    color: "#a04208",
+  },
 }
