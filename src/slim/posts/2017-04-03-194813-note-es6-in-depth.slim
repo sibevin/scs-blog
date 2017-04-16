@@ -1,0 +1,333 @@
+.meta-data title ES6 in Depth 閱讀筆記 Part 1 - loop, generator, template string, rest arguments, default parameters
+.meta-data datetime 2017-04-03 19:48:13
+.meta-data tags js,es6,note
+.meta-data category coding
+.meta-data link note-es6-in-depth
+.meta-data file 2017-04-03-194813-note-es6-in-depth
+.meta-data template post
+.meta-data end
+
+h1 前言
+p 
+  | 這是
+  a href="https://hacks.mozilla.org/category/es6-in-depth/" target="_blank"
+    | ES6 In Depth
+  | 的閱讀筆記，只記錄程式的範例方便語法的查詢，但我強列推薦去讀讀這系列的原始文章，它對於ES6的語法有很深入的介紹，非常值得一讀。
+
+h1 Iterators and the for-of loop
+
+h2 for
+pre
+  code.js
+    | for (var index = 0; index < myArray.length; index++) {
+        console.log(myArray[index]);
+      }
+p 
+  | 缺點：要先知道array的大小。
+
+h2 forEach
+pre
+  code.js
+    | myArray.forEach(function (value) {
+        console.log(value);
+      });
+p 
+  | 缺點：無法使用break與return。
+
+h2 for in
+pre
+  code.js
+    | for (var index in myArray) {    // don't actually do this
+        console.log(myArray[index]);
+      }
+p 
+  | 缺點：1. index的值不是integer，而是string。2. for in不只會跑過array裡的element，連動態加入屬性(expando properties)的值也會一起跑。3. 在某些情況下，for in不會照array的順序，而是照element的文字排序進行迴圈。簡言之，for in當初只是為了object而設計的，不適合用在array中。
+
+h2 for of
+pre
+  code.js
+    | for (var value of myArray) {
+        console.log(value);
+      }
+p 
+  | for of 基本上解決了上面迴圈遇到的問題，帶來了下面的優點：
+ul
+  li 與 forEach / for in 一樣，採用iterator的方式進行迴圈。
+  li 可以使用 break, return, continue。
+  li 沒有 for in 的問題。
+  li 支援string與任何類array資料的迴圈，例如 Map 與 Set。
+pre
+  code.js
+    | for (var [key, value] of phoneBookMap) {
+        console.log(key + "'s phone number is: " + value);
+      }
+ul
+  li 不支援object的迴圈(可以使用for in來替代)，但可以用 Object.keys 的方式來取得對應object的key。
+pre
+  code.js
+    | for (var key of Object.keys(someObject)) {
+        console.log(key + ": " + someObject[key]);
+      }
+ul
+  li 支援任何實作iterable的物件。
+pre
+  code.js
+    | var zeroesForeverIterator = {
+        [Symbol.iterator]: function () {
+          return this;
+        },
+        next: function () {
+          return {done: false, value: 0};
+        }
+      };
+
+h1 Generators
+p 
+  | Generator function即是具有暫停功能的function。
+pre
+  code.js
+    | function* quips(name) {
+        yield "hello " + name + "!";
+        yield "i hope you are enjoying the blog posts";
+        if (name.startsWith("X")) {
+          yield "it's cool how your name starts with X, " + name;
+        }
+        yield "see you later!";
+      }
+p 
+  | 其中要使用 function* 宣告generator function，而 yield 就是類似 return，也就是每次呼叫 next 暫停回傳的值。
+pre
+  code.nohighlight
+    | > var iter = quips("jorendorff");
+        [object Generator]
+      > iter.next()
+        { value: "hello jorendorff!", done: false }
+      > iter.next()
+        { value: "i hope you are enjoying the blog posts", done: false }
+      > iter.next()
+        { value: "see you later!", done: false }
+      > iter.next()
+        { value: undefined, done: true }
+h2 Generators are iterators
+p 
+  | 範例：實作一個function傳入start與end，回傳一個iterator。
+pre
+  code.js
+    | class RangeIterator {
+        constructor(start, stop) {
+          this.value = start;
+          this.stop = stop;
+        }
+
+        [Symbol.iterator]() { return this; }
+
+        next() {
+          var value = this.value;
+          if (value < this.stop) {
+            this.value++;
+            return {done: false, value: value};
+          } else {
+            return {done: true, value: undefined};
+          }
+        }
+      }
+
+      function range(start, stop) {
+        return new RangeIterator(start, stop);
+      }
+p 
+  | 上面的程式碼可以用generator簡化成：
+pre
+  code.js
+    | function* range(start, stop) {
+        for (var i = start; i < stop; i++)
+          yield i;
+      }
+p 
+  | 常用的情境：
+ul
+  li 幫物件實作iterable，next的function可以用generator funcation來實作。
+  li 簡化使用function建立物件的程式碼。
+  li 處理未知大小的資料。
+  li 處理複雜或是多層的回圈，generator function可以先把部分的資料吐回來先處理。
+  li 處理iterable的物件。
+
+h2 Generators and asynchronous code
+
+p 
+  | Generator的另一個用處是將async的function，轉成用一般function(也就是sync)的方式撰寫，但實際上它仍是async的執行方式。下面是範例：
+pre
+  code.js
+    | // Synchronous code to make some noise.
+      function makeNoise() {
+        shake();
+        rattle();
+        roll();
+      }
+
+      // Asynchronous code to make some noise.
+      // Returns a Promise object that becomes resolved
+      // when we're done making noise.
+      function makeNoise_async() {
+        return Q.async(function* () {
+          yield shake_async();
+          yield rattle_async();
+          yield roll_async();
+        });
+      }
+
+h1 Template strings
+
+p 
+  | template string即是可以在字串中帶入變數顯示，這類的字串會用 
+  code
+    | `
+  | 這個符號來定義字串，如下所示：
+pre
+  code.js
+    | `User ${user.name} is not authorized to do ${action}.`
+p 
+  | 它有下面的特性：
+ul
+  li 字串裡除了可以放變數外，還可以放任何的表示式。
+  li 
+    | 如果變數是一個物件，而字串會呼叫 
+    code
+      | .toString()
+    | 這個method。
+  li
+    | 如果要顯示 
+    code
+      | `
+    | ，則需要用 
+    code
+      | \
+    | 做跳脫字元。例如：
+    code
+      | `\``
+    | 。
+  li 
+    | 如果要顯示 
+    code
+      | ${
+    | ，則同樣也要做跳脫字元，可以選其中一個做即可，例如： 
+    code
+      | \${
+    | 或是 
+    code
+      | $\{
+    | 。
+  li 支援多行字串，所有的空白類的字元(空白、換行、縮排等)都會包含在字串中。
+pre
+  code.js
+    | $("#warning").html(`
+        Watch out!
+        Unauthorized hockeying can result in penalties
+        of up to ${maxPenalty} minutes.
+      `);
+ul
+  li template string 不會自動作危險字元的過濾與跳脫，需要特別注意程式碼注入的問題。下面是一個程式範例來處理危險字元的過濾：
+pre
+  code.js
+    | var message = SaferHTML`${bonk.sender} has sent you a bonk.`;
+    
+      function SaferHTML(templateData) {
+        var s = templateData[0];
+        for (var i = 1; i < arguments.length; i++) {
+          var arg = String(arguments[i]);
+          s += arg.replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;");
+          s += templateData[i];
+        }
+        return s;
+      }
+ul
+  li 如果要處理 template string 的 i18n，需要在變數的地方自行做處理，例如下面的例子就是加上額外tag的方式來辨識需要翻譯的地方：
+pre
+  code.js
+    | i18n`Hello ${name}, you have ${amount}:c(CAD) in your bank account.`
+      // => Hallo Bob, Sie haben 1.234,56 $CA auf Ihrem Bankkonto.
+ul
+  li template string 並沒有提供內建的迴圈與判斷式，如果要做到這些還是必須使用其它的 template library 例如 Mustache 或是 Nunjuck 。
+  li 
+    | 如果要處理 markdown 的話，需要使用 
+    code
+      | ``
+    | 來呈現程式碼，例如：
+pre
+  code.js
+    | To display a message, write ``alert(`hello world!`)``.
+
+h1 Rest parameters and defaults
+
+h2 Rest parameters
+
+p 
+  | 如果要在函式中處理不定個數參數的傳入，在ES6之前的作法是使用 
+  code
+    | arguments
+  | 這個內建變數，範例如下：
+pre
+  code.js
+    | containsAll("banana", "b", "nan")
+    
+      function containsAll(haystack) {
+        for (var i = 1; i < arguments.length; i++) {
+          var needle = arguments[i];
+          if (haystack.indexOf(needle) === -1) {
+            return false;
+          }
+        }
+        return true;
+      }
+p 
+  | 其中 haystack 的值即為 "banana"，而 arguments 的值為 ["banana", "b", "nan"]。這樣的處理方式有幾個缺點：
+ul
+  li arguments 代表的是所有傳入的參數，無法區分是哪些參數是額外傳進來的。
+  li arguments 包含了 haystack 的值，有重複的參數值變成反而有點多餘。
+p 
+  | ES6有了 rest arguements 可以改寫成下面這個樣子：
+pre
+  code.js
+    | function containsAll(haystack, ...needles) {
+        for (var needle of needles) {
+          if (haystack.indexOf(needle) === -1) {
+            return false;
+          }
+        }
+        return true;
+      }
+p 
+  | 其中 haystack 的值即為 "banana"，而 needles 的值為 ["b", "nan"]。使用 rest arguments 要注意的是：
+ul
+  li 只有最後一個參數可以設成 rest arguments。
+  li 如果沒有額外參數傳入， rest arguments 為空 array 。
+
+h2 Default parameters
+
+p 
+  | 在ES6中允許函式的參數列可以設定預設值，如下所示：
+pre
+  code.js
+    | function animalSentence(animals2="tigers", animals3="bears") {
+        return `Lions and ${animals2} and ${animals3}! Oh my!`;
+      }
+p 
+  | 當參數沒有傳入時，就會使用設定的預設值當做傳入的參數。使用 default parameters 要注意的是：
+ul
+  li 預設值是即時運算的，你甚至可以在第二個參數的預設值中使用第一個參數的值，例如：
+pre
+  code.js
+    | function animalSentenceFancy(animals2="tigers", animals3=(animals2 == "bears") ? "sealions" : "bears") {
+        return `Lions and ${animals2} and ${animals3}! Oh my!`;
+      }
+ul
+  li 傳入 undefined 的值會視作不傳入參數，如果對應的參數有設定預設值，就會使用預設值。
+  li 
+    | 可以部分的參數設定預設值，部分不設，不設的參數相當於有 undefined 這個預設值。例如 
+    code
+      | function myFunc(a=42, b) {...}
+    | 相當於
+    code
+      | function myFunc(a=42, b=undefined) {...}

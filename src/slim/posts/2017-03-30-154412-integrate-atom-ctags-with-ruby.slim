@@ -34,7 +34,7 @@ h2
 p
   | atom-ctags有一個設定是可以指定產生tag要用的ctags，所以可以替換成ripper-tags來生tag，但atom-ctags會在呼叫ctags程式時，額外產生一些內建的參數給ctags。而有些參數(例如：--options, --fields等)ripper-tags是不支援的，所以在生tag的時候就會出錯。
 p 
-  | 因為atom-ctags內建的預設參數是沒辦法使用套件設定，所以只能改程式碼。我的修改是將原本的cmdArgs套件當做是呼叫ctags傳的參數，所有的建入參考都轉的cmdArgs的預設值。這樣如果要改傳其它的參數，就可以修改這個cmdArgs的設定值。當使用修改過後的atom-ctags與ripper-tags，就可以設定atom-ctags呼叫ripper-tags來生tag了。
+  | 因為atom-ctags內建的預設參數是沒辦法使用套件設定，所以只能改程式碼。我的修改是將原本的cmdArgs套件當做是呼叫ctags傳的參數，所有的內建參數都轉成cmdArgs的預設值。這樣如果要改傳其它的參數，就可以修改這個cmdArgs的設定值。當使用修改過後的atom-ctags與ripper-tags，就可以設定atom-ctags呼叫ripper-tags來生tag了。
 pre
   code.yaml
     | "*":

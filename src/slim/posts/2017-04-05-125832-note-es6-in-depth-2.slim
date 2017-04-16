@@ -1,0 +1,291 @@
+.meta-data title ES6 in Depth 閱讀筆記 Part 2 - destructuring, arrow functions, symbols, collections, generators, proxies
+.meta-data datetime 2017-04-05 12:58:32
+.meta-data tags js,es6,note
+.meta-data category coding
+.meta-data link note-es6-in-depth-2
+.meta-data file 2017-04-05-125832-note-es6-in-depth-2
+.meta-data template post
+.meta-data end
+
+h1 前言
+p 
+  | 這是
+  a href="https://hacks.mozilla.org/category/es6-in-depth/" target="_blank"
+    | ES6 In Depth
+  | 的閱讀筆記，只記錄程式的範例方便語法的查詢，但我強列推薦去讀讀這系列的原始文章，它對於ES6的語法有很深入的介紹，非常值得一讀。
+
+h1 Destructuring
+
+p 
+  | ES6提供另一種 assignment 的方式，就是所謂的 destructuring，方式如下：
+pre
+  code.js
+    | [first, second, third] = someArray;
+p 
+  | 上面的程式碼相當於：
+pre
+  code.js
+    | first = someArray[0];
+      second = someArray[1];
+      third = someArray[2];
+p 
+  | 上面的例子是當 first, second, third 這三個變數存在的時候，如果想在 assignment 的時候順便宣告變數，則可以在前面加上 var, let 或 const。
+
+h2 Destructuring arrays and iterables
+p 
+  | 當 destructuring 的對象是一個 array 或是 iterable 時，會有下面的特性：
+ul
+  li 支援槽狀結構。
+pre
+  code.js
+    | var [foo, [[bar], baz]] = [1, [[2], 3]];
+      console.log(foo); // 1
+      console.log(bar); // 2
+      console.log(baz); // 3
+ul
+  li 可以省略不需要的值。
+pre
+  code.js
+    | var [,,third] = ["foo", "bar", "baz"];
+      console.log(third); //"baz"
+ul
+  li 有 rest 的效果。
+pre
+  code.js
+    | var [head, ...tail] = [1, 2, 3, 4];
+      console.log(tail); // [2, 3, 4]
+ul
+  li 如果是空的 array 或是槽狀結構不正確，則得到的值是 undefined 。
+  li 支援 iterable 的物件，例如：
+pre
+  code.js
+    | function* fibs() {
+        var a = 0;
+        var b = 1;
+        while (true) {
+          yield a;
+          [a, b] = [b, a + b];
+        }
+      }
+
+      var [first, second, third, fourth, fifth, sixth] = fibs();
+      console.log(sixth); // 5
+ul
+  li 可以設定預設值。
+pre
+  code.js
+    | var [missing = true] = [];
+      console.log(missing); // true
+
+h2 Destructuring objects
+
+p 
+  | Destructuring object 的使用方式與 array 類似：
+pre
+  code.js
+    | var robotA = { name: "Bender", height: 120 };
+      var nameA, heightA;
+      { name: nameA, height: heightA } = robotA;
+p 
+  | 如果將變數名稱取的跟 key 的名稱一樣，則可以使用下面的縮寫方式：
+pre
+  code.js
+    | var robotA = { name: "Bender", height: 120 };
+      var name, height;
+      { name, height } = robotA;
+p 
+  | 要特別注意的是如果使用上面的縮寫，但沒有宣告變數時，會出現 Syntax error 。如果要避免這個情況發生，可以用()將表示式包起來，如下所示：
+pre
+  code.js
+    | ({ name, height } = robotA);
+  
+p 當 destructuring 的對象是一個 object 時，會有下面的特性：
+ul
+  li 同樣支援槽狀結構。
+pre
+  code.js
+    | var complicatedObj = {
+        arrayProp: [
+          "Zapp",
+          { second: "Brannigan" }
+        ]
+      };
+
+      var { arrayProp: [first, { second }] } = complicatedObj;
+      console.log(first); // "Zapp"
+      console.log(second); // "Brannigan"
+ul
+  li 如果是空的 object 或是槽狀結構不正確，則得到的值是 undefined 。
+  li 同樣可以設定預設值：
+pre
+  code.js
+    | var { message: msg = "Something went wrong" } = {};
+      console.log(msg); // "Something went wrong"
+
+      var { x = 3 } = {};
+      console.log(x); // 3
+  
+h2 Destructuring values that are not an object, array, or iterable
+
+p 
+  | 如果 destructuring 的對象不是 array 或 object，則要特別注意：
+ul
+  li destructuring null 或是 undefined 時，會出現 TypeError 。
+  li destructuring string, numbers(包含NaN), booleans 時，會出現 undefined 。
+  
+h2 Practical applications of destructuring
+p 
+  | destructuring 的使用情境
+ul
+  li 
+    | 定義函數的參數列，例如：
+    code
+      | function removeBreakpoint({ url, line, column }) { ... }
+    | 。
+  li 用來做為設定值的預設值，例如：
+pre
+  code.js
+    | jQuery.ajax = function (url, {
+        async = true,
+        beforeSend = noop,
+        cache = true,
+        complete = noop,
+        crossDomain = false,
+        global = true,
+        // ... more config
+      }) {
+        // ... do stuff
+      };
+ul
+  li 支援ES6的新增型態 Map 的 for-of，例如：
+pre
+  code.js
+    | var map = new Map();
+      map.set(window, "the global");
+      map.set(document, "the document");
+
+      for (var [key, value] of map) {
+        console.log(key + " is " + value);
+      }
+      
+      for (var [key] of map) {
+        // ...
+      }
+      
+      for (var [,value] of map) {
+        // ...
+      }
+ul
+  li 讓函式可以回傳多個值，例如：
+pre
+  code.js
+    | function returnMultipleValues() {
+        return [1, 2];
+      }
+      var [foo, bar] = returnMultipleValues();
+      
+      function returnMultipleValues() {
+        return {
+          foo: 1,
+          bar: 2
+        };
+      }
+      var { foo, bar } = returnMultipleValues();
+ul
+  li 
+    | 支援 CommonJS 的 module import，例如： 
+    code
+      | const { SourceMapConsumer, SourceNode } = require("source-map");
+      
+h1 Arrow functions
+
+h2 A new arrow in your quiver(箭袋)
+
+p 
+  | ES6提供了新的方式寫匿名函式，例如：
+pre
+  code.js
+    | // ES5
+      var selected = allJobs.filter(function (job) {
+        return job.isSelected();
+      });
+
+      // ES6
+      var selected = allJobs.filter(job => job.isSelected());
+p 
+  | 多個參數也可以：
+pre
+  code.js
+    | // ES5
+      var total = values.reduce(function (a, b) {
+        return a + b;
+      }, 0);
+
+      // ES6
+      var total = values.reduce((a, b) => a + b, 0);
+p 
+  | 多行的函式也可以：
+pre
+  code.js
+    | // ES5
+      $("#confetti-btn").click(function (event) {
+        playTrumpet();
+        fireConfettiCannon();
+      });
+      
+      // ES6
+      $("#confetti-btn").click(event => {
+        playTrumpet();
+        fireConfettiCannon();
+      });
+p 
+  | 但要特別注意的是如果對應的是要回傳一個空物件，要用括號包起來，不然會被判斷成一個函式回傳 undefined。
+pre
+  code.js
+    | // create a new empty object for each puppy to play with
+      var chewToys = puppies.map(puppy => {});   // BUG!
+      var chewToys = puppies.map(puppy => ({})); // ok
+
+h2 What’s this?
+
+p 
+  | arrow function 與一般的 function 一個很重要的差別在於 arrow function 沒有自己的 this，在 arrow function 裡的 this 會直接繼承函式外部的 this。舉個例子，一般的 function 要使用外部的 this 時，通常需要做下面的手法：
+pre
+  code.js
+    | {
+        ...
+        addAll: function addAll(pieces) {
+          var self = this;
+          _.each(pieces, function (piece) {
+            self.add(piece);
+          });
+        },
+        ...
+      }
+p 
+  | 但如果改成 arrow function，就可以更簡化：
+pre
+  code.js
+    | {
+        ...
+        addAll: function addAll(pieces) {
+          _.each(pieces, piece => this.add(piece));
+        },
+        ...
+      }
+p 
+  | ES6一個值得注意的特性是，即使是一般的 function，如果是做為 object 的 method (例如上面例子中的addAll(pieces))而被呼叫時，function 裡的 this 會是對應呼叫這個 method 的 caller 。所以上面例子，在 addAll 裡的 this 即是代表 object 本身(而不是undefined)。另外在ES6中，這類的 method function 可以進一步簡寫成下面這個樣子：
+pre
+  code.js
+    | {
+        ...
+        addAll(pieces) {
+          _.each(pieces, piece => this.add(piece));
+        },
+        ...
+      }
+      
+h1 Symbols
+h1 Collections
+h1 Generators, continued
+h1 Proxies
